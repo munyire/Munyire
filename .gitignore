@@ -1,0 +1,14 @@
+# Node.js
+node_modules/
+.env
+
+# SQLite database
+*.db
+*.sqlite
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+thumbs.db

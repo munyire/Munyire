@@ -95,3 +95,29 @@ A weboldal lesz. Az alkalmazás fő moduljai:
 *   Jelszó hash-elés
 *   Szerepkör-alapú jogosultságkezelés
 *   Csak engedélyezett API végpontok használata
+
+---
+
+## 7. Backend Rendszer
+
+A projekt REST API-ja a `backend` mappában található, és a következő technológiákkal készült:
+
+*   **Node.js**
+*   **Express.js** keretrendszer
+*   **SQLite** adatbázis
+
+### Indítási Útmutató
+
+1.  Lépj be a `backend` könyvtárba:
+    ```sh
+    cd backend
+    ```
+2.  Telepítsd a függőségeket (ezt csak az első alkalommal kell megtenni):
+    ```sh
+    npm install
+    ```
+3.  Indítsd el a szervert:
+    ```sh
+    npm start
+    ```
+Az API a `http://localhost:3001` címen fog futni. A részletes API végpont dokumentáció a `backend/BACKEND_DOCS.md` fájlban található.
