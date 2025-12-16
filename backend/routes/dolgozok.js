@@ -61,7 +61,7 @@ router.post('/', isAdmin, (req, res) => {
 });
 
 // Update an employee (Admin only)
-router.put('/:did', isAdmin, (req, res) => {
+router.patch('/:did', isAdmin, (req, res) => {
     const { did } = req.params;
     const { DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, JelszoHash } = req.body;
     db.run(

@@ -61,7 +61,7 @@ router.post('/', isAdmin, (req, res) => {
 });
 
 // Update a clothing item (Admin only)
-router.put('/:kid', isAdmin, (req, res) => {
+router.patch('/:kid', isAdmin, (req, res) => {
     const { kid } = req.params;
     const { Fajta, Szin, Meret, Mennyiseg } = req.body;
     db.run(

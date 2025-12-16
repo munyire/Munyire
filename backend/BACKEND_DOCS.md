@@ -115,15 +115,15 @@ Minden alábbi végpont védett, és érvényes `x-auth-token` fejlécet igénye
 *   `GET /`: Összes dolgozó lekérdezése. (Jogosultság: Manager, Admin)
 *   `GET /:did`: Egy dolgozó lekérdezése ID alapján. (Jogosultság: Manager, Admin)
 *   `POST /`: Új dolgozó létrehozása. (Jogosultság: Admin)
-*   `PUT /:did`: Dolgozó adatainak frissítése. (Jogosultság: Admin)
-*   `DELETE /:did`: Dolgozó törlése. (Jogosultság: Admin)
+*   `PATCH /:did`: Dolgozó adatainak frissítése. (Jogosultság: Admin)
+*   `DELETE /:did`: Dolgozó törlése. (Jogosultság: Admin) (Deleted flag)
 
 ### Ruhák (`/api/ruhak`)
 
 *   `GET /`: Összes ruha lekérdezése. (Jogosultság: Manager, Admin)
 *   `GET /:kid`: Egy ruha lekérdezése ID alapján. (Jogosultság: Manager, Admin)
 *   `POST /`: Új ruha létrehozása a készletben. (Jogosultság: Admin)
-*   `PUT /:kid`: Ruha adatainak (pl. mennyiség) frissítése. (Jogosultság: Admin)
+*   `PATCH /:kid`: Ruha adatainak (pl. mennyiség) frissítése. (Jogosultság: Admin)
 *   `DELETE /:kid`: Ruha törlése a készletből. (Jogosultság: Admin)
 
 ### Ruha Kiadás/Visszavétel (`/api/ruhakibe`)
@@ -131,7 +131,7 @@ Minden alábbi végpont védett, és érvényes `x-auth-token` fejlécet igénye
 *   `GET /`: Összes kiadási/visszavételi tranzakció lekérdezése. (Jogosultság: Manager, Admin)
 *   `GET /:kiadasid`: Egy tranzakció lekérdezése ID alapján. (Jogosultság: Manager, Admin)
 *   `POST /`: Új kiadási/visszavételi tranzakció létrehozása. (Jogosultság: Manager, Admin)
-*   `PUT /:kiadasid`: Tranzakció adatainak frissítése (pl. visszavétel dátuma). (Jogosultság: Admin)
+*   `PATCH /:kiadasid`: Tranzakció adatainak frissítése (pl. visszavétel dátuma). (Jogosultság: Admin)
 *   `DELETE /:kiadasid`: Tranzakció törlése. (Jogosultság: Admin)
 
 ### Rendelések (`/api/rendelesek`)
@@ -139,5 +139,5 @@ Minden alábbi végpont védett, és érvényes `x-auth-token` fejlécet igénye
 *   `GET /`: Összes rendelés lekérdezése. (Jogosultság: Manager, Admin)
 *   `GET /:rid`: Egy rendelés lekérdezése ID alapján. (Jogosultság: Manager, Admin)
 *   `POST /`: Új rendelés létrehozása. (Jogosultság: Manager, Admin)
-*   `PUT /:rid`: Rendelés adatainak frissítése. (Jogosultság: Manager, Admin)
+*   `PATCH /:rid`: Rendelés adatainak frissítése. (Jogosultság: Manager, Admin)
 *   `DELETE /:rid`: Rendelés törlése. (Jogosultság: Admin)

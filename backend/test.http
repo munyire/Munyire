@@ -155,7 +155,7 @@ x-auth-token: {{managerToken}}
 # @name createRuha
 POST {{baseUrl}}/ruhak
 Content-Type: application/json
-x-auth-token: {{adminToken}}
+x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJ1c2VybmFtZSI6ImFkbWludXNlciIsImFkbWluIjoxLCJtdW5rYWtvciI6IkFkbWluIn0sImlhdCI6MTc2NTg3MzU1MSwiZXhwIjoxNzY1ODc3MTUxfQ.j7JtTpWzzLb3XVgZpTWBMhCV72cL0O-XvRud_Si22NQ
 
 {
     "Fajta": "Nadrag",
@@ -178,7 +178,7 @@ x-auth-token: {{managerToken}}
 # Create a new record (should work for Manager)
 POST {{baseUrl}}/ruhakibe
 Content-Type: application/json
-x-auth-token: {{managerToken}}
+x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJ1c2VybmFtZSI6ImFkbWludXNlciIsImFkbWluIjoxLCJtdW5rYWtvciI6IkFkbWluIn0sImlhdCI6MTc2NTg3MzU1MSwiZXhwIjoxNzY1ODc3MTUxfQ.j7JtTpWzzLb3XVgZpTWBMhCV72cL0O-XvRud_Si22NQ
 
 {
     "DID": 2,
@@ -202,9 +202,9 @@ x-auth-token: {{managerToken}}
 ###
 
 # Update a record (should work for Admin)
-PUT {{baseUrl}}/ruhakibe/1
+PATCH {{baseUrl}}/ruhakibe/1
 Content-Type: application/json
-x-auth-token: {{adminToken}}
+x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJ1c2VybmFtZSI6ImFkbWludXNlciIsImFkbWluIjoxLCJtdW5rYWtvciI6IkFkbWluIn0sImlhdCI6MTc2NTg3MzU1MSwiZXhwIjoxNzY1ODc3MTUxfQ.j7JtTpWzzLb3XVgZpTWBMhCV72cL0O-XvRud_Si22NQ
 
 {
     "VisszaDatum": "2025-12-22"

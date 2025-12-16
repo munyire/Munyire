@@ -70,7 +70,7 @@ router.post('/', isManagerOrAdmin, (req, res) => {
 });
 
 // Update a check-in/check-out record (Admin only)
-router.put('/:kiadasid', isAdmin, (req, res) => {
+router.patch('/:kiadasid', isAdmin, (req, res) => {
     const { kiadasid } = req.params;
     const { DID, KID, KiadasDatum, VisszaDatum, Mennyiseg } = req.body;
     db.run(

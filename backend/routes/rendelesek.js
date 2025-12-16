@@ -70,7 +70,7 @@ router.post('/', isManagerOrAdmin, (req, res) => {
 });
 
 // Update an order (Manager and Admin)
-router.put('/:rid', isManagerOrAdmin, (req, res) => {
+router.patch('/:rid', isManagerOrAdmin, (req, res) => {
     const { rid } = req.params;
     const { KID, RDatum, Mennyiseg } = req.body;
     db.run(

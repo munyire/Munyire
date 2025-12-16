@@ -31,6 +31,9 @@ A rendszer első verziója egy weboldal, mely gyors, modern felhasználói élm�
 
 ## 3. Adatbázis felépítése
 
+
+
+
 A rendszer kész, végleges adatbázisterve az alábbi táblákból áll:
 
 ### `Ruhak`
@@ -121,3 +124,4 @@ A projekt REST API-ja a `backend` mappában található, és a következő techn
     npm start
     ```
 Az API a `http://localhost:3001` címen fog futni. A részletes API végpont dokumentáció a `backend/BACKEND_DOCS.md` fájlban található.
+
