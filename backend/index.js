@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./database');
+const { syncDb } = require('./database');
 const dolgozokRouter = require('./routes/dolgozok');
 const ruhakRouter = require('./routes/ruhak');
 const ruhakibeRouter = require('./routes/ruhakibe');
@@ -28,6 +28,12 @@ app.use('/api/ruhak', ruhakRouter);
 app.use('/api/ruhakibe', ruhakibeRouter);
 app.use('/api/rendelesek', rendelesekRouter);
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Sync DB and start server
+const startServer = async () => {
+    await syncDb();
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+};
+
+startServer();

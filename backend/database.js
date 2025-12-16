@@ -1,45 +1,169 @@
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./munyire.db', (err) => {
-    if (err) {
-        console.error('Error connecting to database:', err.message);
-    } else {
-        console.log('Connected to the SQLite database.');
-        db.run(`CREATE TABLE IF NOT EXISTS Dolgozok (
-            DID INTEGER PRIMARY KEY AUTOINCREMENT,
-            DNev TEXT NOT NULL,
-            Email TEXT UNIQUE NOT NULL,
-            Telefonszam TEXT,
-            Nem TEXT,
-            Munkakor TEXT,
-            Admin INTEGER DEFAULT 0,
-            FelhasznaloNev TEXT UNIQUE NOT NULL,
-            JelszoHash TEXT NOT NULL
-        )`);
-        db.run(`CREATE TABLE IF NOT EXISTS Ruhak (
-            KID INTEGER PRIMARY KEY AUTOINCREMENT,
-            Fajta TEXT NOT NULL,
-            Szin TEXT NOT NULL,
-            Meret TEXT NOT NULL,
-            Mennyiseg INTEGER NOT NULL
-        )`);
-        db.run(`CREATE TABLE IF NOT EXISTS RuhaKiBe (
-            KiadasID INTEGER PRIMARY KEY AUTOINCREMENT,
-            DID INTEGER NOT NULL,
-            KID INTEGER NOT NULL,
-            KiadasDatum TEXT NOT NULL,
-            VisszaDatum TEXT,
-            Mennyiseg INTEGER NOT NULL,
-            FOREIGN KEY (DID) REFERENCES Dolgozok(DID),
-            FOREIGN KEY (KID) REFERENCES Ruhak(KID)
-        )`);
-        db.run(`CREATE TABLE IF NOT EXISTS Rendelesek (
-            RID INTEGER PRIMARY KEY AUTOINCREMENT,
-            KID INTEGER NOT NULL,
-            RDatum TEXT NOT NULL,
-            Mennyiseg INTEGER NOT NULL,
-            FOREIGN KEY (KID) REFERENCES Ruhak(KID)
-        )`);
-    }
+const { Sequelize, DataTypes } = require('sequelize');
+
+// Initialize Sequelize with SQLite
+const sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: './munyire.db',
+    logging: false // Disable logging for cleaner output
 });
 
-module.exports = db;
+// Define Dolgozok model
+const Dolgozok = sequelize.define('Dolgozok', {
+    DID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    DNev: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    Email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    },
+    Telefonszam: DataTypes.STRING,
+    Nem: DataTypes.STRING,
+    Munkakor: DataTypes.STRING,
+    Admin: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    FelhasznaloNev: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    },
+    JelszoHash: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+}, {
+    tableName: 'Dolgozok',
+    timestamps: false
+});
+
+// Define Ruhak model
+const Ruhak = sequelize.define('Ruhak', {
+    KID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    Fajta: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    Szin: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    Meret: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    Mennyiseg: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    }
+}, {
+    tableName: 'Ruhak',
+    timestamps: false
+});
+
+// Define RuhaKiBe model
+const RuhaKiBe = sequelize.define('RuhaKiBe', {
+    KiadasID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    DID: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Dolgozok,
+            key: 'DID'
+        }
+    },
+    KID: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Ruhak,
+            key: 'KID'
+        }
+    },
+    KiadasDatum: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    VisszaDatum: DataTypes.STRING,
+    Mennyiseg: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    }
+}, {
+    tableName: 'RuhaKiBe',
+    timestamps: false
+});
+
+// Define Rendelesek model
+const Rendelesek = sequelize.define('Rendelesek', {
+    RID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    KID: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Ruhak,
+            key: 'KID'
+        }
+    },
+    RDatum: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    Mennyiseg: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    }
+}, {
+    tableName: 'Rendelesek',
+    timestamps: false
+});
+
+// Define associations
+Dolgozok.hasMany(RuhaKiBe, { foreignKey: 'DID' });
+RuhaKiBe.belongsTo(Dolgozok, { foreignKey: 'DID' });
+
+Ruhak.hasMany(RuhaKiBe, { foreignKey: 'KID' });
+RuhaKiBe.belongsTo(Ruhak, { foreignKey: 'KID' });
+
+Ruhak.hasMany(Rendelesek, { foreignKey: 'KID' });
+Rendelesek.belongsTo(Ruhak, { foreignKey: 'KID' });
+
+// Sync database
+const syncDb = async () => {
+    try {
+        await sequelize.authenticate();
+        console.log('Connection has been established successfully.');
+        await sequelize.sync({ alter: true }); // Use alter to avoid dropping tables
+        console.log('All models were synchronized successfully.');
+    } catch (error) {
+        console.error('Unable to connect to the database:', error);
+    }
+};
+
+module.exports = {
+    sequelize,
+    syncDb,
+    Dolgozok,
+    Ruhak,
+    RuhaKiBe,
+    Rendelesek
+};

@@ -2,30 +2,45 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../database');
+const { Dolgozok } = require('../database');
+const { Op } = require('sequelize');
+
 
 // Register a new user
 router.post('/register', async (req, res) => {
     const { DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, Jelszo } = req.body;
 
     try {
+        // Check if user already exists
+        const existingUser = await Dolgozok.findOne({
+            where: {
+                [Op.or]: [{ FelhasznaloNev: FelhasznaloNev }, { Email: Email }]
+            }
+        });
+        if (existingUser) {
+            return res.status(400).json({ "error": "FelhasznaloNev or Email already exists" });
+        }
+
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const JelszoHash = await bcrypt.hash(Jelszo, salt);
 
-        const insert = 'INSERT INTO Dolgozok (DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, JelszoHash) VALUES (?,?,?,?,?,?,?,?)';
-        db.run(insert, [DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, JelszoHash], function (err) {
-            if (err) {
-                if (err.message.includes('UNIQUE constraint failed')) {
-                    return res.status(400).json({"error": "FelhasznaloNev or Email already exists"});
-                }
-                return res.status(500).json({"error": err.message});
-            }
-            res.status(201).json({
-                "message": "User registered successfully",
-                "data": { DID: this.lastID, FelhasznaloNev }
-            });
+        const newUser = await Dolgozok.create({
+            DNev,
+            Email,
+            Telefonszam,
+            Nem,
+            Munkakor,
+            Admin,
+            FelhasznaloNev,
+            JelszoHash
         });
+
+        res.status(201).json({
+            "message": "User registered successfully",
+            "data": { DID: newUser.DID, FelhasznaloNev: newUser.FelhasznaloNev }
+        });
+
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -33,28 +48,26 @@ router.post('/register', async (req, res) => {
 });
 
 // Login user
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { FelhasznaloNev, Jelszo } = req.body;
 
-    db.get('SELECT * FROM Dolgozok WHERE FelhasznaloNev = ?', [FelhasznaloNev], async (err, user) => {
-        if (err) {
-            return res.status(500).json({"error": err.message});
-        }
+    try {
+        const user = await Dolgozok.findOne({ where: { FelhasznaloNev } });
         if (!user) {
-            return res.status(400).json({"message": "Invalid Credentials"});
+            return res.status(400).json({ "message": "Invalid Credentials" });
         }
 
         const isMatch = await bcrypt.compare(Jelszo, user.JelszoHash);
         if (!isMatch) {
-            return res.status(400).json({"message": "Invalid Credentials"});
+            return res.status(400).json({ "message": "Invalid Credentials" });
         }
 
         const payload = {
             user: {
                 id: user.DID,
                 username: user.FelhasznaloNev,
-                admin: user.Admin,
-                munkakor: user.Munkakor
+                Admin: user.Admin,
+                Munkakor: user.Munkakor
             }
         };
 
@@ -67,7 +80,10 @@ router.post('/login', (req, res) => {
                 res.json({ token });
             }
         );
-    });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
 });
 
 module.exports = router;

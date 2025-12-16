@@ -1,105 +1,114 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database');
+const { Dolgozok } = require('../database');
+const bcrypt = require('bcryptjs');
+
 
 // Middleware to check if user is Admin
 const isAdmin = (req, res, next) => {
-    if (req.user && req.user.admin === 1) {
+    if (req.user && req.user.Admin === 1) { // Note: Sequelize might return capitalized field names
         next();
     } else {
         res.status(403).json({ message: 'Access denied: Admin role required' });
     }
 };
 
-// Get all employees (Manager and Admin)
-router.get('/', (req, res) => {
-    db.all('SELECT * FROM Dolgozok', [], (err, rows) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
+// Get all employees
+router.get('/', async (req, res) => {
+    try {
+        const dolgozok = await Dolgozok.findAll();
         res.json({
             "message": "success",
-            "data": rows
+            "data": dolgozok
         });
-    });
+    } catch (err) {
+        res.status(500).json({ "error": err.message });
+    }
 });
 
-// Get a single employee by DID (Manager and Admin)
-router.get('/:did', (req, res) => {
-    const { did } = req.params;
-    db.get('SELECT * FROM Dolgozok WHERE DID = ?', [did], (err, row) => {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        if (row) {
+// Get a single employee by DID
+router.get('/:did', async (req, res) => {
+    try {
+        const dolgozo = await Dolgozok.findByPk(req.params.did);
+        if (dolgozo) {
             res.json({
                 "message": "success",
-                "data": row
+                "data": dolgozo
             });
         } else {
-            res.status(404).json({"message": "Employee not found"});
+            res.status(404).json({ "message": "Employee not found" });
         }
-    });
+    } catch (err) {
+        res.status(500).json({ "error": err.message });
+    }
 });
 
 // Create a new employee (Admin only)
-router.post('/', isAdmin, (req, res) => {
-    const { DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, JelszoHash } = req.body;
-    const insert = 'INSERT INTO Dolgozok (DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, JelszoHash) VALUES (?,?,?,?,?,?,?,?)';
-    db.run(insert, [DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, JelszoHash], function (err) {
-        if (err) {
-            res.status(400).json({"error": err.message});
-            return;
+router.post('/', isAdmin, async (req, res) => {
+    try {
+        const { DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, Jelszo } = req.body;
+        if (!Jelszo) {
+            return res.status(400).json({ "error": "Password is required" });
         }
+        const JelszoHash = await bcrypt.hash(Jelszo, 10);
+        
+        const newDolgozo = await Dolgozok.create({
+            DNev,
+            Email,
+            Telefonszam,
+            Nem,
+            Munkakor,
+            Admin,
+            FelhasznaloNev,
+            JelszoHash
+        });
         res.status(201).json({
             "message": "success",
-            "data": { DID: this.lastID, ...req.body }
+            "data": newDolgozo
         });
-    });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // Update an employee (Admin only)
-router.patch('/:did', isAdmin, (req, res) => {
-    const { did } = req.params;
-    const { DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, JelszoHash } = req.body;
-    db.run(
-        `UPDATE Dolgozok SET
-            DNev = COALESCE(?,DNev),
-            Email = COALESCE(?,Email),
-            Telefonszam = COALESCE(?,Telefonszam),
-            Nem = COALESCE(?,Nem),
-            Munkakor = COALESCE(?,Munkakor),
-            Admin = COALESCE(?,Admin),
-            FelhasznaloNev = COALESCE(?,FelhasznaloNev),
-            JelszoHash = COALESCE(?,JelszoHash)
-            WHERE DID = ?`,
-        [DNev, Email, Telefonszam, Nem, Munkakor, Admin, FelhasznaloNev, JelszoHash, did],
-        function (err) {
-            if (err) {
-                res.status(400).json({"error": err.message});
-                return;
-            }
-            res.json({ "message": "success", "changes": this.changes });
+router.patch('/:did', isAdmin, async (req, res) => {
+    try {
+        const { Jelszo, ...updateData } = req.body;
+
+        if (Jelszo) {
+            updateData.JelszoHash = await bcrypt.hash(Jelszo, 10);
         }
-    );
+
+        const [updated] = await Dolgozok.update(updateData, {
+            where: { DID: req.params.did }
+        });
+
+        if (updated) {
+            res.json({ "message": "success", "changes": updated });
+        } else {
+            res.status(404).json({ "message": "Employee not found" });
+        }
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // Delete an employee (Admin only)
-router.delete('/:did', isAdmin, (req, res) => {
-    const { did } = req.params;
-    db.run(
-        'DELETE FROM Dolgozok WHERE DID = ?',
-        did,
-        function (err) {
-            if (err) {
-                res.status(400).json({"error": err.message});
-                return;
-            }
-            res.json({ "message": "deleted", "changes": this.changes });
+router.delete('/:did', isAdmin, async (req, res) => {
+    try {
+        const deleted = await Dolgozok.destroy({
+            where: { DID: req.params.did }
+        });
+
+        if (deleted) {
+            res.json({ "message": "deleted", "changes": deleted });
+        } else {
+            res.status(404).json({ "message": "Employee not found" });
         }
-    );
+    } catch (err) {
+        res.status(500).json({ "error": err.message });
+    }
 });
 
 module.exports = router;

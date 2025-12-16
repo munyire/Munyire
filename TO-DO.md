@@ -1,8 +1,8 @@
 # TO-DO Lista
 
 ## Projekt Fejlesztések
-- [ ] Sequelize ORM beépítése a projektbe a natív `sqlite3` driver helyett.
-- [ ] A `nodemon` csomag áthelyezése a `dependencies`-ből a `devDependencies`-be.
+- [x] Sequelize ORM beépítése a projektbe a natív `sqlite3` driver helyett.
+- [x] A `nodemon` csomag áthelyezése a `dependencies`-ből a `devDependencies`-be.
 
 ## Új Funkciók és Adatbázis Bővítések (Felvetések)
 - [ ] **Ruha minőség:** Új mező bevezetése a ruhák minőségének követésére (pl. `Uj`, `Hasznalt`). Ezt a visszaadásnál is rögzíteni kellene.
