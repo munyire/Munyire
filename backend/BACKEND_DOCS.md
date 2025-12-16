@@ -9,6 +9,7 @@ Ez a dokumentum a Munyire projekt backend API-jának felépítését, végpontja
 A backend a következő technológiákra épül:
 *   **Node.js**: JavaScript futtatókörnyezet a szerveroldali logika megvalósításához.
 *   **Express.js**: Minimalista és rugalmas webalkalmazás keretrendszer Node.js-hez.
+*   **Sequelize**: Modern, ígéret-alapú Node.js ORM (Object-Relational Mapper) PostgreSQL, MySQL, MariaDB, SQLite és Microsoft SQL Server számára.
 *   **SQLite3**: Fájl-alapú, szerver nélküli SQL adatbázis-motor.
 *   **JSON Web Tokens (JWT)**: Az authentikáció és authorizáció kezelésére szolgáló token-alapú rendszer.
 *   **bcrypt.js**: A felhasználói jelszavak biztonságos hash-elésére.
@@ -32,11 +33,11 @@ Munyire/
     │   ├───rendelesek.js   # Rendelésekre vonatkozó CRUD végpontok
     │   ├───ruhak.js        # Ruhákra vonatkozó CRUD végpontok
     │   └───ruhakibe.js     # Ruha kiadás/visszavétel CRUD végpontok
-    ├───database.js         # Adatbázis inicializálása és séma létrehozása
+    ├───database.js         # Sequelize kapcsolat és modellek definiálása
     ├───index.js            # Az Express szerver belépési pontja
     ├───munyire.db          # Az SQLite adatbázis fájl
     ├───package.json        # Projekt függőségek és scriptek
-    └───test.http           # Tesztelési HTTP kérések gyűjteménye
+    └───integration_test.js # Integrációs tesztek az API végpontokhoz
 ```
 
 ---
@@ -54,6 +55,10 @@ Munyire/
 3.  **Indítsd el a fejlesztői szervert:**
     ```sh
     npm start
+    ```
+4.  **(Opcionális) Futtasd a teszteket:** (A szervernek futnia kell egy másik terminálban)
+    ```sh
+    npm test
     ```
 A szerver elindul és a `http://localhost:3001` címen lesz elérhető.
 
@@ -84,7 +89,7 @@ Az API a legtöbb végpontot JWT tokenekkel védi. A token megszerzéséhez a fe
     ```json
     {
         "message": "User registered successfully",
-        "data": { "DID": 1, "FelhasznaloNev": "mintauser" }
+        "data": { "DolgozoID": 1, "FelhasznaloNev": "mintauser" }
     }
     ```
 
@@ -112,32 +117,37 @@ Minden alábbi végpont védett, és érvényes `x-auth-token` fejlécet igénye
 
 ### Dolgozók (`/api/dolgozok`)
 
-*   `GET /`: Összes dolgozó lekérdezése. (Jogosultság: Manager, Admin)
-*   `GET /:did`: Egy dolgozó lekérdezése ID alapján. (Jogosultság: Manager, Admin)
+*   `GET /`: Összes dolgozó lekérdezése.
+*   `GET /:dolgozoId`: Egy dolgozó lekérdezése ID alapján.
 *   `POST /`: Új dolgozó létrehozása. (Jogosultság: Admin)
-*   `PATCH /:did`: Dolgozó adatainak frissítése. (Jogosultság: Admin)
-*   `DELETE /:did`: Dolgozó törlése. (Jogosultság: Admin) (Deleted flag)
+*   `PATCH /:dolgozoId`: Dolgozó adatainak frissítése. (Jogosultság: Admin)
+*   `DELETE /:dolgozoId`: Dolgozó törlése. (Jogosultság: Admin)
 
 ### Ruhák (`/api/ruhak`)
 
-*   `GET /`: Összes ruha lekérdezése. (Jogosultság: Manager, Admin)
-*   `GET /:kid`: Egy ruha lekérdezése ID alapján. (Jogosultság: Manager, Admin)
+*   `GET /`: Összes ruha lekérdezése.
+*   `GET /:ruhaId`: Egy ruha lekérdezése ID alapján.
 *   `POST /`: Új ruha létrehozása a készletben. (Jogosultság: Admin)
-*   `PATCH /:kid`: Ruha adatainak (pl. mennyiség) frissítése. (Jogosultság: Admin)
-*   `DELETE /:kid`: Ruha törlése a készletből. (Jogosultság: Admin)
+    *   **Body (Példa)**: `{ "Fajta": "Nadrág", "Szin": "Fekete", "Meret": "M", "Mennyiseg": 50, "Minoseg": "Uj" }`
+*   `PATCH /:ruhaId`: Ruha adatainak (pl. mennyiség, minőség) frissítése. (Jogosultság: Admin)
+*   `DELETE /:ruhaId`: Ruha törlése a készletből. (Jogosultság: Admin)
 
 ### Ruha Kiadás/Visszavétel (`/api/ruhakibe`)
 
-*   `GET /`: Összes kiadási/visszavételi tranzakció lekérdezése. (Jogosultság: Manager, Admin)
-*   `GET /:kiadasid`: Egy tranzakció lekérdezése ID alapján. (Jogosultság: Manager, Admin)
+*   `GET /`: Összes kiadási/visszavételi tranzakció lekérdezése.
+*   `GET /:ruhaKiBeId`: Egy tranzakció lekérdezése ID alapján.
 *   `POST /`: Új kiadási/visszavételi tranzakció létrehozása. (Jogosultság: Manager, Admin)
-*   `PATCH /:kiadasid`: Tranzakció adatainak frissítése (pl. visszavétel dátuma). (Jogosultság: Admin)
-*   `DELETE /:kiadasid`: Tranzakció törlése. (Jogosultság: Admin)
+    *   **Body (Példa)**: `{ "DolgozoID": 1, "RuhaID": 2, "KiadasDatum": "2025-12-16T10:00:00Z", "Mennyiseg": 1 }`
+*   `PATCH /:ruhaKiBeId`: Tranzakció adatainak frissítése (pl. visszavétel dátuma, ruha minősége). (Jogosultság: Admin)
+    *   **Body (Példa)**: `{ "VisszaDatum": "2026-01-10T10:00:00Z", "RuhaMinoseg": "Hasznalt" }`
+*   `DELETE /:ruhaKiBeId`: Tranzakció törlése. (Jogosultság: Admin)
 
 ### Rendelések (`/api/rendelesek`)
 
-*   `GET /`: Összes rendelés lekérdezése. (Jogosultság: Manager, Admin)
-*   `GET /:rid`: Egy rendelés lekérdezése ID alapján. (Jogosultság: Manager, Admin)
+*   `GET /`: Összes rendelés lekérdezése.
+*   `GET /:rendelesId`: Egy rendelés lekérdezése ID alapján.
 *   `POST /`: Új rendelés létrehozása. (Jogosultság: Manager, Admin)
-*   `PATCH /:rid`: Rendelés adatainak frissítése. (Jogosultság: Manager, Admin)
-*   `DELETE /:rid`: Rendelés törlése. (Jogosultság: Admin)
+    *   **Body (Példa)**: `{ "RuhaID": 2, "RDatum": "2025-12-16T11:00:00Z", "Mennyiseg": 25, "Statusz": "Leadva" }`
+*   `PATCH /:rendelesId`: Rendelés adatainak (pl. státusz) frissítése. (Jogosultság: Manager, Admin)
+    *   **Body (Példa)**: `{ "Statusz": "Teljesitve" }`
+*   `DELETE /:rendelesId`: Rendelés törlése. (Jogosultság: Admin)

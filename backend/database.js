@@ -9,7 +9,7 @@ const sequelize = new Sequelize({
 
 // Define Dolgozok model
 const Dolgozok = sequelize.define('Dolgozok', {
-    DID: {
+    DolgozoID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
@@ -46,7 +46,7 @@ const Dolgozok = sequelize.define('Dolgozok', {
 
 // Define Ruhak model
 const Ruhak = sequelize.define('Ruhak', {
-    KID: {
+    RuhaID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
@@ -66,6 +66,11 @@ const Ruhak = sequelize.define('Ruhak', {
     Mennyiseg: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    Minoseg: {
+        type: DataTypes.STRING, // Pl. 'Uj', 'Jo', 'Szakadt'
+        defaultValue: 'Uj',
+        allowNull: false
     }
 }, {
     tableName: 'Ruhak',
@@ -74,25 +79,25 @@ const Ruhak = sequelize.define('Ruhak', {
 
 // Define RuhaKiBe model
 const RuhaKiBe = sequelize.define('RuhaKiBe', {
-    KiadasID: {
+    RuhaKiBeID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    DID: {
+    DolgozoID: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: Dolgozok,
-            key: 'DID'
+            key: 'DolgozoID'
         }
     },
-    KID: {
+    RuhaID: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: Ruhak,
-            key: 'KID'
+            key: 'RuhaID'
         }
     },
     KiadasDatum: {
@@ -103,6 +108,10 @@ const RuhaKiBe = sequelize.define('RuhaKiBe', {
     Mennyiseg: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    RuhaMinoseg: {
+        type: DataTypes.STRING, // Minoseg a visszaadáskor
+        allowNull: true // Lehet null, ha még nincs visszaadva
     }
 }, {
     tableName: 'RuhaKiBe',
@@ -111,17 +120,17 @@ const RuhaKiBe = sequelize.define('RuhaKiBe', {
 
 // Define Rendelesek model
 const Rendelesek = sequelize.define('Rendelesek', {
-    RID: {
+    RendelesID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    KID: {
+    RuhaID: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: Ruhak,
-            key: 'KID'
+            key: 'RuhaID'
         }
     },
     RDatum: {
@@ -131,6 +140,11 @@ const Rendelesek = sequelize.define('Rendelesek', {
     Mennyiseg: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    Statusz: {
+        type: DataTypes.STRING, // Pl. 'Leadva', 'Feldolgozás alatt', 'Teljesítve', 'Törölve'
+        defaultValue: 'Leadva',
+        allowNull: false
     }
 }, {
     tableName: 'Rendelesek',
@@ -138,21 +152,23 @@ const Rendelesek = sequelize.define('Rendelesek', {
 });
 
 // Define associations
-Dolgozok.hasMany(RuhaKiBe, { foreignKey: 'DID' });
-RuhaKiBe.belongsTo(Dolgozok, { foreignKey: 'DID' });
+Dolgozok.hasMany(RuhaKiBe, { foreignKey: 'DolgozoID' });
+RuhaKiBe.belongsTo(Dolgozok, { foreignKey: 'DolgozoID' });
 
-Ruhak.hasMany(RuhaKiBe, { foreignKey: 'KID' });
-RuhaKiBe.belongsTo(Ruhak, { foreignKey: 'KID' });
+Ruhak.hasMany(RuhaKiBe, { foreignKey: 'RuhaID' });
+RuhaKiBe.belongsTo(Ruhak, { foreignKey: 'RuhaID' });
 
-Ruhak.hasMany(Rendelesek, { foreignKey: 'KID' });
-Rendelesek.belongsTo(Ruhak, { foreignKey: 'KID' });
+Ruhak.hasMany(Rendelesek, { foreignKey: 'RuhaID' });
+Rendelesek.belongsTo(Ruhak, { foreignKey: 'RuhaID' });
 
 // Sync database
 const syncDb = async () => {
     try {
         await sequelize.authenticate();
         console.log('Connection has been established successfully.');
-        await sequelize.sync({ alter: true }); // Use alter to avoid dropping tables
+        // Drop tables and re-create to handle ID renames and new fields cleanly in dev
+        // In production, use migrations!
+        await sequelize.sync({ force: true }); // Use force: true for development to drop and re-create tables
         console.log('All models were synchronized successfully.');
     } catch (error) {
         console.error('Unable to connect to the database:', error);

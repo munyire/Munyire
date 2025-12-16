@@ -38,7 +38,7 @@ router.post('/register', async (req, res) => {
 
         res.status(201).json({
             "message": "User registered successfully",
-            "data": { DID: newUser.DID, FelhasznaloNev: newUser.FelhasznaloNev }
+            "data": { DolgozoID: newUser.DolgozoID, FelhasznaloNev: newUser.FelhasznaloNev }
         });
 
     } catch (err) {
@@ -64,7 +64,7 @@ router.post('/login', async (req, res) => {
 
         const payload = {
             user: {
-                id: user.DID,
+                id: user.DolgozoID,
                 username: user.FelhasznaloNev,
                 Admin: user.Admin,
                 Munkakor: user.Munkakor

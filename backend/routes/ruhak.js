@@ -24,10 +24,10 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Get a single piece of clothing by KID
-router.get('/:kid', async (req, res) => {
+// Get a single piece of clothing by RuhaID
+router.get('/:ruhaId', async (req, res) => {
     try {
-        const ruha = await Ruhak.findByPk(req.params.kid);
+        const ruha = await Ruhak.findByPk(req.params.ruhaId);
         if (ruha) {
             res.json({
                 "message": "success",
@@ -55,10 +55,10 @@ router.post('/', isAdmin, async (req, res) => {
 });
 
 // Update a clothing item (Admin only)
-router.patch('/:kid', isAdmin, async (req, res) => {
+router.patch('/:ruhaId', isAdmin, async (req, res) => {
     try {
         const [updated] = await Ruhak.update(req.body, {
-            where: { KID: req.params.kid }
+            where: { RuhaID: req.params.ruhaId }
         });
 
         if (updated) {
@@ -72,10 +72,10 @@ router.patch('/:kid', isAdmin, async (req, res) => {
 });
 
 // Delete a clothing item (Admin only)
-router.delete('/:kid', isAdmin, async (req, res) => {
+router.delete('/:ruhaId', isAdmin, async (req, res) => {
     try {
         const deleted = await Ruhak.destroy({
-            where: { KID: req.params.kid }
+            where: { RuhaID: req.params.ruhaId }
         });
 
         if (deleted) {

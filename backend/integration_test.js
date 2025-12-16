@@ -26,10 +26,10 @@ const managerUser = {
 
 let adminToken = '';
 let managerToken = '';
-let createdDid = null;
-let createdKid = null;
-let createdRid = null;
-let createdKiadasId = null;
+let createdDolgozoID = null;
+let createdRuhaID = null;
+let createdRendelesID = null;
+let createdRuhaKiBeID = null;
 
 const log = (message, data = '') => console.log(`
 --- ${message} ---
@@ -71,9 +71,9 @@ const main = async () => {
     // 2. Dolgozok (Employees) CRUD
     await runTest('Admin creates a new employee (manager)', async () => {
         const res = await adminAxios.post(`${API_URL}/dolgozok`, managerUser);
-        createdDid = res.data.data.DID;
+        createdDolgozoID = res.data.data.DolgozoID; // Changed from DID
         log('Manager user created by admin', res.data);
-        if (res.status !== 201 || !createdDid) throw new Error('Failed to create manager');
+        if (res.status !== 201 || !createdDolgozoID) throw new Error('Failed to create manager');
     });
 
     await runTest('Admin gets all employees', async () => {
@@ -83,65 +83,85 @@ const main = async () => {
     });
     
     await runTest('Admin updates an employee', async () => {
-        const res = await adminAxios.patch(`${API_URL}/dolgozok/${createdDid}`, { Munkakor: 'Senior Manager' });
+        const res = await adminAxios.patch(`${API_URL}/dolgozok/${createdDolgozoID}`, { Munkakor: 'Senior Manager' }); // Changed from createdDid
         log('Employee updated', res.data);
         if (res.data.changes !== 1) throw new Error('Failed to update employee');
     });
 
     // 3. Ruhak (Clothing) CRUD
     await runTest('Admin creates a new clothing item', async () => {
-        const ruha = { Fajta: 'Póló', Szin: 'Kék', Meret: 'L', Mennyiseg: 100 };
+        const ruha = { Fajta: 'Póló', Szin: 'Kék', Meret: 'L', Mennyiseg: 100, Minoseg: 'Uj' }; // Added Minoseg
         const res = await adminAxios.post(`${API_URL}/ruhak`, ruha);
-        createdKid = res.data.data.KID;
+        createdRuhaID = res.data.data.RuhaID; // Changed from KID
         log('Clothing item created', res.data);
-        if (res.status !== 201 || !createdKid) throw new Error('Failed to create clothing item');
+        if (res.status !== 201 || !createdRuhaID) throw new Error('Failed to create clothing item');
+        if (res.data.data.Minoseg !== 'Uj') throw new Error('Incorrect clothing quality');
     });
 
     await runTest('Admin gets a single clothing item', async () => {
-        const res = await adminAxios.get(`${API_URL}/ruhak/${createdKid}`);
+        const res = await adminAxios.get(`${API_URL}/ruhak/${createdRuhaID}`); // Changed from createdKid
         log('Single clothing item fetched', res.data);
-        if (res.data.data.KID !== createdKid) throw new Error('Fetched wrong clothing item');
+        if (res.data.data.RuhaID !== createdRuhaID) throw new Error('Fetched wrong clothing item'); // Changed from KID
+    });
+
+    await runTest('Admin updates a clothing item quality', async () => {
+        const res = await adminAxios.patch(`${API_URL}/ruhak/${createdRuhaID}`, { Minoseg: 'Jo' }); // Changed from createdKid
+        log('Clothing item quality updated', res.data);
+        if (res.data.changes !== 1) throw new Error('Failed to update clothing item quality');
     });
 
     // 4. Rendelesek (Orders) CRUD
     await runTest('Admin creates a new order', async () => {
-        const rendeles = { KID: createdKid, RDatum: new Date().toISOString(), Mennyiseg: 20 };
+        const rendeles = { RuhaID: createdRuhaID, RDatum: new Date().toISOString(), Mennyiseg: 20, Statusz: 'Leadva' }; // Changed from KID, Added Statusz
         const res = await adminAxios.post(`${API_URL}/rendelesek`, rendeles);
-        createdRid = res.data.data.RID;
+        createdRendelesID = res.data.data.RendelesID; // Changed from RID
         log('Order created', res.data);
-        if (res.status !== 201 || !createdRid) throw new Error('Failed to create order');
+        if (res.status !== 201 || !createdRendelesID) throw new Error('Failed to create order');
+        if (res.data.data.Statusz !== 'Leadva') throw new Error('Incorrect order status');
+    });
+
+    await runTest('Admin updates an order status', async () => {
+        const res = await adminAxios.patch(`${API_URL}/rendelesek/${createdRendelesID}`, { Statusz: 'Teljesitve' }); // Changed from createdRid
+        log('Order status updated', res.data);
+        if (res.data.changes !== 1) throw new Error('Failed to update order status');
     });
 
     // 5. RuhaKiBe (Check-in/out) CRUD
      await runTest('Admin creates a new check-out record', async () => {
-        const kiadas = { DID: createdDid, KID: createdKid, KiadasDatum: new Date().toISOString(), Mennyiseg: 2 };
+        const kiadas = { DolgozoID: createdDolgozoID, RuhaID: createdRuhaID, KiadasDatum: new Date().toISOString(), Mennyiseg: 2 }; // Changed from DID, KID
         const res = await adminAxios.post(`${API_URL}/ruhakibe`, kiadas);
-        createdKiadasId = res.data.data.KiadasID;
+        createdRuhaKiBeID = res.data.data.RuhaKiBeID; // Changed from KiadasID
         log('Check-out record created', res.data);
-        if (res.status !== 201 || !createdKiadasId) throw new Error('Failed to create check-out record');
+        if (res.status !== 201 || !createdRuhaKiBeID) throw new Error('Failed to create check-out record');
+    });
+
+    await runTest('Admin updates a check-out record with return quality', async () => {
+        const res = await adminAxios.patch(`${API_URL}/ruhakibe/${createdRuhaKiBeID}`, { VisszaDatum: new Date().toISOString(), RuhaMinoseg: 'Hasznalt' }); // Added RuhaMinoseg
+        log('Check-out record updated with return quality', res.data);
+        if (res.data.changes !== 1) throw new Error('Failed to update check-out record with return quality');
     });
     
     // 6. Deletion (Cleanup)
     await runTest('Admin deletes check-out record', async () => {
-        const res = await adminAxios.delete(`${API_URL}/ruhakibe/${createdKiadasId}`);
+        const res = await adminAxios.delete(`${API_URL}/ruhakibe/${createdRuhaKiBeID}`); // Changed from createdKiadasId
         if(res.data.changes !== 1) throw new Error('Failed to delete check-out record');
         log('Check-out record deleted');
     });
 
     await runTest('Admin deletes order', async () => {
-        const res = await adminAxios.delete(`${API_URL}/rendelesek/${createdRid}`);
+        const res = await adminAxios.delete(`${API_URL}/rendelesek/${createdRendelesID}`); // Changed from createdRid
         if(res.data.changes !== 1) throw new Error('Failed to delete order');
         log('Order deleted');
     });
 
     await runTest('Admin deletes clothing item', async () => {
-        const res = await adminAxios.delete(`${API_URL}/ruhak/${createdKid}`);
+        const res = await adminAxios.delete(`${API_URL}/ruhak/${createdRuhaID}`); // Changed from createdKid
         if(res.data.changes !== 1) throw new Error('Failed to delete clothing item');
         log('Clothing item deleted');
     });
 
     await runTest('Admin deletes manager employee', async () => {
-        const res = await adminAxios.delete(`${API_URL}/dolgozok/${createdDid}`);
+        const res = await adminAxios.delete(`${API_URL}/dolgozok/${createdDolgozoID}`); // Changed from createdDid
         if(res.data.changes !== 1) throw new Error('Failed to delete employee');
         log('Manager employee deleted');
     });

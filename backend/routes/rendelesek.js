@@ -33,10 +33,10 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Get a single order by RID
-router.get('/:rid', async (req, res) => {
+// Get a single order by RendelesID
+router.get('/:rendelesId', async (req, res) => {
     try {
-        const rendeles = await Rendelesek.findByPk(req.params.rid);
+        const rendeles = await Rendelesek.findByPk(req.params.rendelesId);
         if (rendeles) {
             res.json({
                 "message": "success",
@@ -64,10 +64,10 @@ router.post('/', isManagerOrAdmin, async (req, res) => {
 });
 
 // Update an order (Manager or Admin)
-router.patch('/:rid', isManagerOrAdmin, async (req, res) => {
+router.patch('/:rendelesId', isManagerOrAdmin, async (req, res) => {
     try {
         const [updated] = await Rendelesek.update(req.body, {
-            where: { RID: req.params.rid }
+            where: { RendelesID: req.params.rendelesId }
         });
 
         if (updated) {
@@ -81,10 +81,10 @@ router.patch('/:rid', isManagerOrAdmin, async (req, res) => {
 });
 
 // Delete an order (Admin only)
-router.delete('/:rid', isAdmin, async (req, res) => {
+router.delete('/:rendelesId', isAdmin, async (req, res) => {
     try {
         const deleted = await Rendelesek.destroy({
-            where: { RID: req.params.rid }
+            where: { RendelesID: req.params.rendelesId }
         });
 
         if (deleted) {

@@ -26,10 +26,10 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Get a single employee by DID
-router.get('/:did', async (req, res) => {
+// Get a single employee by DolgozoID
+router.get('/:dolgozoId', async (req, res) => {
     try {
-        const dolgozo = await Dolgozok.findByPk(req.params.did);
+        const dolgozo = await Dolgozok.findByPk(req.params.dolgozoId);
         if (dolgozo) {
             res.json({
                 "message": "success",
@@ -72,7 +72,7 @@ router.post('/', isAdmin, async (req, res) => {
 });
 
 // Update an employee (Admin only)
-router.patch('/:did', isAdmin, async (req, res) => {
+router.patch('/:dolgozoId', isAdmin, async (req, res) => {
     try {
         const { Jelszo, ...updateData } = req.body;
 
@@ -81,7 +81,7 @@ router.patch('/:did', isAdmin, async (req, res) => {
         }
 
         const [updated] = await Dolgozok.update(updateData, {
-            where: { DID: req.params.did }
+            where: { DolgozoID: req.params.dolgozoId }
         });
 
         if (updated) {
@@ -95,10 +95,10 @@ router.patch('/:did', isAdmin, async (req, res) => {
 });
 
 // Delete an employee (Admin only)
-router.delete('/:did', isAdmin, async (req, res) => {
+router.delete('/:dolgozoId', isAdmin, async (req, res) => {
     try {
         const deleted = await Dolgozok.destroy({
-            where: { DID: req.params.did }
+            where: { DolgozoID: req.params.dolgozoId }
         });
 
         if (deleted) {

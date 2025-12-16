@@ -33,10 +33,10 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Get a single check-in/check-out by KiadasID
-router.get('/:kiadasid', async (req, res) => {
+// Get a single check-in/check-out by RuhaKiBeID
+router.get('/:ruhaKiBeId', async (req, res) => {
     try {
-        const record = await RuhaKiBe.findByPk(req.params.kiadasid);
+        const record = await RuhaKiBe.findByPk(req.params.ruhaKiBeId);
         if (record) {
             res.json({
                 "message": "success",
@@ -64,10 +64,10 @@ router.post('/', isManagerOrAdmin, async (req, res) => {
 });
 
 // Update a check-in/check-out record (Admin only)
-router.patch('/:kiadasid', isAdmin, async (req, res) => {
+router.patch('/:ruhaKiBeId', isAdmin, async (req, res) => {
     try {
         const [updated] = await RuhaKiBe.update(req.body, {
-            where: { KiadasID: req.params.kiadasid }
+            where: { RuhaKiBeID: req.params.ruhaKiBeId }
         });
 
         if (updated) {
@@ -81,10 +81,10 @@ router.patch('/:kiadasid', isAdmin, async (req, res) => {
 });
 
 // Delete a check-in/check-out record (Admin only)
-router.delete('/:kiadasid', isAdmin, async (req, res) => {
+router.delete('/:ruhaKiBeId', isAdmin, async (req, res) => {
     try {
         const deleted = await RuhaKiBe.destroy({
-            where: { KiadasID: req.params.kiadasid }
+            where: { RuhaKiBeID: req.params.ruhaKiBeId }
         });
 
         if (deleted) {

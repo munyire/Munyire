@@ -5,6 +5,6 @@
 - [x] A `nodemon` csomag áthelyezése a `dependencies`-ből a `devDependencies`-be.
 
 ## Új Funkciók és Adatbázis Bővítések (Felvetések)
-- [ ] **Ruha minőség:** Új mező bevezetése a ruhák minőségének követésére (pl. `Uj`, `Hasznalt`). Ezt a visszaadásnál is rögzíteni kellene.
-- [ ] **ID elnevezések:** Az adatbázisban lévő ID oszlopok (pl. `KID`, `DID`, `RID`) nevének egységesítése a jobb olvashatóság érdekében (pl. `RuhaID`, `DolgozoID`).
-- [ ] **Rendelés státusza:** A `Rendelesek` tábla bővítése egy `Statusz` mezővel (pl. `Leadva`, `Megjött`).
+- [x] **Ruha minőség:** Új mező bevezetése a ruhák minőségének követésére (pl. `Uj`, `Hasznalt`, `Szakadt`). Ezt a visszaadásnál is rögzíteni kellene.
+- [x] **ID elnevezések:** Az adatbázisban lévő ID oszlopok (pl. `KID`, `DID`, `RID`) nevének egységesítése a jobb olvashatóság érdekében (pl. `RuhaID`, `DolgozoID`).
+- [x] **Rendelés státusza:** A `Rendelesek` tábla bővítése egy `Statusz` mezővel (pl. `Leadva`, `Teljesitve`, `Törölve`).
