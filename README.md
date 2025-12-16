@@ -31,28 +31,27 @@ A rendszer első verziója egy weboldal, mely gyors, modern felhasználói élm�
 
 ## 3. Adatbázis felépítése
 
-
-
-
-A rendszer kész, végleges adatbázisterve az alábbi táblákból áll:
+A rendszer végleges adatbázisterve az alábbi táblákból áll:
 
 ### `Ruhak`
-*   `KID`
+*   `RuhaID` (PK)
 *   `Fajta`
 *   `Szin`
 *   `Meret`
-*   `Mennyiség`
+*   `Mennyiseg`
+*   `Minoseg` (pl. 'Uj', 'Jo', 'Szakadt')
 
 ### `RuhaKiBe`
-*   `KiadasID`
-*   `DID`
-*   `KID`
+*   `RuhaKiBeID` (PK)
+*   `DolgozoID` (FK)
+*   `RuhaID` (FK)
 *   `KiadasDatum`
 *   `VisszaDatum`
-*   `Mennyiség`
+*   `Mennyiseg`
+*   `RuhaMinoseg` (visszavételkor)
 
 ### `Dolgozok`
-*   `DID`
+*   `DolgozoID` (PK)
 *   `DNev`
 *   `Email`
 *   `Telefonszam`
@@ -63,10 +62,11 @@ A rendszer kész, végleges adatbázisterve az alábbi táblákból áll:
 *   `JelszoHash`
 
 ### `Rendelesek`
-*   `RID`
-*   `KID`
+*   `RendelesID` (PK)
+*   `RuhaID` (FK)
 *   `RDatum`
 *   `Mennyiseg`
+*   `Statusz` (pl. 'Leadva', 'Teljesítve')
 
 ---
 
@@ -107,6 +107,7 @@ A projekt REST API-ja a `backend` mappában található, és a következő techn
 
 *   **Node.js**
 *   **Express.js** keretrendszer
+*   **Sequelize** ORM
 *   **SQLite** adatbázis
 
 ### Indítási Útmutató
