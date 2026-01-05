@@ -35,32 +35,61 @@ A cél egy szakközépiskolai kimeneti vizsgához illő, átlátható, biztonsá
 
 ```text
 backend/
-├── src/
-│   ├── index.js                 # Express app indítása
-│   ├── database.js              # Sequelize kapcsolat (SQLite)
-│   ├── models/
-│   │   ├── dolgozo.js
-│   │   ├── ruha.js
-│   │   ├── ruhakibe.js
-│   │   └── rendeles.js
-│   ├── routes/
-│   │   ├── auth.js
-│   │   ├── dolgozok.js
-│   │   ├── ruhak.js
-│   │   ├── ruhakibe.js
-│   │   ├── rendelesek.js
-│   │   ├── dashboard.js
-│   │   └── reports.js
-│   ├── middleware/
-│   │   ├── auth.js              # JWT ellenőrzés
-│   │   ├── requireRole.js       # szerepkör ellenőrzés
-│   │   ├── requireSelfOrRole.js # csak saját adat VAGY magasabb szerepkör
-│   │   └── errorHandler.js      # egységes hibakezelés
-│   └── utils/
-│       └── roles.js             # szerepkör hierarchia
-├── munyire.db                   # SQLite adatbázis fájl (fejlesztés)
+├── app.js                       # Express app indítása
+├── db.js                        # Sequelize kapcsolat (SQLite)
+├── models/
+│   ├── Dolgozo.js
+│   ├── Ruha.js
+│   ├── RuhaKiBe.js
+│   └── Rendeles.js
+├── routes/
+│   ├── authRoutes.js
+│   ├── dolgozoRoutes.js
+│   ├── ruhaRoutes.js
+│   ├── ruhakibeRoutes.js
+│   ├── rendelesRoutes.js
+│   ├── dashboardRoutes.js
+│   └── reportsRoutes.js
+├── controllers/
+│   ├── authController.js
+│   ├── dolgozoController.js
+│   ├── ruhaController.js
+│   ├── ruhakibeController.js
+│   ├── rendelesController.js
+│   ├── dashboardController.js
+│   └── reportsController.js
+├── services/
+│   ├── authService.js
+│   ├── dolgozoService.js
+│   ├── ruhaService.js
+│   ├── ruhakibeService.js
+│   ├── rendelesService.js
+│   ├── dashboardService.js
+│   └── reportsService.js
+├── repositories/
+│   ├── dolgozoRepository.js
+│   ├── ruhaRepository.js
+│   ├── ruhakibeRepository.js
+│   ├── rendelesRepository.js
+│   └── dashboardRepository.js
+├── middlewares/
+│   ├── authMiddleware.js        # JWT ellenőrzés
+│   ├── requireRoleMiddleware.js # szerepkör ellenőrzés
+│   ├── requireSelfOrRoleMiddleware.js # csak saját adat VAGY magasabb szerepkör
+│   ├── errorHandlerMiddleware.js # egységes hibakezelés
+│   └── validationHandler.js     # validációs hibák kezelése
+├── validators/
+│   ├── authValidators.js
+│   ├── dolgozoValidators.js
+│   ├── ruhaValidators.js
+│   ├── ruhakibeValidators.js
+│   └── rendelesValidators.js
+├── utils/
+│   └── roles.js                 # szerepkör hierarchia
+├── database.sqlite              # SQLite adatbázis fájl (fejlesztés)
 ├── package.json
-└── integration_test.js          # opcionális
+├── request.http                 # opcionális API teszteléshez
+└── integration_test.js         # opcionális
 ```
 
 ---
