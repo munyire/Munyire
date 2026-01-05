@@ -1,7 +1,4 @@
-Íme a kért tartalom egyetlen Markdown fájlként formázva:
 
-```markdown
-# BACKEND.md
 
 # Munyire Backend Dokumentáció
 
@@ -38,7 +35,6 @@ A cél egy szakközépiskolai kimeneti vizsgához illő, átlátható, biztonsá
 
 ## 3. Tervezett projekt struktúra
 
-```text
 backend/
 ├── src/
 │   ├── index.js                 # Express app indítása
@@ -64,7 +60,7 @@ backend/
 ├── munyire.db                   # SQLite adatbázis fájl (fejlesztés)
 ├── package.json
 └── integration_test.js          # opcionális
-```
+
 
 > **Megjegyzés**: a `src/` mappázás ajánlott, de nem kötelező. A lényeg, hogy a route-ok, modellek és middleware-ek külön legyenek.
 
