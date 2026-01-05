@@ -88,6 +88,7 @@ Az adatbázis SQLite alapú, Sequelize ORM kezeli.
 
 ### 5.2. Ruhak
 - `RuhaID` (PK)
+- `Cikkszam` (**egyedi** cikkszám / azonosító)
 - `Fajta`
 - `Szin`
 - `Meret`
@@ -102,6 +103,7 @@ Megjegyzés: 1 sor egy „ruhacikk” (pl. fekete M-es nadrág), nem egyedi dara
 - `RuhaID` (FK → Ruhak)
 - `KiadasDatum`
 - `VisszaDatum` (NULL, amíg nincs visszavéve)
+- `Indok` (kiadás indoka / megjegyzés, pl. „új belépő”, „csere”, „pótlás”)
 - `Mennyiseg`
 - `RuhaMinoseg` (visszavételkor rögzített minőség)
 
