@@ -1,9 +1,3 @@
-
----
-
-## ENDPOINTS.md
-
-```markdown
 # Munyire API Végpontok
 
 ## Összesítés

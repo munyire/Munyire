@@ -1,0 +1,29 @@
+{
+  "name": "munyire-backend",
+  "version": "1.0.0",
+  "description": "Munyire munkaruhakezelő rendszer backend API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "node integration_test.js"
+  },
+  "keywords": ["express", "sequelize", "sqlite", "jwt"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "express-validator": "^7.0.1",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
+
