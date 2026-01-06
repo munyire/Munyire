@@ -6,15 +6,17 @@
 ### Health
 GET {{host}}/health
 
-### Register (public) - create a basic user (role defaults to Dolgozo)
+### Register (Admin only) - provision employee user
 POST {{host}}/api/auth/register
 Content-Type: application/json
+Authorization: Bearer {{adminToken}}
 
 {
   "name": "Test User",
   "email": "user@example.com",
   "username": "user1",
-  "password": "pass1234"
+  "password": "pass1234",
+  "role": "Dolgozo"
 }
 
 ### Login (public) - obtain JWT
