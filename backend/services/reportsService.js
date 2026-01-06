@@ -14,7 +14,7 @@ async function employeeSummary() {
       [fn("COUNT", col("RuhaKiBeID")), "transactionCount"],
       [fn("SUM", col("Mennyiseg")), "totalQuantity"],
     ],
-    include: [models.Dolgozo],
+
     group: ["DolgozoID"],
   });
 }

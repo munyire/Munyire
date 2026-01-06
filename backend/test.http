@@ -36,9 +36,9 @@ Content-Type: application/json
 Authorization: Bearer {{adminToken}}
 
 {
-  "name": "Test User",
-  "email": "user@example.com",
-  "username": "user1",
+  "name": "Test User2",
+  "email": "user2@example.com",
+  "username": "user2",
   "password": "pass1234",
   "role": "Dolgozo"
 }
