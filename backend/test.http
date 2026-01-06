@@ -1,5 +1,5 @@
 @host = http://localhost:3000
-@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY3NjkxNTc2LCJleHAiOjE3Njc3MjAzNzZ9._ysO2CXm9h05-thx5Qr_zq56iyuUJPjfo5yKWfOsk-w
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY3NjkyMTI1LCJleHAiOjE3Njc3MjA5MjV9.u02aqDd2I5WwuWGFQzJvvepWF-Bxmr6C277_7tuZMXE
 @managerToken = {{managerToken}}
 @userToken = {{userToken}}
 
@@ -100,8 +100,8 @@ Authorization: Bearer {{managerToken}}
 
 ### Dashboard summary (Manager/Admin)
 GET {{host}}/api/dashboard
-Authorization: Bearer {{managerToken}}
+Authorization: Bearer {{adminToken}}
 
 ### Reports - stock (Manager/Admin)
 GET {{host}}/api/reports/stock
-Authorization: Bearer {{managerToken}}
+Authorization: Bearer {{adminToken}}
