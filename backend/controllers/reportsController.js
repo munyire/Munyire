@@ -1,37 +1,36 @@
 const reportsService = require("../services/reportsService");
 
-async function stock(req, res, next) {
+async function inventory(req, res, next) {
   try {
-    res.json(await reportsService.stockByItem());
+    res.json(await reportsService.inventory());
   } catch (err) {
     next(err);
   }
 }
 
-async function issued(req, res, next) {
+async function employeeSummary(req, res, next) {
   try {
-    const { from, to } = req.query;
-    res.json(await reportsService.issuedInPeriod({ from, to }));
+    res.json(await reportsService.employeeSummary());
   } catch (err) {
     next(err);
   }
 }
 
-async function returns(req, res, next) {
+async function monthly(req, res, next) {
   try {
-    const { from, to } = req.query;
-    res.json(await reportsService.returnsInPeriod({ from, to }));
+    const { year, month } = req.query;
+    res.json(await reportsService.monthly(Number(year), Number(month)));
   } catch (err) {
     next(err);
   }
 }
 
-async function issuedCounts(req, res, next) {
+async function qualitySummary(req, res, next) {
   try {
-    res.json(await reportsService.issuedCountsByItem());
+    res.json(await reportsService.qualitySummary());
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { stock, issued, returns, issuedCounts };
+module.exports = { inventory, employeeSummary, monthly, qualitySummary };

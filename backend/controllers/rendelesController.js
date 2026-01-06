@@ -8,9 +8,33 @@ async function list(req, res, next) {
   }
 }
 
+async function listPending(req, res, next) {
+  try {
+    res.json(await rendelesService.listPending());
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function listByStatus(req, res, next) {
+  try {
+    res.json(await rendelesService.listByStatus(req.params.statusz));
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function listByRuha(req, res, next) {
+  try {
+    res.json(await rendelesService.listByRuha(req.params.ruhaId));
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function get(req, res, next) {
   try {
-    const item = await rendelesService.get(req.params.id);
+    const item = await rendelesService.get(req.params.rendelesId);
     if (!item) return res.status(404).json({ error: "Not found" });
     res.json(item);
   } catch (err) {
@@ -29,8 +53,17 @@ async function create(req, res, next) {
 
 async function update(req, res, next) {
   try {
-    const updated = await rendelesService.update(req.params.id, req.body);
+    const updated = await rendelesService.update(req.params.rendelesId, req.body);
     if (!updated) return res.status(404).json({ error: "Not found" });
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function complete(req, res, next) {
+  try {
+    const updated = await rendelesService.complete(req.params.rendelesId);
     res.json(updated);
   } catch (err) {
     next(err);
@@ -39,11 +72,21 @@ async function update(req, res, next) {
 
 async function remove(req, res, next) {
   try {
-    await rendelesService.remove(req.params.id);
+    await rendelesService.remove(req.params.rendelesId);
     res.status(204).send();
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { list, get, create, update, remove };
+module.exports = {
+  list,
+  listPending,
+  listByStatus,
+  listByRuha,
+  get,
+  create,
+  update,
+  complete,
+  remove,
+};

@@ -1,39 +1,50 @@
 const { models } = require("../db");
 const { Op, fn, col } = require("sequelize");
 
-async function stockByItem() {
-  return models.Ruha.findAll({
-    attributes: ["RuhaID", "Cikkszam", "Fajta", "Szin", "Meret", "Mennyiseg"],
+// Teljes készletjelentés
+async function inventory() {
+  return models.Ruha.findAll();
+}
+
+// Dolgozónkénti összesítő
+async function employeeSummary() {
+  return models.RuhaKiBe.findAll({
+    attributes: [
+      "DolgozoID",
+      [fn("COUNT", col("RuhaKiBeID")), "transactionCount"],
+      [fn("SUM", col("Mennyiseg")), "totalQuantity"],
+    ],
+    include: [models.Dolgozo],
+    group: ["DolgozoID"],
   });
 }
 
-async function issuedInPeriod({ from, to }) {
-  return models.RuhaKiBe.findAll({
+// Havi riport
+async function monthly(year, month) {
+  const start = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 0, 23, 59, 59, 999);
+
+  const issued = await models.RuhaKiBe.findAll({
     where: {
-      KiadasDatum: {
-        [Op.between]: [from, to],
-      },
+      KiadasDatum: { [Op.between]: [start, end] },
     },
-    include: [models.Dolgozo, models.Ruha],
   });
-}
 
-async function returnsInPeriod({ from, to }) {
-  return models.RuhaKiBe.findAll({
+  const returned = await models.RuhaKiBe.findAll({
     where: {
-      VisszaDatum: {
-        [Op.between]: [from, to],
-      },
+      VisszaDatum: { [Op.between]: [start, end] },
     },
-    include: [models.Dolgozo, models.Ruha],
   });
+
+  return { issued, returned };
 }
 
-async function issuedCountsByItem() {
+// Minőség szerinti összesítés
+async function qualitySummary() {
   return models.RuhaKiBe.findAll({
-    attributes: ["RuhaID", [fn("COUNT", col("RuhaKiBeID")), "issueCount"]],
-    group: ["RuhaID"],
+    attributes: ["RuhaMinoseg", [fn("COUNT", col("RuhaKiBeID")), "count"]],
+    group: ["RuhaMinoseg"],
   });
 }
 
-module.exports = { stockByItem, issuedInPeriod, returnsInPeriod, issuedCountsByItem };
+module.exports = { inventory, employeeSummary, monthly, qualitySummary };

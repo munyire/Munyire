@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const dolgozoRepo = require("../repositories/dolgozoRepository");
+const ruhakibeRepo = require("../repositories/ruhakibeRepository");
 
 async function list() {
   return dolgozoRepo.findAll();
@@ -36,4 +37,25 @@ async function remove(id) {
   return dolgozoRepo.remove(id);
 }
 
-module.exports = { list, get, create, update, remove };
+async function listClothes(dolgozoId) {
+  return ruhakibeRepo.findByDolgozo(dolgozoId);
+}
+
+async function listActiveClothes(dolgozoId) {
+  return ruhakibeRepo.findActiveByDolgozo(dolgozoId);
+}
+
+async function listWithActiveItems() {
+  return ruhakibeRepo.findDolgozokWithActive();
+}
+
+module.exports = {
+  list,
+  get,
+  create,
+  update,
+  remove,
+  listClothes,
+  listActiveClothes,
+  listWithActiveItems,
+};

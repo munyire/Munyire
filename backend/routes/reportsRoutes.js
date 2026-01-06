@@ -6,9 +6,10 @@ const { ROLES } = require("../utils/roles");
 const controller = require("../controllers/reportsController");
 
 router.use(auth);
-router.get("/stock", requireRole(ROLES.Manager), controller.stock);
-router.get("/issued", requireRole(ROLES.Manager), controller.issued);
-router.get("/returns", requireRole(ROLES.Manager), controller.returns);
-router.get("/issued-counts", requireRole(ROLES.Manager), controller.issuedCounts);
+
+router.get("/inventory", requireRole(ROLES.Manager), controller.inventory);
+router.get("/employee-summary", requireRole(ROLES.Manager), controller.employeeSummary);
+router.get("/monthly", requireRole(ROLES.Manager), controller.monthly);
+router.get("/quality-summary", requireRole(ROLES.Admin), controller.qualitySummary);
 
 module.exports = router;

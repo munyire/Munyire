@@ -6,6 +6,9 @@ const { ROLES } = require("../utils/roles");
 const controller = require("../controllers/dashboardController");
 
 router.use(auth);
-router.get("/", requireRole(ROLES.Manager), controller.summary);
+
+router.get("/stats", requireRole(ROLES.Manager), controller.stats);
+router.get("/low-stock", requireRole(ROLES.Manager), controller.lowStock);
+router.get("/recent-activity", requireRole(ROLES.Manager), controller.recentActivity);
 
 module.exports = router;

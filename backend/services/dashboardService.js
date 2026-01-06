@@ -1,12 +1,16 @@
 const dashboardRepo = require("../repositories/dashboardRepository");
 
-async function getSummary() {
-  const [counts, recent, orders] = await Promise.all([
-    dashboardRepo.getCounts(),
-    dashboardRepo.recentIssued(),
-    dashboardRepo.pendingOrders(),
-  ]);
-  return { counts, recent, orders };
+async function getStats() {
+  return dashboardRepo.getStats();
 }
 
-module.exports = { getSummary };
+async function getLowStock() {
+  const threshold = Number(process.env.LOW_STOCK_THRESHOLD) || 5;
+  return dashboardRepo.getLowStock(threshold);
+}
+
+async function getRecentActivity() {
+  return dashboardRepo.getRecentActivity(10);
+}
+
+module.exports = { getStats, getLowStock, getRecentActivity };

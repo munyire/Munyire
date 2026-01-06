@@ -9,10 +9,31 @@ const controller = require("../controllers/ruhaController");
 
 router.use(auth);
 
+// Készlet listázása
 router.get("/", requireRole(ROLES.Manager), controller.list);
-router.get("/:id", requireRole(ROLES.Manager), controller.get);
+
+// Keresés q paraméterrel
+router.get("/search", requireRole(ROLES.Manager), controller.search);
+
+// Cikkszám alapú keresés
+router.get("/by-cikkszam/:cikkszam", requireRole(ROLES.Manager), controller.getByCikkszam);
+
+// Egy ruhacikk részletei
+router.get("/:ruhaId", requireRole(ROLES.Manager), controller.get);
+
+// Ruhacikk kiadási története
+router.get("/:ruhaId/history", requireRole(ROLES.Manager), controller.history);
+
+// Ruhacikkből kint lévő kiadások
+router.get("/:ruhaId/active", requireRole(ROLES.Manager), controller.active);
+
+// Új ruhacikk felvétele
 router.post("/", requireRole(ROLES.Admin), createRuha, validationHandler, controller.create);
-router.put("/:id", requireRole(ROLES.Admin), updateRuha, validationHandler, controller.update);
-router.delete("/:id", requireRole(ROLES.Admin), controller.remove);
+
+// Ruhacikk módosítása
+router.patch("/:ruhaId", requireRole(ROLES.Admin), updateRuha, validationHandler, controller.update);
+
+// Ruhacikk törlése
+router.delete("/:ruhaId", requireRole(ROLES.Admin), controller.remove);
 
 module.exports = router;

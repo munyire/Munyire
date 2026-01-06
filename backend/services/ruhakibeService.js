@@ -6,6 +6,30 @@ async function list() {
   return ruhakibeRepo.findAll();
 }
 
+async function listMine(dolgozoId) {
+  return ruhakibeRepo.findMine(dolgozoId);
+}
+
+async function listActive() {
+  return ruhakibeRepo.findActive();
+}
+
+async function listReturned() {
+  return ruhakibeRepo.findReturned();
+}
+
+async function listByDate(from, to) {
+  return ruhakibeRepo.findByDateRange(from, to);
+}
+
+async function getStats() {
+  return ruhakibeRepo.stats();
+}
+
+async function get(id) {
+  return ruhakibeRepo.findById(id);
+}
+
 async function issue({ DolgozoID, RuhaID, Mennyiseg = 1, Indok }) {
   return sequelize.transaction(async (t) => {
     const ruha = await ruhaRepo.findById(RuhaID);
@@ -44,4 +68,19 @@ async function markReturn(id, { RuhaMinoseg, VisszaDatum = new Date() }) {
   });
 }
 
-module.exports = { list, issue, markReturn };
+async function remove(id) {
+  return ruhakibeRepo.remove(id);
+}
+
+module.exports = {
+  list,
+  listMine,
+  listActive,
+  listReturned,
+  listByDate,
+  getStats,
+  get,
+  issue,
+  markReturn,
+  remove,
+};
