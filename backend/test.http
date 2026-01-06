@@ -1,12 +1,36 @@
 @host = http://localhost:3000
-@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY3NjkyMTI1LCJleHAiOjE3Njc3MjA5MjV9.u02aqDd2I5WwuWGFQzJvvepWF-Bxmr6C277_7tuZMXE
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY3NjkzNDUwLCJleHAiOjE3Njc3MjIyNTB9.I6jdmf-slWk8glZ849Xjwsq-Jhm6Bkvd_lWQzyH0yYE
 @managerToken = {{managerToken}}
 @userToken = {{userToken}}
+
+# IDs for testing
+@dolgozoId = 1
+@ruhaId = 1
+@ruhaKiBeId = 1
+@rendelesId = 1
+@cikkszam = C-1001
+
+### ═══════════════════════════════════════════════════════════════
+### HEALTH CHECK
+### ═══════════════════════════════════════════════════════════════
 
 ### Health
 GET {{host}}/health
 
-### Register (Admin only) - provision employee user
+### ═══════════════════════════════════════════════════════════════
+### AUTH – /api/auth (2 végpont)
+### ═══════════════════════════════════════════════════════════════
+
+### 1. Login (🔓 Nyilvános) - JWT token beszerzése
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "alma"
+}
+
+### 2. Register (👑 Admin) - Új felhasználó regisztrálása
 POST {{host}}/api/auth/register
 Content-Type: application/json
 Authorization: Bearer {{adminToken}}
@@ -19,20 +43,255 @@ Authorization: Bearer {{adminToken}}
   "role": "Dolgozo"
 }
 
-### Login (public) - obtain JWT
-POST {{host}}/api/auth/login
-Content-Type: application/json
+### ═══════════════════════════════════════════════════════════════
+### DOLGOZÓK – /api/dolgozok (7 végpont)
+### ═══════════════════════════════════════════════════════════════
 
-{
-  "username": "admin",
-  "password": "alma"
-}
-
-### List employees (Manager/Admin)
+### 1. GET - Összes dolgozó listázása (👥 👑)
 GET {{host}}/api/dolgozok
 Authorization: Bearer {{adminToken}}
 
-### Create employee (Admin)
+### 2. GET - Egy dolgozó adatai (👤 👥 👑)
+GET {{host}}/api/dolgozok/{{dolgozoId}}
+Authorization: Bearer {{adminToken}}
+
+### 3. PATCH - Dolgozó módosítása (👑)
+PATCH {{host}}/api/dolgozok/{{dolgozoId}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "DNev": "Updated Name",
+  "Email": "updated@example.com",
+  "Telefonszam": "987654321"
+}
+
+### 4. DELETE - Dolgozó törlése (👑)
+DELETE {{host}}/api/dolgozok/{{dolgozoId}}
+Authorization: Bearer {{adminToken}}
+
+### 5. GET - Dolgozó összes ruhakiadása (👤 👥 👑)
+GET {{host}}/api/dolgozok/{{dolgozoId}}/ruhak
+Authorization: Bearer {{adminToken}}
+
+### 6. GET - Dolgozó kint lévő ruhái (👤 👥 👑)
+GET {{host}}/api/dolgozok/{{dolgozoId}}/ruhak/aktiv
+Authorization: Bearer {{adminToken}}
+
+### 7. GET - Dolgozók, akiknek van kint ruhája (👥 👑)
+GET {{host}}/api/dolgozok/with-active-items
+Authorization: Bearer {{adminToken}}
+
+### ═══════════════════════════════════════════════════════════════
+### RUHÁK – /api/ruhak (9 végpont)
+### ═══════════════════════════════════════════════════════════════
+
+### 1. GET - Készlet listázása (👥 👑)
+GET {{host}}/api/ruhak
+Authorization: Bearer {{adminToken}}
+
+### 2. GET - Keresés (👥 👑)
+GET {{host}}/api/ruhak/search?q=Nadrag
+Authorization: Bearer {{adminToken}}
+
+### 3. GET - Ruhacikk cikkszám alapján (👥 👑)
+GET {{host}}/api/ruhak/by-cikkszam/{{cikkszam}}
+Authorization: Bearer {{adminToken}}
+
+### 4. GET - Egy ruhacikk részletei (👥 👑)
+GET {{host}}/api/ruhak/{{ruhaId}}
+Authorization: Bearer {{adminToken}}
+
+### 5. GET - Ruhacikk kiadási története (👥 👑)
+GET {{host}}/api/ruhak/{{ruhaId}}/history
+Authorization: Bearer {{adminToken}}
+
+### 6. GET - Ruhacikkből kint lévő kiadások (👥 👑)
+GET {{host}}/api/ruhak/{{ruhaId}}/active
+Authorization: Bearer {{adminToken}}
+
+### 7. POST - Új ruhacikk felvétele (👑)
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "Cikkszam": "C-1001",
+  "Fajta": "Nadrag",
+  "Szin": "Fekete",
+  "Meret": "M",
+  "Mennyiseg": 20,
+  "Minoseg": "Uj"
+}
+
+### 8. PATCH - Ruhacikk módosítása (👑)
+PATCH {{host}}/api/ruhak/{{ruhaId}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "Mennyiseg": 25,
+  "Minoseg": "Jo"
+}
+
+### 9. DELETE - Ruhacikk törlése (👑)
+DELETE {{host}}/api/ruhak/{{ruhaId}}
+Authorization: Bearer {{adminToken}}
+
+### ═══════════════════════════════════════════════════════════════
+### RUHAKIBE – /api/ruhakibe (10 végpont)
+### ═══════════════════════════════════════════════════════════════
+
+### 1. GET - Összes tranzakció listázása (👥 👑)
+GET {{host}}/api/ruhakibe
+Authorization: Bearer {{adminToken}}
+
+### 2. GET - Saját tranzakciók (👤 👥 👑)
+GET {{host}}/api/ruhakibe/mine
+Authorization: Bearer {{userToken}}
+
+### 3. GET - Aktív (kint lévő) kiadások (👥 👑)
+GET {{host}}/api/ruhakibe/active
+Authorization: Bearer {{adminToken}}
+
+### 4. GET - Lezárt (visszavett) tranzakciók (👥 👑)
+GET {{host}}/api/ruhakibe/returned
+Authorization: Bearer {{adminToken}}
+
+### 5. GET - Időszak szerinti szűrés (👥 👑)
+GET {{host}}/api/ruhakibe/by-date?from=2024-01-01&to=2024-12-31
+Authorization: Bearer {{adminToken}}
+
+### 6. GET - Kiadás/visszavétel statisztikák (👥 👑)
+GET {{host}}/api/ruhakibe/stats
+Authorization: Bearer {{adminToken}}
+
+### 7. GET - Egy tranzakció részletei (👥 👑)
+GET {{host}}/api/ruhakibe/{{ruhaKiBeId}}
+Authorization: Bearer {{adminToken}}
+
+### 8. POST - Új kiadás rögzítése (👥 👑)
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "DolgozoID": 1,
+  "RuhaID": 1,
+  "Mennyiseg": 1,
+  "Indok": "uj belepo"
+}
+
+### 9. PATCH - Visszavétel rögzítése (👥 👑)
+PATCH {{host}}/api/ruhakibe/{{ruhaKiBeId}}
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "RuhaMinoseg": "Jo"
+}
+
+### 10. DELETE - Tranzakció törlése (👑)
+DELETE {{host}}/api/ruhakibe/{{ruhaKiBeId}}
+Authorization: Bearer {{adminToken}}
+
+### ═══════════════════════════════════════════════════════════════
+### RENDELÉSEK – /api/rendelesek (9 végpont)
+### ═══════════════════════════════════════════════════════════════
+
+### 1. GET - Összes rendelés listázása (👥 👑)
+GET {{host}}/api/rendelesek
+Authorization: Bearer {{adminToken}}
+
+### 2. GET - Függőben lévő rendelések (👥 👑)
+GET {{host}}/api/rendelesek/pending
+Authorization: Bearer {{adminToken}}
+
+### 3. GET - Rendelések státusz szerint (👥 👑)
+GET {{host}}/api/rendelesek/by-status/Leadva
+Authorization: Bearer {{adminToken}}
+
+### 4. GET - Rendelések ruhacikk szerint (👥 👑)
+GET {{host}}/api/rendelesek/by-ruha/{{ruhaId}}
+Authorization: Bearer {{adminToken}}
+
+### 5. GET - Egy rendelés részletei (👥 👑)
+GET {{host}}/api/rendelesek/{{rendelesId}}
+Authorization: Bearer {{adminToken}}
+
+### 6. POST - Új rendelés létrehozása (👥 👑)
+POST {{host}}/api/rendelesek
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "RuhaID": 1,
+  "Mennyiseg": 10,
+  "Statusz": "Leadva"
+}
+
+### 7. PATCH - Rendelés módosítása (👥 👑)
+PATCH {{host}}/api/rendelesek/{{rendelesId}}
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "Mennyiseg": 15,
+  "Statusz": "Feldolgozas alatt"
+}
+
+### 8. PATCH - Rendelés teljesítése + készlet növelés (👑)
+PATCH {{host}}/api/rendelesek/{{rendelesId}}/complete
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{}
+
+### 9. DELETE - Rendelés törlése (👑)
+DELETE {{host}}/api/rendelesek/{{rendelesId}}
+Authorization: Bearer {{adminToken}}
+
+### ═══════════════════════════════════════════════════════════════
+### DASHBOARD – /api/dashboard (3 végpont)
+### ═══════════════════════════════════════════════════════════════
+
+### 1. GET - Fő statisztikák (👥 👑)
+GET {{host}}/api/dashboard/stats
+Authorization: Bearer {{adminToken}}
+
+### 2. GET - Alacsony készletű ruhák (👥 👑)
+GET {{host}}/api/dashboard/low-stock
+Authorization: Bearer {{adminToken}}
+
+### 3. GET - Legutóbbi tevékenységek (👥 👑)
+GET {{host}}/api/dashboard/recent-activity
+Authorization: Bearer {{adminToken}}
+
+### ═══════════════════════════════════════════════════════════════
+### JELENTÉSEK – /api/reports (4 végpont)
+### ═══════════════════════════════════════════════════════════════
+
+### 1. GET - Teljes készletjelentés (👥 👑)
+GET {{host}}/api/reports/inventory
+Authorization: Bearer {{adminToken}}
+
+### 2. GET - Dolgozónkénti összesítő (👥 👑)
+GET {{host}}/api/reports/employee-summary
+Authorization: Bearer {{adminToken}}
+
+### 3. GET - Havi riport (👥 👑)
+GET {{host}}/api/reports/monthly?year=2024&month=6
+Authorization: Bearer {{adminToken}}
+
+### 4. GET - Minőség szerinti összesítés (👑)
+GET {{host}}/api/reports/quality-summary
+Authorization: Bearer {{adminToken}}
+
+### ═══════════════════════════════════════════════════════════════
+### EXTRA TEST SCENARIOS
+### ═══════════════════════════════════════════════════════════════
+
+### Create Manager dolgozó (for testing)
 POST {{host}}/api/dolgozok
 Content-Type: application/json
 Authorization: Bearer {{adminToken}}
@@ -48,60 +307,11 @@ Authorization: Bearer {{adminToken}}
   "password": "pass1234"
 }
 
-### List inventory (Manager/Admin)
-GET {{host}}/api/ruhak
-Authorization: Bearer {{managerToken}}
-
-### Create inventory item (Admin)
-POST {{host}}/api/ruhak
+### Manager Login - get managerToken
+POST {{host}}/api/auth/login
 Content-Type: application/json
-Authorization: Bearer {{adminToken}}
 
 {
-  "Cikkszam": "C-1001",
-  "Fajta": "Nadrag",
-  "Szin": "Fekete",
-  "Meret": "M",
-  "Mennyiseg": 20,
-  "Minoseg": "Uj"
+  "username": "manager1",
+  "password": "pass1234"
 }
-
-### Issue clothing (Manager)
-POST {{host}}/api/ruhakibe/issue
-Content-Type: application/json
-Authorization: Bearer {{managerToken}}
-
-{
-  "DolgozoID": 1,
-  "RuhaID": 1,
-  "Mennyiseg": 1,
-  "Indok": "uj belepo"
-}
-
-### Mark return (Manager)
-POST {{host}}/api/ruhakibe/1/return
-Content-Type: application/json
-Authorization: Bearer {{managerToken}}
-
-{
-  "RuhaMinoseg": "Jo"
-}
-
-### Create order (Manager)
-POST {{host}}/api/rendelesek
-Content-Type: application/json
-Authorization: Bearer {{managerToken}}
-
-{
-  "RuhaID": 1,
-  "Mennyiseg": 10,
-  "Statusz": "Leadva"
-}
-
-### Dashboard summary (Manager/Admin)
-GET {{host}}/api/dashboard
-Authorization: Bearer {{adminToken}}
-
-### Reports - stock (Manager/Admin)
-GET {{host}}/api/reports/stock
-Authorization: Bearer {{adminToken}}
