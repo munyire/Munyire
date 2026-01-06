@@ -1,0 +1,105 @@
+@host = http://localhost:3000
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY3NjkxNTc2LCJleHAiOjE3Njc3MjAzNzZ9._ysO2CXm9h05-thx5Qr_zq56iyuUJPjfo5yKWfOsk-w
+@managerToken = {{managerToken}}
+@userToken = {{userToken}}
+
+### Health
+GET {{host}}/health
+
+### Register (public) - create a basic user (role defaults to Dolgozo)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "user@example.com",
+  "username": "user1",
+  "password": "pass1234"
+}
+
+### Login (public) - obtain JWT
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "alma"
+}
+
+### List employees (Manager/Admin)
+GET {{host}}/api/dolgozok
+Authorization: Bearer {{adminToken}}
+
+### Create employee (Admin)
+POST {{host}}/api/dolgozok
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "DNev": "Manager One",
+  "Email": "manager@example.com",
+  "Telefonszam": "123456789",
+  "Nem": "F",
+  "Munkakor": "Manager",
+  "Szerepkor": "Manager",
+  "FelhasznaloNev": "manager1",
+  "password": "pass1234"
+}
+
+### List inventory (Manager/Admin)
+GET {{host}}/api/ruhak
+Authorization: Bearer {{managerToken}}
+
+### Create inventory item (Admin)
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "Cikkszam": "C-1001",
+  "Fajta": "Nadrag",
+  "Szin": "Fekete",
+  "Meret": "M",
+  "Mennyiseg": 20,
+  "Minoseg": "Uj"
+}
+
+### Issue clothing (Manager)
+POST {{host}}/api/ruhakibe/issue
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "DolgozoID": 1,
+  "RuhaID": 1,
+  "Mennyiseg": 1,
+  "Indok": "uj belepo"
+}
+
+### Mark return (Manager)
+POST {{host}}/api/ruhakibe/1/return
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "RuhaMinoseg": "Jo"
+}
+
+### Create order (Manager)
+POST {{host}}/api/rendelesek
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "RuhaID": 1,
+  "Mennyiseg": 10,
+  "Statusz": "Leadva"
+}
+
+### Dashboard summary (Manager/Admin)
+GET {{host}}/api/dashboard
+Authorization: Bearer {{managerToken}}
+
+### Reports - stock (Manager/Admin)
+GET {{host}}/api/reports/stock
+Authorization: Bearer {{managerToken}}
