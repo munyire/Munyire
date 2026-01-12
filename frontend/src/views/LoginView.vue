@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
+import { Shirt, Mail, Key } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -33,92 +34,298 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="login-container flex items-center justify-between h-screen w-full">
-    <div class="login-bg"></div>
-    
-    <div class="login-card glass-panel p-8">
-      <div class="text-center mb-6">
-        <h1>Munyire</h1>
-        <p class="text-muted">Munkaruhakezelő Rendszer</p>
+  <div class="login-wrapper">
+    <div class="login-container">
+      <div class="form-side">
+        <div class="header">
+          <div class="logo-container">
+            <Shirt class="app-logo" :size="48" />
+            <h1>Munyire</h1>
+          </div>
+          <p class="subtitle">Munkaruhakezelő Rendszer</p>
+        </div>
+
+        <form @submit.prevent="handleLogin" class="login-form">
+          <div class="form-group">
+            <label for="username">Felhasználónév</label>
+            <div class="input-wrapper">
+              <Mail class="input-icon" :size="20" />
+              <input 
+                id="username" 
+                v-model="username" 
+                type="text" 
+                placeholder="Adja meg a felhasználónevét" 
+                required
+              />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Jelszó</label>
+            <div class="input-wrapper">
+              <Key class="input-icon" :size="20" />
+              <input 
+                id="password" 
+                v-model="password" 
+                type="password" 
+                placeholder="Adja meg a jelszavát" 
+                required
+              />
+            </div>
+            <a href="#" class="forgot-password">Elfelejtettem a jelszót</a>
+          </div>
+
+          <div v-if="error" class="error-message">
+            {{ error }}
+          </div>
+
+          <button type="submit" class="submit-btn" :disabled="loading">
+            {{ loading ? 'Bejelentkezés...' : 'Bejelentkezés' }}
+          </button>
+        </form>
+
+        <div class="footer-left">
+          Copyright &copy; 2026 Munyire
+        </div>
+        <div class="footer-right">
+          <a href="#">Privacy Policy</a>
+        </div>
       </div>
-
-      <form @submit.prevent="handleLogin" class="flex flex-col gap-4">
-        <div>
-          <label for="username" class="block mb-1 text-sm font-medium">Felhasználónév</label>
-          <input 
-            id="username" 
-            v-model="username" 
-            type="text" 
-            placeholder="Adja meg a felhasználónevét" 
-            required
-            class="w-full"
-          />
-        </div>
-        
-        <div>
-          <label for="password" class="block mb-1 text-sm font-medium">Jelszó</label>
-          <input 
-            id="password" 
-            v-model="password" 
-            type="password" 
-            placeholder="Adja meg a jelszavát" 
-            required
-            class="w-full"
-          />
-        </div>
-
-        <div v-if="error" class="text-red-500 text-sm text-center">
-          {{ error }}
-        </div>
-
-        <button type="submit" class="btn btn-primary w-full" :disabled="loading">
-          {{ loading ? 'Bejelentkezés...' : 'Bejelentkezés' }}
-        </button>
-      </form>
+      
+      <div class="image-side"></div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.login-container {
+.login-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  z-index: 1000;
 }
 
-.login-bg {
-  position: absolute;
-  top: -20%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
-  background-image: 
-    radial-gradient(circle at 80% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 40%);
-  z-index: 0;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 400px;
+.login-container {
+  display: flex;
+  width: 900px;
+  max-width: 90%;
+  height: 600px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   position: relative;
-  z-index: 1;
-  border-radius: 1.5rem;
+  z-index: 10;
 }
 
-.text-muted {
-  color: var(--color-text-muted);
+.form-side {
+  flex: 1;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative; /* Make relative for absolute footer positioning */
 }
 
-.text-red-500 {
+.footer-left {
+  position: absolute;
+  bottom: 2rem;
+  left: 3rem;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.footer-right {
+  position: absolute;
+  bottom: 2rem;
+  right: 3rem;
+}
+
+.footer-right a {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: color 0.2s;
+}
+
+.footer-right a:hover {
+  color: #1e40af;
+  text-decoration: underline;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.app-logo {
+  color: #1e40af;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  color: #1e3a8a;
+  margin: 0;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.subtitle {
+  color: #64748b;
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  color: #1e40af;
+  pointer-events: none;
+}
+
+label {
+  font-weight: 500;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  background-color: #f8fafc;
+}
+
+input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-color: white;
+}
+
+.forgot-password {
+  align-self: flex-end;
+  font-size: 0.85rem;
+  color: #1e40af;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.forgot-password:hover {
+  color: #1e3a8a;
+  text-decoration: underline;
+}
+
+.submit-btn {
+  margin-top: 0.5rem;
+  padding: 0.875rem;
+  background-color: #1e40af;
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.submit-btn:hover {
+  background-color: #1e3a8a;
+}
+
+.submit-btn:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.error-message {
   color: #ef4444;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 0.5rem;
+  background-color: #fef2f2;
+  border-radius: 6px;
 }
 
-.p-8 { padding: 2rem; }
-.mb-6 { margin-bottom: 1.5rem; }
-.mb-1 { margin-bottom: 0.25rem; }
-.text-sm { font-size: 0.875rem; }
-.font-medium { font-weight: 500; }
-.block { display: block; }
+.image-side {
+  flex: 1;
+  background-image: url('../assets/login-side.png');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.image-side::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(30, 64, 175, 0.1), rgba(30, 64, 175, 0.2));
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+  }
+
+  .image-side {
+    display: none;
+  }
+
+  .form-side {
+    padding: 2rem;
+  }
+
+  .footer-left, .footer-right {
+    position: static;
+    margin-top: 2rem;
+    text-align: center;
+  }
+  
+  .footer-left {
+    margin-bottom: 0.5rem;
+  }
+}
 </style>
