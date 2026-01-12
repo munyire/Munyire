@@ -60,7 +60,7 @@
 | GET | `/api/ruhak/:ruhaId` | Egy ruhacikk részletei | 👥 👑 |
 | GET | `/api/ruhak/:ruhaId/history` | Ruhacikk kiadási története | 👥 👑 |
 | GET | `/api/ruhak/:ruhaId/active` | Ruhacikkből kint lévő kiadások | 👥 👑 |
-| POST | `/api/ruhak` | Új ruhacikk felvétele (Cikkszám generálható) | 👑 |
+| POST | `/api/ruhak` | Új ruhacikk felvétele (Cikkszám automatikusan generálódik, ha nincs megadva) | 👑 |
 | PATCH | `/api/ruhak/:ruhaId` | Ruhacikk módosítása | 👑 |
 | DELETE | `/api/ruhak/:ruhaId` | Ruhacikk törlése | 👑 |
 
