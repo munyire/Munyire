@@ -40,7 +40,7 @@ async function findByStatus(statusz) {
 
 async function findByRuha(ruhaId) {
   return models.Rendeles.findAll({
-    where: { RuhaID: ruhaId },
+    where: { Cikkszam: ruhaId },
     include: [models.Ruha],
   });
 }

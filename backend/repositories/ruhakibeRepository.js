@@ -43,7 +43,7 @@ async function findDolgozokWithActive() {
     where: { VisszaDatum: null },
     attributes: ["DolgozoID", [fn("COUNT", col("RuhaKiBeID")), "activeCount"]],
     include: [models.Dolgozo],
-    group: ["DolgozoID"],
+    group: ["RuhaKiBe.DolgozoID"],
   });
 }
 
@@ -85,6 +85,20 @@ async function findMine(dolgozoId) {
   });
 }
 
+async function findByRuha(cikkszam) {
+  return models.RuhaKiBe.findAll({
+    where: { Cikkszam: cikkszam },
+    include: [models.Dolgozo],
+  });
+}
+
+async function findActiveForRuha(cikkszam) {
+  return models.RuhaKiBe.findAll({
+    where: { Cikkszam: cikkszam, VisszaDatum: null },
+    include: [models.Dolgozo],
+  });
+}
+
 module.exports = {
   findAll,
   findById,
@@ -99,4 +113,6 @@ module.exports = {
   findByDateRange,
   stats,
   findMine,
+  findByRuha,
+  findActiveForRuha,
 };

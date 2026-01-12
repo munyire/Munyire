@@ -16,6 +16,9 @@ router.get("/", requireRole(ROLES.Manager), controller.list);
 // Összes dolgozó neve (Frontend dropdownokhoz - Manager/Admin)
 router.get("/names", requireRole(ROLES.Manager), controller.listNames);
 
+// Dolgozók, akiknek van kint ruhája (Manager/Admin)
+router.get("/with-active-items", requireRole(ROLES.Manager), controller.listWithActiveItems);
+
 // Egy dolgozó adatai (saját vagy Manager/Admin)
 router.get("/:dolgozoId", requireSelfOrRole({ paramKey: "dolgozoId", role: ROLES.Manager }), controller.get);
 
@@ -33,7 +36,7 @@ router.delete("/:dolgozoId", requireRole(ROLES.Admin), controller.remove);
 
 // Dolgozó összes ruhakiadása (saját vagy Manager/Admin)
 router.get(
-  "//:dolgozoId/ruhak",
+  "/:dolgozoId/ruhak",
   requireSelfOrRole({ paramKey: "dolgozoId", role: ROLES.Manager }),
   controller.listClothes
 );

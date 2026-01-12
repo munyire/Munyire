@@ -320,6 +320,39 @@ async function testDolgozok() {
   } catch (error) {
     assert(false, `List names failed: ${error.message}`);
   }
+
+  // Test employee history
+  if (testData.dolgozoId) {
+    logGroup('Dolgozók - History');
+    try {
+      const res = await request('GET', `/api/dolgozok/${testData.dolgozoId}/ruhak`, null, testData.managerToken);
+      assert(res.status === 200, 'Get employee history returns 200');
+      assert(Array.isArray(res.data), 'History returns array');
+      // No items yet for new employee? Or maybe we create some later and test this again?
+      // Order of tests matters. testRuhaKiBe comes later.
+      // But we can at least verify endpoint exists and returns 200.
+    } catch (error) {
+      assert(false, `Get employee history failed: ${error.message}`);
+    }
+
+    logGroup('Dolgozók - Active Items');
+    try {
+      const res = await request('GET', `/api/dolgozok/${testData.dolgozoId}/ruhak/aktiv`, null, testData.managerToken);
+      assert(res.status === 200, 'Get employee active items returns 200');
+      assert(Array.isArray(res.data), 'Active items returns array');
+    } catch (error) {
+      assert(false, `Get employee active items failed: ${error.message}`);
+    }
+  }
+
+  logGroup('Dolgozók - With Active Items');
+  try {
+    const res = await request('GET', '/api/dolgozok/with-active-items', null, testData.managerToken);
+    assert(res.status === 200, 'Get employees with active items returns 200');
+    assert(Array.isArray(res.data), 'Returns array');
+  } catch (error) {
+    assert(false, `Get employees with active items failed: ${error.message}`);
+  }
 }
 
 /**
@@ -432,6 +465,27 @@ async function testRuhak() {
   } catch (error) {
     assert(false, `Get options failed: ${error.message}`);
   }
+
+  // Test clothing history and active items
+  if (testData.ruhaId) {
+    logGroup('Ruhák - History & Active');
+
+    try {
+      const res = await request('GET', `/api/ruhak/${testData.ruhaId}/history`, null, testData.managerToken);
+      assert(res.status === 200, 'Get ruha history returns 200');
+      assert(Array.isArray(res.data), 'History returns array');
+    } catch (error) {
+      assert(false, `Get ruha history failed: ${error.message}`);
+    }
+
+    try {
+      const res = await request('GET', `/api/ruhak/${testData.ruhaId}/active`, null, testData.managerToken);
+      assert(res.status === 200, 'Get ruha active items returns 200');
+      assert(Array.isArray(res.data), 'Active items returns array');
+    } catch (error) {
+      assert(false, `Get ruha active items failed: ${error.message}`);
+    }
+  }
 }
 
 /**
@@ -543,6 +597,51 @@ async function testRuhaKiBe() {
   } catch (error) {
     assert(false, `Statistics failed: ${error.message}`);
   }
+
+  // Test additional RuhaKiBe endpoints
+  logGroup('RuhaKiBe - Additional Filters');
+
+  // Mine (should get current user's items)
+  try {
+    // If login was admin, do we have items? We created transaction for 'dolgozoId' but we are 'managerToken' or 'adminToken'?
+    // Let's use 'dolgozoToken' if available
+    const token = testData.dolgozoToken || testData.managerToken;
+    const res = await request('GET', '/api/ruhakibe/mine', null, token);
+    assert(res.status === 200, 'Get my items returns 200');
+    assert(Array.isArray(res.data), 'My items returns array');
+  } catch (error) {
+    assert(false, `Get my items failed: ${error.message}`);
+  }
+
+  // Returned items
+  try {
+    const res = await request('GET', '/api/ruhakibe/returned', null, testData.managerToken);
+    assert(res.status === 200, 'Get returned items returns 200');
+    assert(Array.isArray(res.data), 'Returned items returns array');
+  } catch (error) {
+    assert(false, `Get returned items failed: ${error.message}`);
+  }
+
+  // By Date
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const res = await request('GET', `/api/ruhakibe/by-date?from=${today}&to=${today}`, null, testData.managerToken);
+    assert(res.status === 200, 'Get items by date returns 200');
+    assert(Array.isArray(res.data), 'Items by date returns array');
+  } catch (error) {
+    assert(false, `Get items by date failed: ${error.message}`);
+  }
+
+  // Get specific transaction
+  if (testData.ruhaKiBeId) {
+    try {
+      const res = await request('GET', `/api/ruhakibe/${testData.ruhaKiBeId}`, null, testData.managerToken);
+      assert(res.status === 200, 'Get specific transaction returns 200');
+      assert(res.data.RuhaKiBeID === testData.ruhaKiBeId, 'Correct transaction ID');
+    } catch (error) {
+      assert(false, `Get specific transaction failed: ${error.message}`);
+    }
+  }
 }
 
 /**
@@ -603,6 +702,43 @@ async function testRendelesek() {
       assert(res.status === 200, 'Complete order returns 200');
     } catch (error) {
       assert(false, `Complete order failed: ${error.message}`);
+    }
+  }
+
+  // Test additional Rendelések endpoints
+  logGroup('Rendelések - Additional Search');
+
+  // By Status
+  try {
+    // Current status might be 'Teljesítve' after completion, or 'Leadva' before?
+    // Let's search for 'Teljesítve' since we just completed one
+    const status = 'Teljesítve';
+    const res = await request('GET', `/api/rendelesek/by-status/${encodeURIComponent(status)}`, null, testData.managerToken);
+    assert(res.status === 200, `Get orders by status '${status}' returns 200`);
+    assert(Array.isArray(res.data), 'Orders by status returns array');
+  } catch (error) {
+    assert(false, `Get orders by status failed: ${error.message}`);
+  }
+
+  // By Ruha (Cikkszam)
+  if (testData.ruhaId) {
+    try {
+      const res = await request('GET', `/api/rendelesek/by-ruha/${testData.ruhaId}`, null, testData.managerToken);
+      assert(res.status === 200, 'Get orders by ruha returns 200');
+      assert(Array.isArray(res.data), 'Orders by ruha returns array');
+    } catch (error) {
+      assert(false, `Get orders by ruha failed: ${error.message}`);
+    }
+  }
+
+  // Get specific order
+  if (testData.rendelesId) {
+    try {
+      const res = await request('GET', `/api/rendelesek/${testData.rendelesId}`, null, testData.managerToken);
+      assert(res.status === 200, 'Get specific order returns 200');
+      assert(res.data.RendelesID === testData.rendelesId, 'Correct order ID');
+    } catch (error) {
+      assert(false, `Get specific order failed: ${error.message}`);
     }
   }
 }

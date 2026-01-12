@@ -1,14 +1,13 @@
 @host = http://localhost:3000
-@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY4MjAyNzAwLCJleHAiOjE3NjgyMzE1MDB9.bTBK53Ckec6uLMckC3VoCDJNEdnFQj7TeQDVscMy800
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY4MjE1MDUwLCJleHAiOjE3NjgyNDM4NTB9.MtSvs3uvQ27NUZoyMihbPAWhEGL9OmNfMW5CRV17Cvs
 @managerToken = {{managerToken}}
 @userToken = {{userToken}}
 
 # IDs for testing
 @dolgozoId = 1
-@ruhaId = 1
+@cikkszam = 1000001
 @ruhaKiBeId = 1
 @rendelesId = 1
-@cikkszam = C-1001
 
 ### ═══════════════════════════════════════════════════════════════
 ### HEALTH CHECK
@@ -102,20 +101,20 @@ Authorization: Bearer {{adminToken}}
 GET {{host}}/api/ruhak/options
 Authorization: Bearer {{adminToken}}
 
-### 3. GET - Ruhacikk cikkszám alapján (👥 👑)
-GET {{host}}/api/ruhak/by-cikkszam/{{cikkszam}}
+### 3. GET - Ruhacikk cikkszám alapján (Deprecated - use ID endpoint) (👥 👑)
+GET {{host}}/api/ruhak/{{cikkszam}}
 Authorization: Bearer {{adminToken}}
 
 ### 4. GET - Egy ruhacikk részletei (👥 👑)
-GET {{host}}/api/ruhak/{{ruhaId}}
+GET {{host}}/api/ruhak/{{cikkszam}}
 Authorization: Bearer {{adminToken}}
 
 ### 5. GET - Ruhacikk kiadási története (👥 👑)
-GET {{host}}/api/ruhak/{{ruhaId}}/history
+GET {{host}}/api/ruhak/{{cikkszam}}/history
 Authorization: Bearer {{adminToken}}
 
 ### 6. GET - Ruhacikkből kint lévő kiadások (👥 👑)
-GET {{host}}/api/ruhak/{{ruhaId}}/active
+GET {{host}}/api/ruhak/{{cikkszam}}/active
 Authorization: Bearer {{adminToken}}
 
 
@@ -138,26 +137,26 @@ Content-Type: application/json
 Authorization: Bearer {{adminToken}}
 
 {
-  "Cikkszam": "C-1001",
+  "Cikkszam": 1000001,
   "Fajta": "Nadrag",
   "Szin": "Fekete",
   "Meret": "M",
   "Mennyiseg": 20,
-  "Minoseg": "Uj"
+  "Minoseg": "Új"
 }
 
 ### 8. PATCH - Ruhacikk módosítása (👑)
-PATCH {{host}}/api/ruhak/{{ruhaId}}
+PATCH {{host}}/api/ruhak/{{cikkszam}}
 Content-Type: application/json
 Authorization: Bearer {{adminToken}}
 
 {
   "Mennyiseg": 25,
-  "Minoseg": "Jo"
+  "Minoseg": "Jó" 
 }
 
 ### 9. DELETE - Ruhacikk törlése (👑)
-DELETE {{host}}/api/ruhak/{{ruhaId}}
+DELETE {{host}}/api/ruhak/{{cikkszam}}
 Authorization: Bearer {{adminToken}}
 
 ### ═══════════════════════════════════════════════════════════════
@@ -195,11 +194,11 @@ Authorization: Bearer {{adminToken}}
 ### 8. POST - Új kiadás rögzítése (👥 👑)
 POST {{host}}/api/ruhakibe
 Content-Type: application/json
-Authorization: Bearer {{managerToken}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY4MjE1MDUwLCJleHAiOjE3NjgyNDM4NTB9.MtSvs3uvQ27NUZoyMihbPAWhEGL9OmNfMW5CRV17Cvs
 
 {
   "DolgozoID": 1,
-  "RuhaID": 1,
+  "Cikkszam": {{cikkszam}},
   "Mennyiseg": 1,
   "Indok": "uj belepo"
 }
@@ -234,7 +233,7 @@ GET {{host}}/api/rendelesek/by-status/Leadva
 Authorization: Bearer {{adminToken}}
 
 ### 4. GET - Rendelések ruhacikk szerint (👥 👑)
-GET {{host}}/api/rendelesek/by-ruha/{{ruhaId}}
+GET {{host}}/api/rendelesek/by-ruha/{{cikkszam}}
 Authorization: Bearer {{adminToken}}
 
 ### 5. GET - Egy rendelés részletei (👥 👑)
@@ -247,7 +246,7 @@ Content-Type: application/json
 Authorization: Bearer {{managerToken}}
 
 {
-  "RuhaID": 1,
+  "Cikkszam": {{cikkszam}},
   "Mennyiseg": 10,
   "Statusz": "Leadva"
 }

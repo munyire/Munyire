@@ -90,7 +90,7 @@ async function create(data) {
 
   await raktarRepo.create({
     Cikkszam: ruha.Cikkszam,
-    Minoseg: minsogeq = minoseg, // Tyto fix: minoseg
+    Minoseg: minoseg,
     Mennyiseg: mennyiseg
   });
 
