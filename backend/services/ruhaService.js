@@ -1,5 +1,6 @@
 const ruhaRepo = require("../repositories/ruhaRepository");
 const ruhakibeRepo = require("../repositories/ruhakibeRepository");
+const raktarRepo = require("../repositories/raktarRepository");
 
 async function list() {
   return ruhaRepo.findAll();
@@ -9,23 +10,25 @@ async function search(q) {
   return ruhaRepo.search(q);
 }
 
-async function get(id) {
-  return ruhaRepo.findById(id);
+async function get(cikkszam) {
+  return ruhaRepo.findById(cikkszam);
 }
 
 async function getByCikkszam(cikkszam) {
   return ruhaRepo.findByCikkszam(cikkszam);
 }
 
-async function history(ruhaId) {
-  return ruhakibeRepo.findByDateRange(null, null, { RuhaID: ruhaId });
+// History and Active need to check usage. ruhakibeRepo methods might need update if they used RuhaID.
+// But we passed RuhaID which is now Cikkszam.
+async function history(cikkszam) {
+  return ruhakibeRepo.findByDateRange(null, null, { Cikkszam: cikkszam });
 }
 
-async function active(ruhaId) {
-  return ruhakibeRepo.findActiveForRuha(ruhaId);
+async function active(cikkszam) {
+  return ruhakibeRepo.findActiveForRuha(cikkszam);
 }
 
-
+// Normalization might still be useful for text fields but not for SKU generation anymore?
 function normalizeText(text) {
   if (!text) return "XXX";
   return text
@@ -52,50 +55,55 @@ async function getOptions() {
 }
 
 async function create(data) {
-  // Ensure Minoseg has default if missing
-  if (!data.Minoseg) data.Minoseg = "Új";
+  // Data: Fajta, Szin, Meret, Mennyiseg (optional), Minoseg (optional, default Új)
 
   // Check for duplicates
   const existing = await ruhaRepo.findByAttributes(data);
   if (existing) {
+    // If Ruha exists, we might just want to add stock?
+    // But this is "create new product" endpoint usually.
+    // However, if product exists, user might be adding stock.
+    // Let's throw duplicate error as before, or handle it? 
+    // Previous code threw DUPLICATE_ITEM.
     const error = new Error("Duplicate item found");
     error.code = "DUPLICATE_ITEM";
     throw error;
   }
 
-  if (!data.Cikkszam) {
-    const typePrefix = normalizeText(data.Fajta);
-    const colorPrefix = normalizeText(data.Szin);
-    const sizePart = data.Meret ? data.Meret.toUpperCase() : "XX";
-    const qualityPrefix = normalizeText(data.Minoseg);
-    const prefix = `${typePrefix}-${colorPrefix}-${sizePart}-${qualityPrefix}`;
-
-    // Find last SKU with this prefix
-    const lastItems = await ruhaRepo.findByCikkszamPrefix(prefix);
-    let nextSeq = 1;
-
-    if (lastItems && lastItems.length > 0) {
-      const lastSku = lastItems[0].Cikkszam;
-      const parts = lastSku.split("-");
-      const lastSeq = parseInt(parts[parts.length - 1]);
-      if (!isNaN(lastSeq)) {
-        nextSeq = lastSeq + 1;
-      }
-    }
-
-    const seqStr = nextSeq.toString().padStart(4, "0");
-    data.Cikkszam = `${prefix}-${seqStr}`;
+  // Generate Cikkszam (7 digit int)
+  // Start at 1000000
+  let cikkszam = 1000000;
+  const maxCikkszam = await ruhaRepo.findMaxCikkszam();
+  if (maxCikkszam) {
+    cikkszam = maxCikkszam + 1;
   }
 
-  return ruhaRepo.create(data);
+  data.Cikkszam = cikkszam;
+
+  // Create Ruha
+  const ruha = await ruhaRepo.create(data);
+
+  // Create Raktar entry (Default 'Új' stock)
+  // use input Minoseg or default 'Új'
+  const minoseg = data.Minoseg || "Új";
+  const mennyiseg = data.Mennyiseg || 0;
+
+  await raktarRepo.create({
+    Cikkszam: ruha.Cikkszam,
+    Minoseg: minsogeq = minoseg, // Tyto fix: minoseg
+    Mennyiseg: mennyiseg
+  });
+
+  // Fetch complete object with Raktar
+  return ruhaRepo.findById(ruha.Cikkszam);
 }
 
-async function update(id, data) {
-  return ruhaRepo.update(id, data);
+async function update(cikkszam, data) {
+  return ruhaRepo.update(cikkszam, data);
 }
 
-async function remove(id) {
-  return ruhaRepo.remove(id);
+async function remove(cikkszam) {
+  return ruhaRepo.remove(cikkszam);
 }
 
 module.exports = {

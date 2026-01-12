@@ -54,16 +54,15 @@
 
 | Metódus | Útvonal | Leírás | Jog |
 |:-------:|:--------|:-------|:---:|
-| GET | `/api/ruhak` | Készlet listázása | 👥 👑 |
+| GET | `/api/ruhak` | Készlet listázása (raktár adatokkal) | 👥 👑 |
 | GET | `/api/ruhak/search` | Keresés (query: `q`) | 👥 👑 |
 | GET | `/api/ruhak/options` | Lehetőségek listázása (szín, fajta, méret) | 👥 👑 |
-| GET | `/api/ruhak/by-cikkszam/:cikkszam` | Ruhacikk cikkszám alapján | 👥 👑 |
-| GET | `/api/ruhak/:ruhaId` | Egy ruhacikk részletei | 👥 👑 |
-| GET | `/api/ruhak/:ruhaId/history` | Ruhacikk kiadási története | 👥 👑 |
-| GET | `/api/ruhak/:ruhaId/active` | Ruhacikkből kint lévő kiadások | 👥 👑 |
-| POST | `/api/ruhak` | Új ruhacikk felvétele (Cikkszám automatikusan generálódik, ha nincs megadva) | 👑 |
-| PATCH | `/api/ruhak/:ruhaId` | Ruhacikk módosítása | 👑 |
-| DELETE | `/api/ruhak/:ruhaId` | Ruhacikk törlése | 👑 |
+| GET | `/api/ruhak/:cikkszam` | Egy ruhacikk részletei és készlete | 👥 👑 |
+| GET | `/api/ruhak/:cikkszam/history` | Ruhacikk kiadási története | 👥 👑 |
+| GET | `/api/ruhak/:cikkszam/active` | Ruhacikkből kint lévő kiadások | 👥 👑 |
+| POST | `/api/ruhak` | Új ruhacikk felvétele (Cikkszám 7-jegyű int, auto-generálva) | 👑 |
+| PATCH | `/api/ruhak/:cikkszam` | Ruhacikk módosítása | 👑 |
+| DELETE | `/api/ruhak/:cikkszam` | Ruhacikk törlése | 👑 |
 
 ---
 
@@ -78,7 +77,7 @@
 | GET | `/api/ruhakibe/by-date` | Időszak szerinti szűrés (query: `from`, `to`) | 👥 👑 |
 | GET | `/api/ruhakibe/stats` | Kiadás/visszavétel statisztikák | 👥 👑 |
 | GET | `/api/ruhakibe/:ruhaKiBeId` | Egy tranzakció részletei | 👥 👑 |
-| POST | `/api/ruhakibe` | Új kiadás rögzítése | 👥 👑 |
+| POST | `/api/ruhakibe` | Új kiadás rögzítése (RuhaID helyett Cikkszam) | 👥 👑 |
 | PATCH | `/api/ruhakibe/:ruhaKiBeId` | Visszavétel rögzítése | 👥 👑 |
 | DELETE | `/api/ruhakibe/:ruhaKiBeId` | Tranzakció törlése | 👑 |
 
@@ -91,7 +90,7 @@
 | GET | `/api/rendelesek` | Összes rendelés listázása | 👥 👑 |
 | GET | `/api/rendelesek/pending` | Függőben lévő rendelések | 👥 👑 |
 | GET | `/api/rendelesek/by-status/:statusz` | Rendelések státusz szerint | 👥 👑 |
-| GET | `/api/rendelesek/by-ruha/:ruhaId` | Rendelések ruhacikk szerint | 👥 👑 |
+| GET | `/api/rendelesek/by-ruha/:cikkszam` | Rendelések ruhacikk szerint | 👥 👑 |
 | GET | `/api/rendelesek/:rendelesId` | Egy rendelés részletei | 👥 👑 |
 | POST | `/api/rendelesek` | Új rendelés létrehozása | 👥 👑 |
 | PATCH | `/api/rendelesek/:rendelesId` | Rendelés módosítása | 👥 👑 |

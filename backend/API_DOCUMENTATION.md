@@ -132,23 +132,23 @@ Az API `Bearer Token` hitelesítést használ. A sikeres bejelentkezés után ka
 - **Kérés törzs:**
   ```json
   {
-    "Cikkszam": "MAN-POL-L-UJ", // Ha üres, automatikusan generálódik
+    "Cikkszam": 1000001, // 7-jegyű egész szám. Ha nincs megadva, automatikusan generálódik.
     "Fajta": "Póló",
     "Szin": "Kék",
     "Meret": "L",
-    "Minoseg": "Új", // Opcionális, alapért.: Új
-    "Mennyiseg": 50
+    "Minoseg": "Új", // Opcionális, alapért.: Új (Kezdő készlet minősége)
+    "Mennyiseg": 50 // Kezdő készlet mennyisége
   }
   ```
-- **Megjegyzés:** A rendszer nem enged két ruhát azonos attribútumokkal (Fajta, Szin, Meret, Minoseg).
+- **Megjegyzés:** A rendszer nem enged két ruhát azonos attribútumokkal (Fajta, Szin, Meret). A Minőség és Mennyiség a Raktár táblába kerül.
 
 ### Ruha módosítása
-**PATCH** `/ruhak/:id`
+**PATCH** `/ruhak/:cikkszam`
 - **Hozzáférés:** Admin
-- **Kérés törzs:** Mennyiség vagy egyéb adatok módosítása.
+- **Kérés törzs:** Adatok módosítása (kivéve Cikkszam).
 
 ### Ruha törlése
-**DELETE** `/ruhak/:id`
+**DELETE** `/ruhak/:cikkszam`
 - **Hozzáférés:** Admin
 
 ### Metadata Opciók
@@ -166,7 +166,7 @@ Az API `Bearer Token` hitelesítést használ. A sikeres bejelentkezés után ka
   ```json
   {
     "DolgozoID": 1,
-    "RuhaID": 10,
+    "Cikkszam": 1000001, // RuhaID helyett Cikkszam (int)
     "Mennyiseg": 1, // Opcionális, alapért.: 1
     "Indok": "Munkakezdés" // Opcionális
   }
@@ -199,7 +199,7 @@ Az API `Bearer Token` hitelesítést használ. A sikeres bejelentkezés után ka
 - **Kérés törzs:**
   ```json
   {
-    "RuhaID": 10,
+    "Cikkszam": 1000001, // RuhaID helyett Cikkszam (int)
     "Mennyiseg": 20,
     "Szallito": "WorkWear Kft.",
     "Megjegyzes": "Sürgős"

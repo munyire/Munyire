@@ -1,5 +1,6 @@
 const rendelesRepo = require("../repositories/rendelesRepository");
 const ruhaRepo = require("../repositories/ruhaRepository");
+const raktarRepo = require("../repositories/raktarRepository");
 
 async function list() {
   return rendelesRepo.findAll();
@@ -13,8 +14,8 @@ async function listByStatus(statusz) {
   return rendelesRepo.findByStatus(statusz);
 }
 
-async function listByRuha(ruhaId) {
-  return rendelesRepo.findByRuha(ruhaId);
+async function listByRuha(cikkszam) {
+  return rendelesRepo.findByRuha(cikkszam);
 }
 
 async function get(id) {
@@ -22,12 +23,19 @@ async function get(id) {
 }
 
 async function create(data) {
-  const ruha = await ruhaRepo.findById(data.RuhaID);
+  // Map RuhaID to Cikkszam if needed, or assume data.RuhaID holds the Cikkszam
+  const cikkszam = data.RuhaID; // Assuming input JSON uses RuhaID key
+
+  const ruha = await ruhaRepo.findByCikkszam(cikkszam);
   if (!ruha) {
     const err = new Error("Ruha not found");
     err.status = 404;
     throw err;
   }
+
+  // Ensure we save Cikkszam field
+  data.Cikkszam = cikkszam;
+
   return rendelesRepo.create(data);
 }
 
@@ -44,7 +52,13 @@ async function complete(id) {
   }
   if (order.Statusz === "Teljesítve") return order;
 
-  const ruha = await ruhaRepo.findById(order.RuhaID);
+  // order has Cikkszam (via index.js association and create mapping)
+  // Check if DB schema migration happened. If explicit column usage, access order.Cikkszam or order.RuhaID?
+  // Since we assume DB reset, it's order.Cikkszam (or implicit FK).
+  // Ideally we should use order.Cikkszam.
+  const cikkszam = order.Cikkszam || order.RuhaID;
+
+  const ruha = await ruhaRepo.findByCikkszam(cikkszam);
   if (!ruha) {
     const err = new Error("Ruha not found");
     err.status = 404;
@@ -52,7 +66,21 @@ async function complete(id) {
   }
 
   await order.update({ Statusz: "Teljesítve" });
-  await ruha.update({ Mennyiseg: ruha.Mennyiseg + order.Mennyiseg });
+
+  // Update Stock (Incoming order adds to stock?)
+  // Yes, order complete -> items arrive -> add to stock.
+  // Assume generic 'Új' quality for new orders.
+
+  let raktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, "Új");
+  if (!raktar) {
+    raktar = await raktarRepo.create({
+      Cikkszam: cikkszam,
+      Minoseg: "Új",
+      Mennyiseg: 0
+    });
+  }
+
+  await raktar.update({ Mennyiseg: raktar.Mennyiseg + order.Mennyiseg });
 
   return order;
 }

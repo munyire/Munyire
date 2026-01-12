@@ -2,3 +2,4 @@
 [x] Cikszám automatikus generálása
 [x] Ne lehessen ugyanolyan sor az adatbázisban
 [x] Endpoint: Az összes dolgozó neve
+[x] Adatbázis refaktorálás (Ruha -> Ruha + Raktár)

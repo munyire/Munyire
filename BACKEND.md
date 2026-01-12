@@ -87,29 +87,33 @@ Az adatbázis SQLite alapú, Sequelize ORM kezeli.
 - `JelszoHash` (bcrypt)
 
 ### 5.2. Ruhak
-- `RuhaID` (PK)
-- `Cikkszam` (**egyedi** cikkszám / azonosító)
+- `Cikkszam` (PK, 7-jegyű egész szám, pl. 1000001)
 - `Fajta`
 - `Szin`
 - `Meret`
-- `Mennyiseg` (készlet)
-- `Minoseg` (opcionális: `Uj`, `Jo`, `Szakadt`)
+- (Készlet és minőség kiszervezve a Raktar táblába)
 
-Megjegyzés: 1 sor egy „ruhacikk” (pl. fekete M-es nadrág), nem egyedi darab.
+Megjegyzés: 1 sor egy "ruhacikk típus" (pl. fekete M-es nadrág).
 
-### 5.3. RuhaKiBe
+### 5.3. Raktar (Készlet)
+- `RaktarID` (PK)
+- `Cikkszam` (FK → Ruhak)
+- `Minoseg` (pl. `Új`, `Jó`, `Használt`)
+- `Mennyiseg` (Darbaszám az adott minőségből)
+
+### 5.4. RuhaKiBe
 - `RuhaKiBeID` (PK)
 - `DolgozoID` (FK → Dolgozok)
-- `RuhaID` (FK → Ruhak)
+- `Cikkszam` (FK → Ruhak)
 - `KiadasDatum`
 - `VisszaDatum` (NULL, amíg nincs visszavéve)
-- `Indok` (kiadás indoka / megjegyzés, pl. „új belépő”, „csere”, „pótlás”)
+- `Indok` (kiadás indoka / megjegyzés)
 - `Mennyiseg`
 - `RuhaMinoseg` (visszavételkor rögzített minőség)
 
-### 5.4. Rendelesek
+### 5.5. Rendelesek
 - `RendelesID` (PK)
-- `RuhaID` (FK → Ruhak)
+- `Cikkszam` (FK → Ruhak)
 - `RDatum`
 - `Mennyiseg`
 - `Statusz` (`Leadva`, `Teljesítve`, `Lemondva`)
