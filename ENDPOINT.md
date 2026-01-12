@@ -11,7 +11,7 @@
 | Rendelések | 9 | `/api/rendelesek` |
 | Dashboard | 3 | `/api/dashboard` |
 | Jelentések | 4 | `/api/reports` |
-| **Összesen** | **44** | |
+| **Összesen** | **45** | |
 
 ---
 
@@ -55,11 +55,12 @@
 |:-------:|:--------|:-------|:---:|
 | GET | `/api/ruhak` | Készlet listázása | 👥 👑 |
 | GET | `/api/ruhak/search` | Keresés (query: `q`) | 👥 👑 |
+| GET | `/api/ruhak/options` | Lehetőségek listázása (szín, fajta, méret) | 👥 👑 |
 | GET | `/api/ruhak/by-cikkszam/:cikkszam` | Ruhacikk cikkszám alapján | 👥 👑 |
 | GET | `/api/ruhak/:ruhaId` | Egy ruhacikk részletei | 👥 👑 |
 | GET | `/api/ruhak/:ruhaId/history` | Ruhacikk kiadási története | 👥 👑 |
 | GET | `/api/ruhak/:ruhaId/active` | Ruhacikkből kint lévő kiadások | 👥 👑 |
-| POST | `/api/ruhak` | Új ruhacikk felvétele | 👑 |
+| POST | `/api/ruhak` | Új ruhacikk felvétele (Cikkszám generálható) | 👑 |
 | PATCH | `/api/ruhak/:ruhaId` | Ruhacikk módosítása | 👑 |
 | DELETE | `/api/ruhak/:ruhaId` | Ruhacikk törlése | 👑 |
 

@@ -10,7 +10,7 @@ module.exports = (sequelize) => {
       Szin: { type: DataTypes.STRING, allowNull: false },
       Meret: { type: DataTypes.STRING, allowNull: false },
       Mennyiseg: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
-      Minoseg: { type: DataTypes.STRING, allowNull: true },
+      Minoseg: { type: DataTypes.STRING, allowNull: false, defaultValue: "Új" },
     },
     {
       tableName: "Ruhak",

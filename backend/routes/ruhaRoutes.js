@@ -15,6 +15,9 @@ router.get("/", requireRole(ROLES.Manager), controller.list);
 // Keresés q paraméterrel
 router.get("/search", requireRole(ROLES.Manager), controller.search);
 
+// Lehetőségek listázása (szín, fajta, méret)
+router.get("/options", requireRole(ROLES.Manager), controller.getOptions);
+
 // Cikkszám alapú keresés
 router.get("/by-cikkszam/:cikkszam", requireRole(ROLES.Manager), controller.getByCikkszam);
 

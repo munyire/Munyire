@@ -1,5 +1,13 @@
 const ruhaService = require("../services/ruhaService");
 
+async function getOptions(req, res, next) {
+  try {
+    res.json(await ruhaService.getOptions());
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function list(req, res, next) {
   try {
     res.json(await ruhaService.list());
@@ -60,6 +68,9 @@ async function create(req, res, next) {
     const created = await ruhaService.create(req.body);
     res.status(201).json(created);
   } catch (err) {
+    if (err.code === "DUPLICATE_ITEM") {
+      return res.status(409).json({ error: "Duplicate item: This clothing item already exists." });
+    }
     next(err);
   }
 }
@@ -84,6 +95,7 @@ async function remove(req, res, next) {
 }
 
 module.exports = {
+  getOptions,
   list,
   search,
   get,

@@ -1,5 +1,5 @@
 @host = http://localhost:3000
-@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY3ODY2ODMwLCJleHAiOjE3Njc4OTU2MzB9.Dzsq8Ak5qeu06wZLPUX5j531Nnar65IC1KVeDwtK1M0
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY4MjAyNzAwLCJleHAiOjE3NjgyMzE1MDB9.bTBK53Ckec6uLMckC3VoCDJNEdnFQj7TeQDVscMy800
 @managerToken = {{managerToken}}
 @userToken = {{userToken}}
 
@@ -94,6 +94,10 @@ Authorization: Bearer {{adminToken}}
 GET {{host}}/api/ruhak/search?q=Nadrag
 Authorization: Bearer {{adminToken}}
 
+### 2/B. GET - Lehetőségek listázása (szín, fajta, méret) (👥 👑)
+GET {{host}}/api/ruhak/options
+Authorization: Bearer {{adminToken}}
+
 ### 3. GET - Ruhacikk cikkszám alapján (👥 👑)
 GET {{host}}/api/ruhak/by-cikkszam/{{cikkszam}}
 Authorization: Bearer {{adminToken}}
@@ -110,7 +114,21 @@ Authorization: Bearer {{adminToken}}
 GET {{host}}/api/ruhak/{{ruhaId}}/active
 Authorization: Bearer {{adminToken}}
 
-### 7. POST - Új ruhacikk felvétele (👑)
+
+### 7. POST - Új ruhacikk felvétele (Cikkszám nélkül - automata generálás) (👑)
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "Fajta": "Polo",
+  "Szin": "Zold",
+  "Meret": "L",
+  "Mennyiseg": 50,
+  "Minoseg": "Uj"
+}
+
+### 7/B. POST - Új ruhacikk felvétele (Manuális Cikkszámmal) (👑)
 POST {{host}}/api/ruhak
 Content-Type: application/json
 Authorization: Bearer {{adminToken}}
