@@ -87,29 +87,31 @@ Az adatbázis SQLite alapú, Sequelize ORM kezeli.
 - `JelszoHash` (bcrypt)
 
 ### 5.2. Ruhak
-- `RuhaID` (PK)
-- `Cikkszam` (**egyedi** cikkszám / azonosító)
+- `Cikkszam` (PK, 7-jegyű egész szám)
 - `Fajta`
 - `Szin`
 - `Meret`
-- `Mennyiseg` (készlet)
-- `Minoseg` (opcionális: `Uj`, `Jo`, `Szakadt`)
+- (Készlet és minőség a Raktar táblában)
 
-Megjegyzés: 1 sor egy „ruhacikk” (pl. fekete M-es nadrág), nem egyedi darab.
+### 5.3. Raktar (Készlet)
+- `RaktarID` (PK)
+- `Cikkszam` (FK → Ruhak)
+- `Minoseg` (pl. `Új`, `Jó`, `Használt`)
+- `Mennyiseg`
 
-### 5.3. RuhaKiBe
+### 5.4. RuhaKiBe
 - `RuhaKiBeID` (PK)
 - `DolgozoID` (FK → Dolgozok)
-- `RuhaID` (FK → Ruhak)
+- `Cikkszam` (FK → Ruhak)
 - `KiadasDatum`
 - `VisszaDatum` (NULL, amíg nincs visszavéve)
-- `Indok` (kiadás indoka / megjegyzés, pl. „új belépő”, „csere”, „pótlás”)
+- `Indok`
 - `Mennyiseg`
 - `RuhaMinoseg` (visszavételkor rögzített minőség)
 
-### 5.4. Rendelesek
+### 5.5. Rendelesek
 - `RendelesID` (PK)
-- `RuhaID` (FK → Ruhak)
+- `Cikkszam` (FK → Ruhak)
 - `RDatum`
 - `Mennyiseg`
 - `Statusz` (`Leadva`, `Teljesítve`, `Lemondva`)
@@ -143,4 +145,14 @@ Megjegyzés: 1 sor egy „ruhacikk” (pl. fekete M-es nadrág), nem egyedi dara
 ```bash
 cd backend
 npm install
-npm start
+npm test # Tesztek futtatása
+npm run dev # Fejlesztői szerver indítása
+```
+
+## 9. Frontend futtatás (terv)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
