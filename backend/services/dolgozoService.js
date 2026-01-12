@@ -6,6 +6,10 @@ async function list() {
   return dolgozoRepo.findAll();
 }
 
+async function listNames() {
+  return dolgozoRepo.findAllNames();
+}
+
 async function get(id) {
   return dolgozoRepo.findById(id);
 }
@@ -51,6 +55,7 @@ async function listWithActiveItems() {
 
 module.exports = {
   list,
+  listNames,
   get,
   create,
   update,

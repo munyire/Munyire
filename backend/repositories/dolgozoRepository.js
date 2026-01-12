@@ -12,6 +12,13 @@ async function findAll() {
   return models.Dolgozo.findAll();
 }
 
+async function findAllNames() {
+  return models.Dolgozo.findAll({
+    attributes: ["DolgozoID", "DNev"],
+    order: [["DNev", "ASC"]],
+  });
+}
+
 async function create(data) {
   return models.Dolgozo.create(data);
 }
@@ -27,4 +34,4 @@ async function remove(id) {
   return models.Dolgozo.destroy({ where: { DolgozoID: id } });
 }
 
-module.exports = { findById, findByUsername, findAll, create, update, remove };
+module.exports = { findById, findByUsername, findAll, findAllNames, create, update, remove };

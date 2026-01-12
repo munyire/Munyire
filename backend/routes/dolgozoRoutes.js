@@ -13,6 +13,9 @@ router.use(auth);
 // Összes dolgozó (Manager/Admin)
 router.get("/", requireRole(ROLES.Manager), controller.list);
 
+// Összes dolgozó neve (Frontend dropdownokhoz - Manager/Admin)
+router.get("/names", requireRole(ROLES.Manager), controller.listNames);
+
 // Egy dolgozó adatai (saját vagy Manager/Admin)
 router.get("/:dolgozoId", requireSelfOrRole({ paramKey: "dolgozoId", role: ROLES.Manager }), controller.get);
 

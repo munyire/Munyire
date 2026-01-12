@@ -36,7 +36,9 @@ const testData = {
   managerToken: null,
   dolgozoToken: null,
   dolgozoId: null,
+  managerId: null,
   ruhaId: null,
+  skuRuhaId: null,
   ruhaKiBeId: null,
   rendelesId: null,
 };
@@ -203,6 +205,7 @@ async function testAuthRegister() {
     assert(loginRes.status === 200, 'New manager can login');
     if (loginRes.data.token) {
       testData.managerToken = loginRes.data.token;
+      testData.managerId = res.data.id;
     }
   } catch (error) {
     assert(false, `Manager registration failed: ${error.message}`);
@@ -303,6 +306,20 @@ async function testDolgozok() {
   } catch (error) {
     assert(false, `Authorization check failed: ${error.message}`);
   }
+
+  // Test employee names list
+  logGroup('Dolgozók - List Names');
+  try {
+    const res = await request('GET', '/api/dolgozok/names', null, testData.managerToken);
+    assert(res.status === 200, 'List names returns 200');
+    assert(Array.isArray(res.data), 'List names returns array');
+    if (res.data.length > 0) {
+      assert(res.data[0].DNev !== undefined, 'Item has DNev');
+      assert(res.data[0].Jelszo === undefined, 'Item does NOT have Jelszo');
+    }
+  } catch (error) {
+    assert(false, `List names failed: ${error.message}`);
+  }
 }
 
 /**
@@ -311,9 +328,8 @@ async function testDolgozok() {
 async function testRuhak() {
   logGroup('Ruhák - Create');
 
-  const timestamp = Date.now();
+
   const newRuha = {
-    Cikkszam: `TEST-${timestamp}`,
     Fajta: 'Munkaruha',
     Szin: 'Kék',
     Meret: 'L',
@@ -375,6 +391,76 @@ async function testRuhak() {
       assert(false, `Update ruha failed: ${error.message}`);
     }
   }
+
+  // Test metadata options
+  logGroup('Ruhák - Metadata Options');
+  try {
+    const res = await request('GET', '/api/ruhak/options', null, testData.managerToken);
+    assert(res.status === 200, 'Get options returns 200');
+    assert(Array.isArray(res.data.types), 'Options contains types array');
+    assert(Array.isArray(res.data.colors), 'Options contains colors array');
+  } catch (error) {
+    assert(false, `Get options failed: ${error.message}`);
+  }
+}
+
+/**
+ * Test: Complex SKU Logic and Constraints
+ */
+async function testSkuAndDuplicates() {
+  logGroup('SKU Generation & Duplicate Prevention');
+
+  const baseRuha = {
+    Fajta: 'TESZT-Póló',
+    Szin: "Fehér",
+    Meret: "XL",
+    Minoseg: "Új",
+    Mennyiseg: 5
+  };
+
+  // 1. Automatic SKU Generation
+  let firstSku = null;
+  try {
+    const res = await request('POST', '/api/ruhak', baseRuha, testData.adminToken);
+    assert(res.status === 201, 'Create auto-SKU Item 1 returns 201');
+    assert(res.data.Cikkszam && res.data.Cikkszam.startsWith("TES-FEH-XL-UJ"), 'Generated SKU follows pattern');
+    firstSku = res.data.Cikkszam;
+    if (res.data.RuhaID) {
+      testData.skuRuhaId = res.data.RuhaID;
+    }
+  } catch (error) {
+    assert(false, `Auto-SKU Item 1 failed: ${error.message}`);
+  }
+
+  // 2. Duplicate Prevention
+  try {
+    const res = await request('POST', '/api/ruhak', baseRuha, testData.adminToken);
+    assert(res.status === 409, 'Duplicate creation returns 409 Conflict');
+  } catch (error) {
+    assert(false, `Duplicate check failed: ${error.message}`);
+  }
+
+  // 3. Different Property (Sequence Check)
+  // To test sequence, we'd need another item with same prefix but DIFFERENT unique constraint... 
+  // Wait, unique constraint is on (Fajta, Szin, Meret, Minoseg).
+  // So we CANNOT create another item with same prefix "TES-FEH-XL-UJ" to test sequence "0002" unless we delete the first one?
+  // OR we rely on the fact that if we change one property, the prefix changes. 
+  // Actually, the previous implementation allowed same attributes? 
+  // AH! The requirement "Ne lehessen két ruha ugyanaz a sor" means we CANNOT have two rows with same attributes.
+  // So sequential SKU generation for EXACT SAME attributes is now impossible by design.
+  // Sequential generation is still useful if we manually deleted one, OR if the Prefix is same but other attrs differ?
+  // But Prefix depends on ALL attributes (Fajta, Szin, Meret, Minoseg).
+  // So uniqueness of Prefix implies uniqueness of Attributes.
+  // Thus, sequential generation (0002) creates a dilemma: We can never reach 0002 for the same prefix because that would imply duplicate attributes!
+  // Unless... we have a situation where normalization produces same prefix for different inputs? 
+  // E.g. "Abc" -> "ABC", "aBc" -> "ABC". Database might treat them as different if case sensitive?
+  // But normalization handles that. 
+  // So practically, Cikkszam will always end in -0001 for unique combinations!
+  // UNLESS Minoseg default usage?
+  // If I have "Polo", "Red", "L", "New" -> POL-RED-L-NEW-0001.
+  // I cannot create another "Polo", "Red", "L", "New".
+  // So I can't test 0002 easily without deleting. 
+  // Let's verify Duplicate Prevention primarily.
 }
 
 /**
@@ -586,6 +672,71 @@ async function testReports() {
 }
 
 /**
+ * Cleanup created data
+ */
+async function cleanup() {
+  logSection('CLEANUP');
+
+  // 1. Delete Order
+  if (testData.rendelesId) {
+    try {
+      const res = await request('DELETE', `/api/rendelesek/${testData.rendelesId}`, null, testData.adminToken);
+      if (res.status === 204 || res.status === 200) {
+        console.log(`${colors.green}✓${colors.reset} Order deleted`);
+      } else {
+        console.log(`${colors.red}✗${colors.reset} Failed to delete order: ${res.status}`);
+      }
+    } catch (e) {
+      console.log(`${colors.red}✗${colors.reset} Error deleting order: ${e.message}`);
+    }
+  }
+
+  // 2. Delete Transaction
+  if (testData.ruhaKiBeId) {
+    try {
+      const res = await request('DELETE', `/api/ruhakibe/${testData.ruhaKiBeId}`, null, testData.adminToken);
+      if (res.status === 204 || res.status === 200) {
+        console.log(`${colors.green}✓${colors.reset} Transaction deleted`);
+      } else {
+        console.log(`${colors.red}✗${colors.reset} Failed to delete transaction: ${res.status}`);
+      }
+    } catch (e) {
+      console.log(`${colors.red}✗${colors.reset} Error deleting transaction: ${e.message}`);
+    }
+  }
+
+  // 3. Delete Clothes
+  const clothesToDelete = [testData.ruhaId, testData.skuRuhaId].filter(id => id);
+  for (const id of clothesToDelete) {
+    try {
+      const res = await request('DELETE', `/api/ruhak/${id}`, null, testData.adminToken);
+      if (res.status === 204 || res.status === 200) {
+        console.log(`${colors.green}✓${colors.reset} Clothing item ${id} deleted`);
+      } else {
+        console.log(`${colors.red}✗${colors.reset} Failed to delete clothing ${id}: ${res.status}`);
+      }
+    } catch (e) {
+      console.log(`${colors.red}✗${colors.reset} Error deleting clothing ${id}: ${e.message}`);
+    }
+  }
+
+  // 4. Delete Users
+  const usersToDelete = [testData.dolgozoId, testData.managerId].filter(id => id);
+  for (const id of usersToDelete) {
+    try {
+      const res = await request('DELETE', `/api/dolgozok/${id}`, null, testData.adminToken);
+      if (res.status === 204 || res.status === 200) {
+        console.log(`${colors.green}✓${colors.reset} User ${id} deleted`);
+      } else {
+        console.log(`${colors.red}✗${colors.reset} Failed to delete user ${id}: ${res.status}`);
+      }
+    } catch (e) {
+      console.log(`${colors.red}✗${colors.reset} Error deleting user ${id}: ${e.message}`);
+    }
+  }
+}
+
+/**
  * Print test results
  */
 function printResults() {
@@ -639,6 +790,7 @@ ${colors.reset}`);
 
     logSection('RUHÁK (CLOTHING) TESTS');
     await testRuhak();
+    await testSkuAndDuplicates();
 
     logSection('RUHAKIBE (TRANSACTIONS) TESTS');
     await testRuhaKiBe();
@@ -654,6 +806,8 @@ ${colors.reset}`);
 
   } catch (error) {
     console.error(`${colors.red}Fatal error during testing:${colors.reset}`, error);
+  } finally {
+    await cleanup();
   }
 
   printResults();

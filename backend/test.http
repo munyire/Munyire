@@ -51,6 +51,10 @@ Authorization: Bearer {{adminToken}}
 GET {{host}}/api/dolgozok
 Authorization: Bearer {{adminToken}}
 
+### 1/B. GET - Összes dolgozó neve (Dropdown) (👥 👑)
+GET {{host}}/api/dolgozok/names
+Authorization: Bearer {{adminToken}}
+
 ### 2. GET - Egy dolgozó adatai (👤 👥 👑)
 GET {{host}}/api/dolgozok/{{dolgozoId}}
 Authorization: Bearer {{adminToken}}

@@ -11,7 +11,7 @@
 | Rendelések | 9 | `/api/rendelesek` |
 | Dashboard | 3 | `/api/dashboard` |
 | Jelentések | 4 | `/api/reports` |
-| **Összesen** | **45** | |
+| **Összesen** | **46** | |
 
 ---
 
@@ -40,6 +40,7 @@
 | Metódus | Útvonal | Leírás | Jog |
 |:-------:|:--------|:-------|:---:|
 | GET | `/api/dolgozok` | Összes dolgozó listázása | 👥 👑 |
+| GET | `/api/dolgozok/names` | Összes dolgozó neve (dropdown) | 👥 👑 |
 | GET | `/api/dolgozok/:dolgozoId` | Egy dolgozó adatai | 👤 👥 👑 |
 | PATCH | `/api/dolgozok/:dolgozoId` | Dolgozó módosítása | 👑 |
 | DELETE | `/api/dolgozok/:dolgozoId` | Dolgozó törlése | 👑 |

@@ -9,6 +9,15 @@ async function list(req, res, next) {
   }
 }
 
+async function listNames(req, res, next) {
+  try {
+    const items = await dolgozoService.listNames();
+    res.json(items);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function get(req, res, next) {
   try {
     const item = await dolgozoService.get(req.params.dolgozoId);
@@ -76,6 +85,7 @@ async function listWithActiveItems(req, res, next) {
 
 module.exports = {
   list,
+  listNames,
   get,
   create,
   update,
