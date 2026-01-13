@@ -49,13 +49,13 @@ onMounted(() => {
 <template>
   <div class="dashboard-container w-full">
     <!-- Header Card -->
-    <div class="header-card mb-24 p-10 shadow-xl bg-white rounded-2xl flex flex-col items-center justify-center text-center">
-      <h1 class="m-0 text-6xl font-bold text-gray-900">Áttekintés</h1>
-      <p class="text-muted m-0 text-2xl mt-4 mb-4">Rendszerstatisztikák és aktivitás</p>
+    <div class="header-card p-14 shadow-xl bg-white rounded-[2rem] flex flex-col items-center justify-center text-center">
+      <h1 class="m-0 text-8xl font-black text-gray-900 tracking-tighter leading-none">Áttekintés</h1>
+      <p class="text-muted m-0 text-4xl mt-8 font-semibold">Rendszerstatisztikák és aktivitás</p>
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-grid gap-10 mb-16">
+    <div class="stats-grid mt-5">
       <!-- Hero Card: Workers (Blue) -->
       <div class="stat-card hero-blue p-10">
         <div class="flex justify-between items-start mb-8">
@@ -122,9 +122,9 @@ onMounted(() => {
     </div>
 
 
-    <div class="content-grid gap-10">
+    <div class="content-grid mt-5">
       <!-- Low Stock Section -->
-      <div class="card bg-white rounded-3xl shadow-sm p-8" style="min-height: 500px;">
+      <div class="card bg-white rounded-[2rem] shadow-sm p-10 flex flex-col" style="min-height: 486px;">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-semibold m-0 flex items-center gap-3">
             <AlertTriangle size="28" class="text-amber-500" />
@@ -161,7 +161,7 @@ onMounted(() => {
       </div>
 
       <!-- Recent Activity Section -->
-      <div class="card bg-white rounded-3xl shadow-sm p-8" style="min-height: 500px;">
+      <div class="card bg-white rounded-[2rem] shadow-sm p-10 flex flex-col" style="min-height: 430px;">
          <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-semibold m-0 flex items-center gap-3">
             <Activity size="28" class="text-blue-500" />
@@ -196,22 +196,33 @@ onMounted(() => {
 
 <style scoped>
 .dashboard-container {
-  width: 100%;
+  padding: 12px 12px 12px 0; /* Match sidebar's right margin gap */
+  width: 100% !important;
+  display: flex;
+  flex-direction: column;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2.5rem;
-  margin-bottom: 4rem;
-  width: 100%;
+  grid-template-columns: repeat(4, 1fr); /* Force 4 columns on large screens */
+  gap: 12px;
+  margin-bottom: 12px;
+  width: 100% !important;
 }
 
 .content-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2.5rem;
-  width: 100%;
+  grid-template-columns: repeat(2, 1fr); /* Force 2 columns */
+  gap: 12px;
+  width: 100% !important;
+}
+
+.header-card {
+  background-color: white;
+  border-radius: 2rem;
+  margin-bottom: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100% !important;
 }
 
 @media (min-width: 768px) {
@@ -268,13 +279,6 @@ onMounted(() => {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   color: white;
   border: none;
-}
-
-.header-card {
-  background-color: white;
-  border-radius: 1rem;
-  /* Padding set in template inline or utility, but can reinforce here */
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .icon-circle {

@@ -102,15 +102,17 @@ onMounted(fetchClothes);
 </script>
 
 <template>
-  <div class="inventory-view">
-    <div class="header flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-      <div>
-        <h1>Készlet</h1>
-        <p class="text-muted">Raktárkészlet kezelése</p>
-      </div>
-      
-      <button @click="openAddModal" class="btn btn-primary">
-        <Plus size="20" />
+  <div class="inventory-container w-full">
+    <!-- Header Card -->
+    <div class="header-card p-14 shadow-xl bg-white rounded-[2rem] flex flex-col items-center justify-center text-center">
+      <h1 class="m-0 text-8xl font-black text-gray-900 tracking-tighter leading-none">Készlet</h1>
+      <p class="text-muted m-0 text-4xl mt-8 font-semibold">Raktárkészlet kezelése</p>
+    </div>
+
+    <!-- Actions Row -->
+    <div class="actions-row flex justify-end mt-5 mb-5">
+      <button @click="openAddModal" class="btn btn-primary px-8 py-4 text-lg font-bold shadow-lg">
+        <Plus size="24" />
         Új termék
       </button>
     </div>
@@ -127,43 +129,43 @@ onMounted(fetchClothes);
       </div>
     </div>
 
-    <div class="card overflow-hidden">
+    <div class="card bg-white rounded-[2rem] shadow-sm p-8 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead>
-            <tr class="bg-gray-50 text-left text-sm font-medium text-muted border-b border-gray-100">
-              <th class="px-6 py-4">Cikkszám</th>
-              <th class="px-6 py-4">Fajta</th>
-              <th class="px-6 py-4">Méret</th>
-              <th class="px-6 py-4">Szín</th>
-              <th class="px-6 py-4 text-center">Minőség</th>
-              <th class="px-6 py-4 text-right">Mennyiség</th>
-              <th class="px-6 py-4 text-right">Műveletek</th>
+            <tr class="bg-gray-50 text-sm font-semibold text-muted border-b border-gray-100">
+              <th class="px-4 py-5 text-center">Cikkszám</th>
+              <th class="px-4 py-5 text-center">Fajta</th>
+              <th class="px-4 py-5 text-center">Méret</th>
+              <th class="px-4 py-5 text-center">Szín</th>
+              <th class="px-4 py-5 text-center">Minőség</th>
+              <th class="px-4 py-5 text-center">Mennyiség</th>
+              <th class="px-4 py-5 text-center">Műveletek</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
             <tr v-for="item in filteredClothes" :key="item.RuhaID" class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 font-medium">{{ item.Cikkszam }}</td>
-              <td class="px-6 py-4">{{ item.Fajta }}</td>
-              <td class="px-6 py-4">{{ item.Meret }}</td>
-              <td class="px-6 py-4">{{ item.Szin }}</td>
-              <td class="px-6 py-4 text-center">
+              <td class="px-4 py-5 text-center font-medium">{{ item.Cikkszam }}</td>
+              <td class="px-4 py-5 text-center">{{ item.Fajta }}</td>
+              <td class="px-4 py-5 text-center">{{ item.Meret }}</td>
+              <td class="px-4 py-5 text-center">{{ item.Szin }}</td>
+              <td class="px-4 py-5 text-center">
                 <span class="badge" :class="{
                   'bg-green-100 text-green-700': item.Minoseg === 'Uj',
                   'bg-blue-100 text-blue-700': item.Minoseg === 'Jo',
                   'bg-red-100 text-red-700': item.Minoseg === 'Szakadt'
                 }">{{ item.Minoseg }}</span>
               </td>
-              <td class="px-6 py-4 text-right font-medium">
+              <td class="px-4 py-5 text-center font-bold">
                 {{ item.Mennyiseg }} db
               </td>
-              <td class="px-6 py-4 text-right">
-                <div class="flex justify-end gap-2">
-                  <button @click="openEditModal(item)" class="p-1 text-blue-600 hover:bg-blue-50 rounded">
-                    <Edit size="18" />
+              <td class="px-4 py-5 text-center">
+                <div class="inline-flex items-center gap-4">
+                  <button @click="openEditModal(item)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Szerkesztés">
+                    <Edit size="20" />
                   </button>
-                  <button @click="deleteItem(item.RuhaID)" class="p-1 text-red-600 hover:bg-red-50 rounded">
-                    <Trash2 size="18" />
+                  <button @click="deleteItem(item.RuhaID)" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Törlés">
+                    <Trash2 size="20" />
                   </button>
                 </div>
               </td>
@@ -223,6 +225,21 @@ onMounted(fetchClothes);
 </template>
 
 <style scoped>
+.inventory-container {
+  padding: 12px 12px 12px 0;
+  width: 100% !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-card {
+  background-color: white;
+  border-radius: 2rem;
+  margin-bottom: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100% !important;
+}
+
 .badge {
   padding: 0.25rem 0.6rem;
   border-radius: 9999px;

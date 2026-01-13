@@ -110,27 +110,30 @@ onMounted(fetchWorkers);
 </script>
 
 <template>
-  <div class="workers-view">
-    <div class="header flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-      <div>
-        <h1>Dolgozók</h1>
-        <p class="text-muted">Munkavállalók kezelése</p>
-      </div>
-      
-      <button @click="openAddModal" class="btn btn-primary">
-        <Plus size="20" />
+  <div class="workers-container w-full">
+    <!-- Centered Header Card -->
+    <div class="header-card p-14 shadow-xl bg-white rounded-[2rem] flex flex-col items-center justify-center text-center">
+      <h1 class="text-8xl font-black tracking-tighter leading-none text-gray-900 m-0">Dolgozók</h1>
+      <p class="text-4xl mt-8 font-semibold text-gray-500">Munkavállalók központi kezelése</p>
+    </div>
+
+    <!-- Add Button Row (Above search like in Inventory) -->
+    <div class="actions-row flex justify-end mb-[12px]">
+      <button @click="openAddModal" class="btn btn-primary px-8 py-4 text-lg font-bold shadow-lg">
+        <Plus size="24" />
         Új dolgozó
       </button>
     </div>
 
-    <div class="controls flex gap-4 mb-6">
+    <!-- Search Row -->
+    <div class="controls flex gap-4 mb-[12px]">
       <div class="search-box relative flex-1 max-w-sm">
         <Search size="18" class="absolute left-3 top-3 text-muted" />
         <input 
           v-model="searchQuery" 
           type="text" 
           placeholder="Keresés név vagy email alapján..." 
-          class="pl-10"
+          class="pl-10 h-10 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
         />
       </div>
     </div>
@@ -139,36 +142,36 @@ onMounted(fetchWorkers);
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead>
-            <tr class="bg-gray-50 text-left text-sm font-medium text-muted border-b border-gray-100">
-              <th class="px-6 py-4">Név</th>
-              <th class="px-6 py-4">Email / Telefon</th>
-              <th class="px-6 py-4">Munkakör</th>
-              <th class="px-6 py-4">Szerepkör</th>
-              <th class="px-6 py-4 text-right">Műveletek</th>
+            <tr class="bg-gray-50 text-sm font-semibold text-muted border-b border-gray-100">
+              <th class="px-6 py-5 text-center">Név</th>
+              <th class="px-6 py-5 text-center">Elérhetőség</th>
+              <th class="px-6 py-5 text-center">Munkakör</th>
+              <th class="px-6 py-5 text-center">Szerepkör</th>
+              <th class="px-6 py-5 text-center">Műveletek</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
-            <tr v-for="worker in filteredWorkers" :key="worker.DolgozoID" class="hover:bg-gray-50">
-              <td class="px-6 py-4 font-medium">{{ worker.DNev }}</td>
-              <td class="px-6 py-4 text-sm">
-                <div>{{ worker.Email }}</div>
-                <div class="text-muted">{{ worker.Telefonszam }}</div>
+            <tr v-for="worker in filteredWorkers" :key="worker.DolgozoID" class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-5 font-bold text-center text-lg text-gray-900 border-r border-gray-50/50">{{ worker.DNev }}</td>
+              <td class="px-6 py-5 text-center border-r border-gray-50/50">
+                <div class="font-medium text-gray-700">{{ worker.Email }}</div>
+                <div class="text-sm text-gray-400 mt-1">{{ worker.Telefonszam }}</div>
               </td>
-              <td class="px-6 py-4">{{ worker.Munkakor }}</td>
-              <td class="px-6 py-4">
-                 <span class="badge" :class="{
+              <td class="px-6 py-5 text-center font-medium text-gray-600 border-r border-gray-50/50">{{ worker.Munkakor }}</td>
+              <td class="px-6 py-5 text-center border-r border-gray-50/50">
+                 <span class="px-4 py-2 rounded-full text-sm font-bold shadow-sm inline-block min-w-[100px]" :class="{
                   'bg-purple-100 text-purple-700': worker.Szerepkor === 'Admin',
-                  'bg-blue-100 text-blue-700': worker.Szerepkor === 'Manager',
-                  'bg-gray-100 text-gray-700': worker.Szerepkor === 'Dolgozo'
-                }">{{ worker.Szerepkor }}</span>
+                  'bg-orange-100 text-orange-700': worker.Szerepkor === 'Manager',
+                  'bg-green-100 text-green-700': worker.Szerepkor === 'Dolgozo'
+                }">{{ worker.Szerepkor.toUpperCase() }}</span>
               </td>
-              <td class="px-6 py-4 text-right">
-                <div class="flex justify-end gap-2">
-                  <button @click="openEditModal(worker)" class="p-1 text-blue-600 hover:bg-blue-50 rounded">
-                    <Edit size="18" />
+              <td class="px-6 py-5 text-center">
+                <div class="inline-flex items-center gap-4">
+                  <button @click="openEditModal(worker)" class="p-3 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all hover:scale-110" title="Szerkesztés">
+                    <Edit size="22" />
                   </button>
-                  <button @click="deleteWorker(worker.DolgozoID)" class="p-1 text-red-600 hover:bg-red-50 rounded">
-                    <Trash2 size="18" />
+                  <button @click="deleteWorker(worker.DolgozoID)" class="p-3 text-rose-600 hover:bg-rose-50 rounded-xl transition-all hover:scale-110" title="Törlés">
+                    <Trash2 size="22" />
                   </button>
                 </div>
               </td>
@@ -237,16 +240,62 @@ onMounted(fetchWorkers);
 </template>
 
 <style scoped>
-.badge {
-  padding: 0.25rem 0.6rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+.workers-container {
+  padding: 12px 12px 12px 0;
+  width: 100% !important;
+  display: flex;
+  flex-direction: column;
 }
-.bg-purple-100 { background-color: #f3e8ff; }
-.text-purple-700 { color: #7e22ce; }
-.bg-blue-100 { background-color: #dbeafe; }
-.text-blue-700 { color: #1d4ed8; }
-.bg-gray-100 { background-color: #f3f4f6; }
-.text-gray-700 { color: #374151; }
+
+.header-card {
+  background-color: white;
+  border-radius: 2rem;
+  margin-bottom: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100% !important;
+}
+
+.card {
+  background-color: white;
+  border-radius: 2rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 2rem;
+}
+
+.search-box input {
+  outline: none;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background-color: #1e3a8a;
+  color: white;
+  border-radius: 1.5rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover {
+  background-color: #1e40af;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Role Specific Colors */
+.bg-purple-100 { background-color: #f3e8ff !important; }
+.text-purple-700 { color: #7e22ce !important; }
+
+.bg-orange-100 { background-color: #ffedd5 !important; }
+.text-orange-700 { color: #c2410c !important; }
+
+.bg-green-100 { background-color: #dcfce7 !important; }
+.text-green-700 { color: #15803d !important; }
 </style>
