@@ -25,8 +25,20 @@ A **frontend** a Munyire felhasználói felülete — egy SPA (Single Page Appli
 - `src/api/axios.js` – Axios példány, interceptorok (auth header, 401 kezelés)
 - `src/router/index.js` – útvonalak és `beforeEach` guard-ok (meta.roles)
 - `src/stores/auth.js` – beléptetés, token & user kezelés (Pinia)
-- `src/views/*` – oldalak (LoginView, DashboardView, InventoryView, MyClothesView, WorkersView stb.)
+- `src/views/` – oldalak:
+    - `LoginView.vue`: Bejelentkezés.
+    - `DashboardView.vue`: Statisztikák (Admin/Manager).
+    - `InventoryView.vue`: Készletkezelés (terméklista, új termék felvétele, törlés).
+    - `WorkersView.vue`: Dolgozók kezelése (új dolgozó regisztrációja, szerkesztés).
+    - `TransactionsView.vue`: Kiadás és Visszavétel kezelése.
+    - `OrdersView.vue`: Rendelések listázása és új rendelés leadása.
+    - `MyClothesView.vue`: Saját (dolgozónál lévő) ruhák listája.
 - `src/components/layout/Sidebar.vue` – navigációs sáv (szerepkör-alapú linkek)
+- `src/components/common/` – közös komponensek:
+    - `SearchableSelect.vue`: Kereshető legördülő lista (dolgozók/ruhák kiválasztásához).
+    - `BaseButton.vue`: Egységes stílusú gomb.
+    - `BaseInput.vue`: Egységes stílusú beviteli mező.
+- `src/components/ui/Modal.vue` – Általános modális ablak.
 
 ---
 
@@ -38,10 +50,7 @@ A **frontend** a Munyire felhasználói felülete — egy SPA (Single Page Appli
 - A felhasználói objektum eltárolása: `localStorage.user` (JSON).
 - Axios kérés-interceptor automatikusan hozzáfűzi az `Authorization: Bearer <token>` fejlécet.
 - 401 válasz esetén az interceptor törli a token/user értékeket és a router a bejelentkezésre irányít.
-
-A store (`src/stores/auth.js`) két fontos segédfüggvényt tartalmaz:
-- `getUserRole()` — visszaadja a szerepkört. Támogatja a backend által visszaadott `role` mezőt **és** a korábban használt `Szerepkor` mezőt (compatibility).
-- `normalizeUser()` — login és induláskor biztosítja, hogy a `user` objektum rendelkezzen `Szerepkor` mezővel (a `role`-ból másolva, ha szükséges). Ez megakadályozza, hogy a UI eltérő mezőnevek miatt rosszul jelenjen meg.
+- **Dolgozó regisztráció**: A `WorkersView` a `POST /api/auth/register` végpontot használja új felhasználó létrehozására, majd patch kéréssel frissíti a további adatokat.
 
 ---
 
@@ -51,15 +60,28 @@ A store (`src/stores/auth.js`) két fontos segédfüggvényt tartalmaz:
 - A `beforeEach` guard ellenőrzi:
   - ha az útvonal `requiresAuth` és nincs token → `/login`
   - ha az útvonal `meta.roles` és a felhasználó **nem** szerepel a listában → átirányít `/my-clothes` (vagy `/login` ha nem autentikált)
-- A menü (`Sidebar.vue`) csak a `Manager` és `Admin` szerepkör esetén mutatja a Dashboard/Készlet/Dolgozók linkeket; a `Saját Ruháim` mindig elérhető.
-
-Megjegyzés: ha egy felhasználó (pl. admin) a menüben csak a `Saját Ruháim`-ot látja, gyakori oka az, hogy a store `user` objektuma nem tartalmaz helyesen a szerepkört (pl. régi `Szerepkor` helyett `role` van), vagy a `localStorage` elavult — ilyenkor logout/újra login vagy a localStorage törlése megoldja a problémát. A kódban most normalizálás van bevezetve erre a hibára.
+- A menü (`Sidebar.vue`) dinamikusan jeleníti meg a linkeket:
+    - **Admin/Manager**: Dashboard, Készlet, Dolgozók, Kiadás/Visszavétel (`/transactions`), Rendelések (`/orders`).
+    - **Mindenki**: Saját Ruháim (`/my-clothes`) és Kijelentkezés.
 
 ---
 
-## 6. API proxy & fejlesztés
+## 6. API interakciók és Adatkezelés
 
-- `vite.config.js` beállításában a dev proxy `/api`-t továbbítja `http://localhost:3000`-ra — így fejlesztés közben a frontend ugyanabban a hostban hívhatja az API-t (CORS/host problémák elkerülése érdekében).
+- **Készlet (Inventory)**:
+    - A termékek (`Ruha`) listázása (`GET /ruhak`) magában foglalja a raktárkészlet (`Raktar`) adatait is.
+    - A frontend "kisimítja" (flatten) ezt a struktúrát, hogy a táblázatban megjelenítse a különböző minőségű (Új, Jó, stb.) készleteket.
+    - **Cikkszám generálás**: Új termék létrehozásakor (`POST /ruhak`) a cikkszám mező üresen marad, a backend automatikusan generálja.
+    - **Törlés**: A törlés (`DELETE /ruhak/:cikkszam`) a Cikkszám alapján történik.
+
+- **Tranzakciók (Transactions)**:
+    - **Kiadás**: `POST /api/ruhakibe` – A frontend a kiválasztott `DolgozoID`-t és `RuhaID`-t (ami a Cikkszam) küldi. Fontos: az értékeket számként (`Number()`) kell küldeni.
+    - **Visszavétel**: `PATCH /api/ruhakibe/:id` – A frontend bekéri a visszavételkori minőséget (pl. "Jó", "Szakadt").
+    - **Aktív lista**: `GET /api/ruhakibe/active` – A lista tartalmazza a beágyazott Dolgozó és Ruha objektumokat a nevek megjelenítéséhez.
+
+- **Rendelések (Orders)**:
+    - `GET /api/rendelesek` és `POST /api/rendelesek` a rendelések kezeléséhez.
+    - A "Teljesítés" (`POST /api/rendelesek/:id/complete`) gombbal véglegesíthető egy rendelés (beérkeztetés).
 
 ---
 
@@ -91,10 +113,15 @@ A `baseURL` Axios-ban relatív (`/api`) — a production környezetben az alkalm
 
 ## 9. Hibakeresési tippek (Gyakori problémák)
 
-- 400 Bad Request a loginnál: ellenőrizd, hogy a JSON request body megfelelő mezőket tartalmaz (`username` és `password`) és érvényes JSON-t küldesz.
-- 401 Unauthorized: token lejárt vagy hiányzik; ellenőrizd a `localStorage.token`-t és az Axios interceptort, illetve a backend `JWT_SECRET` és token lejárati beállításokat.
-- Menü nem jelenik az elvártaknak megfelelően: töröld a `localStorage.user`-t és jelentkezz be újra; ellenőrizd, hogy a `user` objektumban van-e `role` vagy `Szerepkor` mező.
-- CORS/Proxy probléma fejlesztés közben: ellenőrizd a `vite.config.js` `server.proxy` beállítást.
+- **400 Bad Request**:
+    - Ellenőrizd a payload típusait (pl. szám vs string). A backend szigorú validációt használ (pl. `issueValidator`).
+    - Készlet létrehozásnál a `Cikkszam` mezőnek hiányoznia kell a payload-ból (hogy auto-generált legyen), ne küldj üres stringet.
+- **Lista üres vagy hiányos adatok**:
+    - Ellenőrizd a backend válasz struktúráját (Network tab). Ha nested objektumok vannak (pl. `ruha.Raktars` vagy `issue.Dolgozo`), a frontendnek megfelelően kell hivatkoznia rájuk (`?.` operátor javasolt).
+- **401 Unauthorized**:
+    - Token lejárt vagy hiányzik. Logout és újbóli Login általában megoldja.
+- **UI elcsúszás**:
+    - A táblázatoknál (`overflow-x-auto`) és a konténereknél (`max-w-*`) ellenőrizd a CSS osztályokat. A Sidebar fix szélességű, a main content `flex-1` vagy `w-full` kell legyen megfelelő paddinggal.
 
 ---
 
@@ -111,9 +138,5 @@ A `baseURL` Axios-ban relatív (`/api`) — a production környezetben az alkalm
 - Axios: `frontend/src/api/axios.js`
 - Auth store: `frontend/src/stores/auth.js`
 - Router: `frontend/src/router/index.js`
-- Login view: `frontend/src/views/LoginView.vue`
+- Views: `frontend/src/views/`
 - Sidebar: `frontend/src/components/layout/Sidebar.vue`
-
----
-
-Ha szeretnéd, hozzáadok egy rövid szakaszt arról, hogyan írjunk Playwright E2E tesztet az UI automatikus ellenőrzéséhez (login + redirect + sidebar elemek ellenőrzése).
