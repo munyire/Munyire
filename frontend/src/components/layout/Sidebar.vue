@@ -7,7 +7,9 @@ import {
   Package, 
   Users, 
   Shirt, 
-  LogOut 
+  LogOut,
+  ArrowRightLeft,
+  ShoppingCart
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -58,6 +60,16 @@ const logout = () => {
         <router-link to="/workers" class="nav-item" :class="{ active: isActive('/workers') }">
           <Users size="22" />
           <span>Dolgozók</span>
+        </router-link>
+
+        <router-link to="/transactions" class="nav-item" :class="{ active: isActive('/transactions') }">
+          <ArrowRightLeft size="22" />
+          <span>Kiadás/Visszavétel</span>
+        </router-link>
+
+        <router-link to="/orders" class="nav-item" :class="{ active: isActive('/orders') }">
+          <ShoppingCart size="22" />
+          <span>Rendelések</span>
         </router-link>
       </template>
 

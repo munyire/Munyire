@@ -81,12 +81,34 @@ const saveWorker = async () => {
       const index = workers.value.findIndex(w => w.DolgozoID === form.value.DolgozoID);
       if (index !== -1) workers.value[index] = { ...workers.value[index], ...payload };
     } else {
-      const res = await api.post('/auth/register', payload); // Use register endpoint for new users? Or specific endpoint?
-      // Assuming /auth/register or a dedicated POST /dolgozok exists. POST /auth/register is in ENDPOINT.md
-      // But typically admin uses a user management endpoint. ENDPOINT says POST /auth/register is for "Új felhasználó regisztrálása" (Admin only).
-      // Let's use that.
+      // Map fields for /auth/register
+      const registerPayload = {
+        name: form.value.DNev,
+        email: form.value.Email,
+        username: form.value.FelhasznaloNev,
+        password: form.value.Jelszo,
+        role: form.value.Szerepkor
+      };
+
+      const res = await api.post('/auth/register', registerPayload);
+      const newUserId = res.data.id;
+
+      // Update remaining fields that register might have missed
+      const extraDetails = {
+        Telefonszam: form.value.Telefonszam,
+        Nem: form.value.Nem,
+        Munkakor: form.value.Munkakor
+      };
       
-      workers.value.push(res.data.user || { ...payload, DolgozoID: Date.now() });
+      // Update the rest of the details
+      await api.patch(`/dolgozok/${newUserId}`, extraDetails);
+
+      workers.value.push({ 
+        ...form.value, 
+        DolgozoID: newUserId,
+        // Ensure we don't store password in frontend list
+        Jelszo: undefined 
+      });
     }
     showModal.value = false;
   } catch (error) {

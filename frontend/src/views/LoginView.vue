@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
 import { Shirt, Mail, Key } from 'lucide-vue-next';
+import BaseButton from '../components/common/BaseButton.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -79,9 +80,9 @@ const handleLogin = async () => {
             {{ error }}
           </div>
 
-          <button type="submit" class="submit-btn" :disabled="loading">
-            {{ loading ? 'Bejelentkezés...' : 'Bejelentkezés' }}
-          </button>
+          <BaseButton type="submit" variant="primary" :loading="loading" class="full-width">
+            Bejelentkezés
+          </BaseButton>
         </form>
 
         <div class="footer-left">
@@ -254,27 +255,6 @@ input:focus {
   text-decoration: underline;
 }
 
-.submit-btn {
-  margin-top: 0.5rem;
-  padding: 0.875rem;
-  background-color: #1e40af;
-  color: white;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-.submit-btn:hover {
-  background-color: #1e3a8a;
-}
-
-.submit-btn:disabled {
-  background-color: #94a3b8;
-  cursor: not-allowed;
-}
 
 .error-message {
   color: #ef4444;
@@ -284,6 +264,7 @@ input:focus {
   background-color: #fef2f2;
   border-radius: 6px;
 }
+
 
 .image-side {
   flex: 1;
@@ -327,5 +308,10 @@ input:focus {
   .footer-left {
     margin-bottom: 0.5rem;
   }
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 0.5rem;
 }
 </style>

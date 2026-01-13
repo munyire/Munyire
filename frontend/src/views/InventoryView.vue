@@ -23,14 +23,37 @@ const form = ref({
   Meret: '',
   Szin: '',
   Mennyiseg: 0,
-  Minoseg: 'Uj'
+  Minoseg: 'Új'
 });
 
 const fetchClothes = async () => {
   loading.value = true;
   try {
     const response = await api.get('/ruhak');
-    clothes.value = response.data;
+    // Flatten Raktars into the list
+    const flattened = [];
+    if (response.data && Array.isArray(response.data)) {
+      response.data.forEach(ruha => {
+        if (ruha.Raktars && ruha.Raktars.length > 0) {
+          ruha.Raktars.forEach(raktar => {
+            flattened.push({
+              ...ruha,
+              Mennyiseg: raktar.Mennyiseg,
+              Minoseg: raktar.Minoseg,
+              // Keep original ID reference if needed, though Cikkszam is PK
+            });
+          });
+        } else {
+          // Listed item with no stock info (should rely on defaults)
+          flattened.push({
+            ...ruha,
+            Mennyiseg: 0,
+            Minoseg: 'Új'
+          });
+        }
+      });
+    }
+    clothes.value = flattened;
   } catch (error) {
     console.error('Error fetching clothes:', error);
   } finally {
@@ -56,7 +79,7 @@ const openAddModal = () => {
     Meret: '',
     Szin: '',
     Mennyiseg: 0,
-    Minoseg: 'Uj'
+    Minoseg: 'Új'
   };
   showModal.value = true;
 };
@@ -77,7 +100,10 @@ const saveItem = async () => {
       if (index !== -1) clothes.value[index] = { ...form.value };
     } else {
       // Create
-      const res = await api.post('/ruhak', form.value);
+      const payload = { ...form.value };
+      if (!payload.Cikkszam) delete payload.Cikkszam;
+      
+      const res = await api.post('/ruhak', payload);
       clothes.value.push(res.data || { ...form.value, RuhaID: Date.now() }); // fallback ID if mock
     }
     showModal.value = false;
@@ -87,11 +113,11 @@ const saveItem = async () => {
   }
 };
 
-const deleteItem = async (id) => {
+const deleteItem = async (cikkszam) => {
   if (!confirm('Biztosan törölni szeretné ezt az elemet?')) return;
   try {
-    await api.delete(`/ruhak/${id}`);
-    clothes.value = clothes.value.filter(c => c.RuhaID !== id);
+    await api.delete(`/ruhak/${cikkszam}`);
+    clothes.value = clothes.value.filter(c => c.Cikkszam !== cikkszam);
   } catch (error) {
     console.error('Error deleting item:', error);
     alert('Hiba történt a törlés során.');
@@ -151,8 +177,8 @@ onMounted(fetchClothes);
               <td class="px-4 py-5 text-center">{{ item.Szin }}</td>
               <td class="px-4 py-5 text-center">
                 <span class="badge" :class="{
-                  'bg-green-100 text-green-700': item.Minoseg === 'Uj',
-                  'bg-blue-100 text-blue-700': item.Minoseg === 'Jo',
+                  'bg-green-100 text-green-700': item.Minoseg === 'Új',
+                  'bg-blue-100 text-blue-700': item.Minoseg === 'Jó',
                   'bg-red-100 text-red-700': item.Minoseg === 'Szakadt'
                 }">{{ item.Minoseg }}</span>
               </td>
@@ -164,7 +190,7 @@ onMounted(fetchClothes);
                   <button @click="openEditModal(item)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Szerkesztés">
                     <Edit size="20" />
                   </button>
-                  <button @click="deleteItem(item.RuhaID)" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Törlés">
+                  <button @click="deleteItem(item.Cikkszam)" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Törlés">
                     <Trash2 size="20" />
                   </button>
                 </div>
@@ -184,7 +210,13 @@ onMounted(fetchClothes);
         <form @submit.prevent="saveItem" id="itemForm" class="flex flex-col gap-4">
           <div>
             <label class="block mb-1 text-sm font-medium">Cikkszám</label>
-            <input v-model="form.Cikkszam" required />
+            <input 
+              v-model="form.Cikkszam" 
+              :placeholder="isEditing ? '' : 'Automatikusan generálás...'" 
+              :disabled="true" 
+              class="bg-gray-100 cursor-not-allowed"
+            />
+            <p v-if="!isEditing" class="text-xs text-muted mt-1">A rendszer automatikusan generálja a cikkszámot.</p>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
@@ -209,8 +241,8 @@ onMounted(fetchClothes);
           <div>
             <label class="block mb-1 text-sm font-medium">Minőség</label>
             <select v-model="form.Minoseg">
-              <option value="Uj">Új</option>
-              <option value="Jo">Jó</option>
+              <option value="Új">Új</option>
+              <option value="Jó">Jó</option>
               <option value="Szakadt">Szakadt</option>
             </select>
           </div>

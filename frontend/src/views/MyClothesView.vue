@@ -1,19 +1,26 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '../api/axios';
+import { useAuthStore } from '../stores/auth';
 import { 
   Shirt, 
   Calendar, 
   AlertCircle 
 } from 'lucide-vue-next';
 
+const authStore = useAuthStore();
 const myItems = ref([]);
 const loading = ref(true);
 
 const fetchMyItems = async () => {
   loading.value = true;
   try {
-    const response = await api.get('/ruhakibe/mine');
+    const userId = authStore.user?.id || authStore.user?.DolgozoID; // Fallback
+    if (!userId) {
+      console.error('No user ID found');
+      return;
+    }
+    const response = await api.get(`/dolgozok/${userId}/ruhak/aktiv`);
     myItems.value = response.data;
   } catch (error) {
     console.error('Error fetching my items:', error);
