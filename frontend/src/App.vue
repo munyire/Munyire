@@ -8,11 +8,11 @@ const isGuest = computed(() => route.meta.guest === true);
 </script>
 
 <template>
-  <div class="app-container flex min-h-screen bg-slate-50">
+  <div class="app-layout">
     <Sidebar v-if="!isGuest" />
     
-    <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-      <div class="flex-1 overflow-auto p-8">
+    <main class="main-content" :class="{ 'is-guest': isGuest }">
+      <div class="content-wrapper" :class="{ 'no-padding': isGuest }">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
@@ -24,8 +24,30 @@ const isGuest = computed(() => route.meta.guest === true);
 </template>
 
 <style>
-.app-container {
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg);
   font-family: 'Inter', sans-serif;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.content-wrapper {
+  flex: 1;
+  overflow: auto;
+  padding: 2rem;
+}
+
+.content-wrapper.no-padding {
+  padding: 0;
 }
 
 .fade-enter-active,

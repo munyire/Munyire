@@ -25,40 +25,40 @@ const logout = () => {
 </script>
 
 <template>
-  <aside class="sidebar glass-panel flex flex-col h-screen">
-    <div class="logo-area p-6 flex items-center gap-3">
-      <div class="logo-icon bg-primary text-white p-2 rounded-lg">
+  <aside class="sidebar glass-panel">
+    <div class="sidebar-header">
+      <div class="logo-icon">
         <Shirt size="24" />
       </div>
-      <h2 class="text-xl font-bold m-0">Munyire</h2>
+      <h2 class="app-title">Munyire</h2>
     </div>
 
-    <nav class="flex-1 px-4 py-6 flex flex-col gap-2">
+    <nav class="sidebar-nav">
       <template v-if="['Manager', 'Admin'].includes(userRole)">
-        <router-link to="/dashboard" class="nav-item" :class="{ active: isActive('/dashboard') }">
+        <router-link to="/dashboard" class="nav-item" :class="{ active: isActive('/dashboard') }" data-testid="sidebar-dashboard-link">
           <LayoutDashboard size="20" />
           <span>Dashboard</span>
         </router-link>
 
-        <router-link to="/inventory" class="nav-item" :class="{ active: isActive('/inventory') }">
+        <router-link to="/inventory" class="nav-item" :class="{ active: isActive('/inventory') }" data-testid="sidebar-inventory-link">
           <Package size="20" />
           <span>Készlet</span>
         </router-link>
 
-        <router-link to="/workers" class="nav-item" :class="{ active: isActive('/workers') }">
+        <router-link to="/workers" class="nav-item" :class="{ active: isActive('/workers') }" data-testid="sidebar-workers-link">
           <Users size="20" />
           <span>Dolgozók</span>
         </router-link>
       </template>
 
-      <router-link to="/my-clothes" class="nav-item" :class="{ active: isActive('/my-clothes') }">
+      <router-link to="/my-clothes" class="nav-item" :class="{ active: isActive('/my-clothes') }" data-testid="sidebar-myclothes-link">
         <Shirt size="20" />
         <span>Saját Ruháim</span>
       </router-link>
     </nav>
 
-    <div class="p-4 border-t border-gray-200">
-      <button @click="logout" class="nav-item w-full text-red-600 hover:bg-red-50">
+    <div class="sidebar-footer">
+      <button @click="logout" class="nav-item logout-btn" data-testid="sidebar-logout-btn">
         <LogOut size="20" />
         <span>Kijelentkezés</span>
       </button>
@@ -71,15 +71,46 @@ const logout = () => {
   width: 260px;
   position: sticky;
   top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   border-right: 1px solid var(--color-border);
 }
 
-.logo-area {
+.sidebar-header {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   border-bottom: 1px solid var(--color-border);
 }
 
-.bg-primary {
+.logo-icon {
   background-color: var(--color-primary);
+  color: white;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: flex;
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .nav-item {
@@ -91,19 +122,29 @@ const logout = () => {
   color: var(--color-text-muted);
   font-weight: 500;
   transition: all 0.2s;
-  text-decoration: none;
+  background: transparent;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  text-align: left;
 }
 
 .nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: var(--color-surface-hover);
   color: var(--color-primary);
 }
 
 .nav-item.active {
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary-dark);
 }
 
-.text-red-600 { color: #dc2626; }
-.hover\:bg-red-50:hover { background-color: #fef2f2; }
+.logout-btn {
+  color: var(--color-danger);
+}
+
+.logout-btn:hover {
+  background-color: var(--color-danger-bg);
+  color: #991b1b;
+}
 </style>

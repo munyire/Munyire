@@ -14,22 +14,22 @@ defineEmits(['close']);
     <div v-if="show" class="modal-mask">
       <div class="modal-wrapper" @click.self="$emit('close')">
         <div class="modal-container glass-panel">
-          <div class="modal-header flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold m-0">{{ title }}</h3>
-            <button @click="$emit('close')" class="close-btn p-1 rounded hover:bg-gray-100">
+          <div class="modal-header">
+            <h3 class="modal-title">{{ title }}</h3>
+            <button @click="$emit('close')" class="btn-icon" data-testid="modal-close-btn">
               <X size="20" />
             </button>
           </div>
 
-          <div class="modal-body mb-6">
+          <div class="modal-body">
             <slot name="body">
               default body
             </slot>
           </div>
 
-          <div class="modal-footer flex justify-end gap-3">
+          <div class="modal-footer">
             <slot name="footer">
-              <button class="btn btn-secondary" @click="$emit('close')">Bezárás</button>
+              <button class="btn btn-secondary" @click="$emit('close')" data-testid="modal-cancel-btn">Bezárás</button>
             </slot>
           </div>
         </div>
@@ -65,16 +65,38 @@ defineEmits(['close']);
 
 .modal-container {
   width: 100%;
-  max-width: 600px; /* Default width */
+  max-width: 600px;
   padding: 1.5rem;
-  background: white;
+  background: var(--color-surface);
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  box-shadow: var(--shadow-xl);
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
-.modal-header h3 {
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modal-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin: 0;
   color: var(--color-text);
+}
+
+.modal-body {
+  margin-bottom: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 /* Transitions */

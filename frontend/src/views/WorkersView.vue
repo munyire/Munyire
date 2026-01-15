@@ -111,63 +111,64 @@ onMounted(fetchWorkers);
 
 <template>
   <div class="workers-view">
-    <div class="header flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-      <div>
+    <div class="view-header">
+      <div class="header-content">
         <h1>Dolgozók</h1>
         <p class="text-muted">Munkavállalók kezelése</p>
       </div>
       
-      <button @click="openAddModal" class="btn btn-primary">
+      <button @click="openAddModal" class="btn btn-primary" data-testid="workers-add-btn">
         <Plus size="20" />
         Új dolgozó
       </button>
     </div>
 
-    <div class="controls flex gap-4 mb-6">
-      <div class="search-box relative flex-1 max-w-sm">
-        <Search size="18" class="absolute left-3 top-3 text-muted" />
+    <div class="view-controls">
+      <div class="search-wrapper">
+        <Search size="18" class="search-icon" />
         <input 
           v-model="searchQuery" 
           type="text" 
           placeholder="Keresés név vagy email alapján..." 
-          class="pl-10"
+          class="search-input"
+          data-testid="search-input"
         />
       </div>
     </div>
 
-    <div class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full">
+    <div class="card p-0 overflow-hidden">
+      <div class="data-table-wrapper">
+        <table class="data-table" data-testid="workers-table">
           <thead>
-            <tr class="bg-gray-50 text-left text-sm font-medium text-muted border-b border-gray-100">
-              <th class="px-6 py-4">Név</th>
-              <th class="px-6 py-4">Email / Telefon</th>
-              <th class="px-6 py-4">Munkakör</th>
-              <th class="px-6 py-4">Szerepkör</th>
-              <th class="px-6 py-4 text-right">Műveletek</th>
+            <tr>
+              <th>Név</th>
+              <th>Email / Telefon</th>
+              <th>Munkakör</th>
+              <th>Szerepkör</th>
+              <th class="text-right">Műveletek</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr v-for="worker in filteredWorkers" :key="worker.DolgozoID" class="hover:bg-gray-50">
-              <td class="px-6 py-4 font-medium">{{ worker.DNev }}</td>
-              <td class="px-6 py-4 text-sm">
+          <tbody>
+            <tr v-for="worker in filteredWorkers" :key="worker.DolgozoID">
+              <td class="font-medium">{{ worker.DNev }}</td>
+              <td class="text-sm">
                 <div>{{ worker.Email }}</div>
                 <div class="text-muted">{{ worker.Telefonszam }}</div>
               </td>
-              <td class="px-6 py-4">{{ worker.Munkakor }}</td>
-              <td class="px-6 py-4">
+              <td>{{ worker.Munkakor }}</td>
+              <td>
                  <span class="badge" :class="{
-                  'bg-purple-100 text-purple-700': worker.Szerepkor === 'Admin',
-                  'bg-blue-100 text-blue-700': worker.Szerepkor === 'Manager',
-                  'bg-gray-100 text-gray-700': worker.Szerepkor === 'Dolgozo'
+                  'badge-info': worker.Szerepkor === 'Admin',
+                  'badge-success': worker.Szerepkor === 'Manager',
+                  'badge-neutral': worker.Szerepkor === 'Dolgozo'
                 }">{{ worker.Szerepkor }}</span>
               </td>
-              <td class="px-6 py-4 text-right">
+              <td class="text-right">
                 <div class="flex justify-end gap-2">
-                  <button @click="openEditModal(worker)" class="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                  <button @click="openEditModal(worker)" class="btn-icon" :data-testid="`edit-btn-${worker.DolgozoID}`">
                     <Edit size="18" />
                   </button>
-                  <button @click="deleteWorker(worker.DolgozoID)" class="p-1 text-red-600 hover:bg-red-50 rounded">
+                  <button @click="deleteWorker(worker.DolgozoID)" class="btn-icon text-danger" :data-testid="`delete-btn-${worker.DolgozoID}`">
                     <Trash2 size="18" />
                   </button>
                 </div>
@@ -181,47 +182,47 @@ onMounted(fetchWorkers);
     <Modal :show="showModal" :title="isEditing ? 'Dolgozó szerkesztése' : 'Új dolgozó felvétele'" @close="showModal = false">
       <template #body>
         <form @submit.prevent="saveWorker" id="workerForm" class="flex flex-col gap-4">
-          <div>
-            <label class="block mb-1 text-sm font-medium">Teljes Név</label>
-            <input v-model="form.DNev" required />
+          <div class="form-group">
+            <label class="form-label">Teljes Név</label>
+            <input v-model="form.DNev" required data-testid="input-name" />
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block mb-1 text-sm font-medium">Email</label>
-              <input type="email" v-model="form.Email" required />
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" v-model="form.Email" required data-testid="input-email" />
             </div>
-            <div>
-              <label class="block mb-1 text-sm font-medium">Telefonszám</label>
-              <input v-model="form.Telefonszam" />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-             <div>
-              <label class="block mb-1 text-sm font-medium">Felhasználónév</label>
-              <input v-model="form.FelhasznaloNev" required :disabled="isEditing" />
-            </div>
-             <div>
-              <label class="block mb-1 text-sm font-medium">Jelszó</label>
-              <input type="password" v-model="form.Jelszo" :placeholder="isEditing ? 'Hagyja üresen ha nem változik' : ''" :required="!isEditing" />
+            <div class="form-group">
+              <label class="form-label">Telefonszám</label>
+              <input v-model="form.Telefonszam" data-testid="input-phone" />
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block mb-1 text-sm font-medium">Munkakör</label>
-              <input v-model="form.Munkakor" />
+          <div class="grid-2">
+             <div class="form-group">
+              <label class="form-label">Felhasználónév</label>
+              <input v-model="form.FelhasznaloNev" required :disabled="isEditing" data-testid="input-username" />
             </div>
-             <div>
-              <label class="block mb-1 text-sm font-medium">Szerepkör</label>
-              <select v-model="form.Szerepkor" required>
+             <div class="form-group">
+              <label class="form-label">Jelszó</label>
+              <input type="password" v-model="form.Jelszo" :placeholder="isEditing ? 'Hagyja üresen ha nem változik' : ''" :required="!isEditing" data-testid="input-password" />
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Munkakör</label>
+              <input v-model="form.Munkakor" data-testid="input-job" />
+            </div>
+             <div class="form-group">
+              <label class="form-label">Szerepkör</label>
+              <select v-model="form.Szerepkor" required data-testid="input-role">
                 <option value="Dolgozo">Dolgozó</option>
                 <option value="Manager">Manager</option>
                 <option value="Admin">Admin</option>
               </select>
             </div>
           </div>
-           <div>
-              <label class="block mb-1 text-sm font-medium">Nem</label>
-              <select v-model="form.Nem">
+           <div class="form-group">
+              <label class="form-label">Nem</label>
+              <select v-model="form.Nem" data-testid="input-gender">
                 <option value="Férfi">Férfi</option>
                 <option value="Nő">Nő</option>
               </select>
@@ -229,24 +230,63 @@ onMounted(fetchWorkers);
         </form>
       </template>
       <template #footer>
-        <button class="btn btn-secondary" @click="showModal = false">Mégse</button>
-        <button type="submit" form="workerForm" class="btn btn-primary">Mentés</button>
+        <button class="btn btn-secondary" @click="showModal = false" data-testid="modal-cancel">Mégse</button>
+        <button type="submit" form="workerForm" class="btn btn-primary" data-testid="modal-save">Mentés</button>
       </template>
     </Modal>
   </div>
 </template>
 
 <style scoped>
-.badge {
-  padding: 0.25rem 0.6rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+.workers-view {
+  width: 100%;
 }
-.bg-purple-100 { background-color: #f3e8ff; }
-.text-purple-700 { color: #7e22ce; }
-.bg-blue-100 { background-color: #dbeafe; }
-.text-blue-700 { color: #1d4ed8; }
-.bg-gray-100 { background-color: #f3f4f6; }
-.text-gray-700 { color: #374151; }
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.view-controls {
+  margin-bottom: 1.5rem;
+}
+
+.search-wrapper {
+  position: relative;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 2.5rem;
+}
+
+.text-danger {
+  color: var(--color-danger);
+}
+
+.text-danger:hover {
+  background-color: var(--color-danger-bg);
+  color: #991b1b;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.p-0 { padding: 0 !important; }
 </style>

@@ -40,14 +40,14 @@ const handleLogin = async () => {
         <div class="header">
           <div class="logo-container">
             <Shirt class="app-logo" :size="48" />
-            <h1>Munyire</h1>
+            <h1 class="app-name">Munyire</h1>
           </div>
           <p class="subtitle">Munkaruhakezelő Rendszer</p>
         </div>
 
         <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
-            <label for="username">Felhasználónév</label>
+            <label for="username" class="form-label">Felhasználónév</label>
             <div class="input-wrapper">
               <Mail class="input-icon" :size="20" />
               <input 
@@ -56,12 +56,14 @@ const handleLogin = async () => {
                 type="text" 
                 placeholder="Adja meg a felhasználónevét" 
                 required
+                class="form-input"
+                data-testid="email-input"
               />
             </div>
           </div>
           
           <div class="form-group">
-            <label for="password">Jelszó</label>
+            <label for="password" class="form-label">Jelszó</label>
             <div class="input-wrapper">
               <Key class="input-icon" :size="20" />
               <input 
@@ -70,16 +72,18 @@ const handleLogin = async () => {
                 type="password" 
                 placeholder="Adja meg a jelszavát" 
                 required
+                class="form-input"
+                data-testid="password-input"
               />
             </div>
             <a href="#" class="forgot-password">Elfelejtettem a jelszót</a>
           </div>
 
-          <div v-if="error" class="error-message">
+          <div v-if="error" class="error-message" data-testid="login-error">
             {{ error }}
           </div>
 
-          <button type="submit" class="submit-btn" :disabled="loading">
+          <button type="submit" class="btn btn-primary w-full" :disabled="loading" data-testid="login-submit">
             {{ loading ? 'Bejelentkezés...' : 'Bejelentkezés' }}
           </button>
         </form>
@@ -99,26 +103,22 @@ const handleLogin = async () => {
 
 <style scoped>
 .login-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
+  width: 100%;
   background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
 }
 
 .login-container {
   display: flex;
   width: 900px;
   max-width: 90%;
-  height: 600px;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  min-height: 600px;
+  background: var(--color-surface);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
   overflow: hidden;
   position: relative;
   z-index: 10;
@@ -130,15 +130,15 @@ const handleLogin = async () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  position: relative; /* Make relative for absolute footer positioning */
+  position: relative;
 }
 
 .footer-left {
   position: absolute;
   bottom: 2rem;
   left: 3rem;
-  color: #94a3b8;
-  font-size: 0.8rem;
+  color: var(--color-text-light);
+  font-size: var(--font-xs);
 }
 
 .footer-right {
@@ -148,14 +148,14 @@ const handleLogin = async () => {
 }
 
 .footer-right a {
-  color: #64748b;
+  color: var(--color-text-muted);
   text-decoration: none;
-  font-size: 0.8rem;
+  font-size: var(--font-xs);
   transition: color 0.2s;
 }
 
 .footer-right a:hover {
-  color: #1e40af;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 
@@ -175,19 +175,19 @@ const handleLogin = async () => {
 }
 
 .app-logo {
-  color: #1e40af;
+  color: var(--color-primary);
 }
 
-.header h1 {
+.app-name {
   font-size: 2.5rem;
-  color: #1e3a8a;
+  color: var(--color-primary-dark);
   margin: 0;
   font-weight: 700;
   line-height: 1;
 }
 
 .subtitle {
-  color: #64748b;
+  color: var(--color-text-muted);
   margin-top: 0.5rem;
   font-size: 1.1rem;
 }
@@ -196,12 +196,6 @@ const handleLogin = async () => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
 }
 
 .input-wrapper {
@@ -213,76 +207,43 @@ const handleLogin = async () => {
 .input-icon {
   position: absolute;
   left: 12px;
-  color: #1e40af;
+  color: var(--color-primary);
   pointer-events: none;
+  z-index: 1;
 }
 
-label {
-  font-weight: 500;
-  color: #334155;
-  font-size: 0.95rem;
-}
-
-input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.2s;
-  background-color: #f8fafc;
-}
-
-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  background-color: white;
+.form-input {
+  padding-left: 2.75rem; /* Make room for icon */
 }
 
 .forgot-password {
   align-self: flex-end;
-  font-size: 0.85rem;
-  color: #1e40af;
+  font-size: var(--font-sm);
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
+  margin-top: 0.25rem;
 }
 
 .forgot-password:hover {
-  color: #1e3a8a;
+  color: var(--color-primary-dark);
   text-decoration: underline;
 }
 
-.submit-btn {
-  margin-top: 0.5rem;
+.btn.w-full {
+  width: 100%;
   padding: 0.875rem;
-  background-color: #1e40af;
-  color: white;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-.submit-btn:hover {
-  background-color: #1e3a8a;
-}
-
-.submit-btn:disabled {
-  background-color: #94a3b8;
-  cursor: not-allowed;
+  font-size: var(--font-base);
 }
 
 .error-message {
-  color: #ef4444;
-  font-size: 0.9rem;
+  color: var(--color-danger);
+  font-size: var(--font-sm);
   text-align: center;
   padding: 0.5rem;
-  background-color: #fef2f2;
-  border-radius: 6px;
+  background-color: var(--color-danger-bg);
+  border-radius: var(--radius-sm);
 }
 
 .image-side {

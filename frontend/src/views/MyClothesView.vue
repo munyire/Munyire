@@ -27,49 +27,49 @@ onMounted(fetchMyItems);
 
 <template>
   <div class="my-clothes-view">
-    <div class="header mb-8">
-      <h1>Saját Ruháim</h1>
-      <p class="text-muted">Az önnél lévő munkaruhák nyilvántartása</p>
+    <div class="view-header">
+      <h1 class="header-title">Saját Ruháim</h1>
+      <p class="header-subtitle">Az önnél lévő munkaruhák nyilvántartása</p>
     </div>
 
     <div v-if="loading" class="text-center py-12">
       <p>Betöltés...</p>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="item in myItems" :key="item.RuhaKiBeID" class="card hover:shadow-md transition-shadow">
-        <div class="flex items-start justify-between mb-4">
-          <div class="p-3 bg-blue-100 text-blue-600 rounded-lg">
+    <div v-else class="items-grid">
+      <div v-for="item in myItems" :key="item.RuhaKiBeID" class="card card-hover item-card" :data-testid="`my-item-${item.RuhaKiBeID}`">
+        <div class="card-header">
+          <div class="item-icon">
             <Shirt size="24" />
           </div>
-          <span class="badge bg-gray-100 text-gray-700">{{ item.Mennyiseg }} db</span>
+          <span class="badge badge-neutral">{{ item.Mennyiseg }} db</span>
         </div>
         
-        <h3 class="text-lg font-semibold mb-1">{{ item.Ruha?.Fajta || 'Ismeretlen' }}</h3>
-        <p class="text-sm text-muted mb-4">{{ item.Ruha?.Cikkszam }}</p>
+        <h3 class="item-title">{{ item.Ruha?.Fajta || 'Ismeretlen' }}</h3>
+        <p class="item-sku">{{ item.Ruha?.Cikkszam }}</p>
 
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between border-b border-gray-50 pb-2">
-            <span class="text-muted">Méret:</span>
-            <span class="font-medium">{{ item.Ruha?.Meret }}</span>
+        <div class="item-details">
+          <div class="detail-row">
+            <span class="detail-label">Méret:</span>
+            <span class="detail-value">{{ item.Ruha?.Meret }}</span>
           </div>
-          <div class="flex justify-between border-b border-gray-50 pb-2">
-            <span class="text-muted">Szín:</span>
-            <span class="font-medium">{{ item.Ruha?.Szin }}</span>
+          <div class="detail-row">
+            <span class="detail-label">Szín:</span>
+            <span class="detail-value">{{ item.Ruha?.Szin }}</span>
           </div>
-          <div class="flex justify-between pt-1">
-            <span class="text-muted flex items-center gap-1">
+          <div class="detail-row detail-date">
+            <span class="detail-label flex items-center gap-1">
               <Calendar size="14" />
               Kiadva:
             </span>
-            <span class="font-medium">{{ item.KiadasDatum }}</span>
+            <span class="detail-value">{{ item.KiadasDatum }}</span>
           </div>
         </div>
       </div>
 
-      <div v-if="myItems.length === 0" class="col-span-full text-center py-12 card bg-gray-50 border-dashed">
-        <AlertCircle size="48" class="mx-auto text-gray-300 mb-4" />
-        <h3 class="text-lg font-medium text-gray-900">Nincs kiadott ruha</h3>
+      <div v-if="myItems.length === 0" class="empty-state card">
+        <AlertCircle size="48" class="empty-icon" />
+        <h3 class="empty-title">Nincs kiadott ruha</h3>
         <p class="text-muted">Jelenleg nincs önnél munkaruha nyilvántartva.</p>
       </div>
     </div>
@@ -78,33 +78,116 @@ onMounted(fetchMyItems);
 
 <style scoped>
 .my-clothes-view {
-  max-width: 1200px;
+  width: 100%;
 }
 
-.badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
+.view-header {
+  margin-bottom: 2rem;
 }
-.bg-blue-100 { background-color: #eff6ff; }
-.text-blue-600 { color: #2563eb; }
-.bg-gray-100 { background-color: #f3f4f6; }
-.text-gray-700 { color: #374151; }
 
-.grid { display: grid; }
-.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-.gap-6 { gap: 1.5rem; }
+.header-title {
+  margin: 0;
+}
+
+.header-subtitle {
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+}
+
+.items-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
 
 @media (min-width: 768px) {
-  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .items-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 1024px) {
-  .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .items-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
-.col-span-full { grid-column: 1 / -1; }
-.mx-auto { margin-left: auto; margin-right: auto; }
-.border-dashed { border-style: dashed; }
+.item-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.item-icon {
+  padding: 0.75rem;
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+  border-radius: var(--radius-md);
+}
+
+.item-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.item-sku {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 1rem 0;
+}
+
+.item-details {
+  margin-top: auto;
+  font-size: var(--font-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-bg);
+  padding-bottom: 0.5rem;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  padding-top: 0.25rem;
+}
+
+.detail-label {
+  color: var(--color-text-muted);
+}
+
+.detail-value {
+  font-weight: 500;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  background-color: var(--color-bg);
+  border: 2px dashed var(--color-border);
+}
+
+.empty-icon {
+  margin: 0 auto 1rem auto;
+  color: var(--color-text-light);
+}
+
+.empty-title {
+  font-size: var(--font-lg);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
 </style>

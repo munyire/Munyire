@@ -103,73 +103,74 @@ onMounted(fetchClothes);
 
 <template>
   <div class="inventory-view">
-    <div class="header flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-      <div>
+    <div class="view-header">
+      <div class="header-content">
         <h1>Készlet</h1>
         <p class="text-muted">Raktárkészlet kezelése</p>
       </div>
       
-      <button @click="openAddModal" class="btn btn-primary">
+      <button @click="openAddModal" class="btn btn-primary" data-testid="inventory-add-btn">
         <Plus size="20" />
         Új termék
       </button>
     </div>
 
-    <div class="controls flex gap-4 mb-6">
-      <div class="search-box relative flex-1 max-w-sm">
-        <Search size="18" class="absolute left-3 top-3 text-muted" />
+    <div class="view-controls">
+      <div class="search-wrapper">
+        <Search size="18" class="search-icon" />
         <input 
           v-model="searchQuery" 
           type="text" 
           placeholder="Keresés cikkszám vagy név alapján..." 
-          class="pl-10"
+          class="search-input"
+          data-testid="search-input"
         />
       </div>
     </div>
 
-    <div class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full">
+    <div class="card p-0 overflow-hidden">
+      <div class="data-table-wrapper">
+        <table class="data-table" data-testid="inventory-table">
           <thead>
-            <tr class="bg-gray-50 text-left text-sm font-medium text-muted border-b border-gray-100">
-              <th class="px-6 py-4">Cikkszám</th>
-              <th class="px-6 py-4">Fajta</th>
-              <th class="px-6 py-4">Méret</th>
-              <th class="px-6 py-4">Szín</th>
-              <th class="px-6 py-4 text-center">Minőség</th>
-              <th class="px-6 py-4 text-right">Mennyiség</th>
-              <th class="px-6 py-4 text-right">Műveletek</th>
+            <tr>
+              <th>Cikkszám</th>
+              <th>Fajta</th>
+              <th>Méret</th>
+              <th>Szín</th>
+              <th class="text-center">Minőség</th>
+              <th class="text-right">Mennyiség</th>
+              <th class="text-right">Műveletek</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr v-for="item in filteredClothes" :key="item.RuhaID" class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 font-medium">{{ item.Cikkszam }}</td>
-              <td class="px-6 py-4">{{ item.Fajta }}</td>
-              <td class="px-6 py-4">{{ item.Meret }}</td>
-              <td class="px-6 py-4">{{ item.Szin }}</td>
-              <td class="px-6 py-4 text-center">
+          <tbody>
+            <tr v-for="item in filteredClothes" :key="item.RuhaID">
+              <td class="font-medium">{{ item.Cikkszam }}</td>
+              <td>{{ item.Fajta }}</td>
+              <td>{{ item.Meret }}</td>
+              <td>{{ item.Szin }}</td>
+              <td class="text-center">
                 <span class="badge" :class="{
-                  'bg-green-100 text-green-700': item.Minoseg === 'Uj',
-                  'bg-blue-100 text-blue-700': item.Minoseg === 'Jo',
-                  'bg-red-100 text-red-700': item.Minoseg === 'Szakadt'
+                  'badge-success': item.Minoseg === 'Uj',
+                  'badge-info': item.Minoseg === 'Jo',
+                  'badge-danger': item.Minoseg === 'Szakadt'
                 }">{{ item.Minoseg }}</span>
               </td>
-              <td class="px-6 py-4 text-right font-medium">
+              <td class="text-right font-medium">
                 {{ item.Mennyiseg }} db
               </td>
-              <td class="px-6 py-4 text-right">
+              <td class="text-right">
                 <div class="flex justify-end gap-2">
-                  <button @click="openEditModal(item)" class="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                  <button @click="openEditModal(item)" class="btn-icon" :data-testid="`edit-btn-${item.RuhaID}`">
                     <Edit size="18" />
                   </button>
-                  <button @click="deleteItem(item.RuhaID)" class="p-1 text-red-600 hover:bg-red-50 rounded">
+                  <button @click="deleteItem(item.RuhaID)" class="btn-icon text-danger" :data-testid="`delete-btn-${item.RuhaID}`">
                     <Trash2 size="18" />
                   </button>
                 </div>
               </td>
             </tr>
             <tr v-if="filteredClothes.length === 0 && !loading">
-              <td colspan="7" class="px-6 py-8 text-center text-muted">Nincs megjeleníthető elem.</td>
+              <td colspan="7" class="text-center text-muted p-8">Nincs megjeleníthető elem.</td>
             </tr>
           </tbody>
         </table>
@@ -180,33 +181,33 @@ onMounted(fetchClothes);
     <Modal :show="showModal" :title="isEditing ? 'Termék szerkesztése' : 'Új termék felvétele'" @close="showModal = false">
       <template #body>
         <form @submit.prevent="saveItem" id="itemForm" class="flex flex-col gap-4">
-          <div>
-            <label class="block mb-1 text-sm font-medium">Cikkszám</label>
-            <input v-model="form.Cikkszam" required />
+          <div class="form-group">
+            <label class="form-label">Cikkszám</label>
+            <input v-model="form.Cikkszam" required data-testid="input-cikkszam" />
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block mb-1 text-sm font-medium">Fajta</label>
-              <input v-model="form.Fajta" required />
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Fajta</label>
+              <input v-model="form.Fajta" required data-testid="input-fajta" />
             </div>
-            <div>
-              <label class="block mb-1 text-sm font-medium">Szín</label>
-              <input v-model="form.Szin" required />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block mb-1 text-sm font-medium">Méret</label>
-              <input v-model="form.Meret" required />
-            </div>
-            <div>
-              <label class="block mb-1 text-sm font-medium">Mennyiség</label>
-              <input type="number" v-model="form.Mennyiseg" required min="0" />
+            <div class="form-group">
+              <label class="form-label">Szín</label>
+              <input v-model="form.Szin" required data-testid="input-szin" />
             </div>
           </div>
-          <div>
-            <label class="block mb-1 text-sm font-medium">Minőség</label>
-            <select v-model="form.Minoseg">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Méret</label>
+              <input v-model="form.Meret" required data-testid="input-meret" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mennyiség</label>
+              <input type="number" v-model="form.Mennyiseg" required min="0" data-testid="input-mennyiseg" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Minőség</label>
+            <select v-model="form.Minoseg" data-testid="input-minoseg">
               <option value="Uj">Új</option>
               <option value="Jo">Jó</option>
               <option value="Szakadt">Szakadt</option>
@@ -215,24 +216,63 @@ onMounted(fetchClothes);
         </form>
       </template>
       <template #footer>
-        <button class="btn btn-secondary" @click="showModal = false">Mégse</button>
-        <button type="submit" form="itemForm" class="btn btn-primary">Mentés</button>
+        <button class="btn btn-secondary" @click="showModal = false" data-testid="modal-cancel">Mégse</button>
+        <button type="submit" form="itemForm" class="btn btn-primary" data-testid="modal-save">Mentés</button>
       </template>
     </Modal>
   </div>
 </template>
 
 <style scoped>
-.badge {
-  padding: 0.25rem 0.6rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+.inventory-view {
+  width: 100%;
 }
-.bg-green-100 { background-color: #dcfce7; }
-.text-green-700 { color: #15803d; }
-.bg-blue-100 { background-color: #dbeafe; }
-.text-blue-700 { color: #1d4ed8; }
-.bg-red-100 { background-color: #fee2e2; }
-.text-red-700 { color: #b91c1c; }
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.view-controls {
+  margin-bottom: 1.5rem;
+}
+
+.search-wrapper {
+  position: relative;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 2.5rem;
+}
+
+.text-danger {
+  color: var(--color-danger);
+}
+
+.text-danger:hover {
+  background-color: var(--color-danger-bg);
+  color: #991b1b;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.p-0 { padding: 0 !important; }
 </style>
