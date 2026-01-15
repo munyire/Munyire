@@ -9,7 +9,8 @@ import {
   Shirt, 
   LogOut,
   ArrowRightLeft,
-  ShoppingCart
+  ShoppingCart,
+  Repeat
 } from 'lucide-vue-next';
 
 const route = useRoute();

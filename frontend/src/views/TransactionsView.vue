@@ -125,106 +125,116 @@ onMounted(() => {
 
 <template>
   <div class="transactions-container w-full">
-    <div class="header-card p-10 shadow-xl bg-white rounded-[2rem] flex flex-col items-center justify-center text-center">
-      <h1 class="m-0 text-6xl font-black text-gray-900 tracking-tighter">Tranzakciók</h1>
-      <p class="text-muted m-0 text-xl mt-4 font-semibold">Kiadás és visszavétel kezelése</p>
+    <!-- RESTORED: Header Card with Shadow -->
+    <div class="header-card-box p-12 shadow-2xl bg-white flex flex-col items-center justify-center text-center mx-8 border border-gray-100">
+      <h1 class="text-8xl font-black tracking-tighter leading-none text-gray-900 m-0">Tranzakciók</h1>
+      <p class="text-4xl mt-8 font-semibold text-gray-500">Kiadás és visszavétel kezelése</p>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs-container mt-8 flex justify-center gap-4">
+    <!-- Larger Tabs -->
+    <div class="tabs-container flex justify-center gap-6">
       <button 
         @click="activeTab = 'issue'" 
-        class="tab-btn"
+        class="tab-btn scale-110"
         :class="{ active: activeTab === 'issue' }"
       >
-        <ArrowRightLeft size="20" />
-        Kiadás
+        <ArrowRightLeft size="22" />
+        <span>Kiadás</span>
       </button>
       <button 
         @click="activeTab = 'return'" 
-        class="tab-btn"
+        class="tab-btn scale-110"
         :class="{ active: activeTab === 'return' }"
       >
-        <History size="20" />
-        Visszavétel
+        <History size="22" />
+        <span>Visszavétel</span>
       </button>
     </div>
 
-    <!-- Issue View -->
-    <div v-if="activeTab === 'issue'" class="card bg-white mt-8 mx-auto max-w-2xl p-8 rounded-[2rem] shadow-sm">
-      <h2 class="text-2xl font-bold mb-6">Új ruha kiadása</h2>
+    <!-- Issue View (BOXED with Shadow) -->
+    <div v-if="activeTab === 'issue'" class="transaction-main-box bg-white mx-auto max-w-5xl p-16 shadow-2xl border border-gray-100 min-h-[700px] flex flex-col">
+      <h2 class="text-5xl font-black mb-12 tracking-tight text-gray-900 text-center">Új ruha kiadása</h2>
       
-      <form @submit.prevent="handleIssue">
-        <div class="form-group mb-4">
-          <label class="block mb-2 font-medium">Dolgozó</label>
+      <form @submit.prevent="handleIssue" class="flex flex-col gap-10">
+        <div class="form-group">
+          <label class="block mb-4 text-2xl font-bold text-gray-700">Dolgozó kiválasztása</label>
           <SearchableSelect 
             :items="workers" 
             v-model="issueForm.DolgozoID" 
-            placeholder="Keress dolgozót..."
+            placeholder="Keresés név vagy ID alapján..."
+            class="scale-110 origin-left"
           />
         </div>
 
-        <div class="form-group mb-4">
-          <label class="block mb-2 font-medium">Ruha</label>
+        <div class="form-group">
+          <label class="block mb-4 text-2xl font-bold text-gray-700">Ruha kiválasztása</label>
           <SearchableSelect 
             :items="clothes" 
             v-model="issueForm.Cikkszam" 
-            placeholder="Keress ruhát (Név, Szín, Cikkszám)..."
+            placeholder="Szűrés típus vagy cikkszám szerint..."
+            class="scale-110 origin-left"
           />
         </div>
 
-        <div class="form-group mb-4">
-          <label class="block mb-2 font-medium">Mennyiség</label>
-          <input type="number" v-model="issueForm.Mennyiseg" min="1" class="form-input w-full" />
+        <div class="grid grid-cols-2 gap-12">
+          <div class="form-group">
+            <label class="block mb-4 text-2xl font-bold text-gray-700">Mennyiség</label>
+            <input type="number" v-model="issueForm.Mennyiseg" min="1" class="form-input-large w-full" />
+          </div>
+
+          <div class="form-group">
+            <label class="block mb-4 text-2xl font-bold text-gray-700">Indoklás / Megjegyzés</label>
+            <input type="text" v-model="issueForm.Indok" placeholder="Pl. Csere, Új belépő" class="form-input-large w-full" />
+          </div>
         </div>
 
-        <div class="form-group mb-6">
-          <label class="block mb-2 font-medium">Megjegyzés / Indok</label>
-          <input type="text" v-model="issueForm.Indok" placeholder="Pl. Munkakezdés" class="form-input w-full" />
-        </div>
-
-        <div v-if="message.text" :class="`message mb-4 p-3 rounded ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`">
+        <div v-if="message.text" :class="`message mt-4 p-6 rounded-2xl text-xl font-bold ${message.type === 'error' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`">
           {{ message.text }}
         </div>
 
-        <BaseButton type="submit" variant="primary" :loading="loading" class="w-full justify-center">
-          Kiadás Rögzítése
-        </BaseButton>
+        <button type="submit" :disabled="loading" class="btn-primary-large mt-8">
+          <span v-if="!loading">Kiadás Rögzítése</span>
+          <span v-else>Feldolgozás...</span>
+        </button>
       </form>
     </div>
 
-    <!-- Return View -->
-    <div v-if="activeTab === 'return'" class="card bg-white mt-8 mx-auto w-full max-w-6xl p-8 rounded-[2rem] shadow-sm">
-      <h2 class="text-2xl font-bold mb-6">Aktív kiadások (Visszavételre vár)</h2>
+    <!-- Return View (Scaled Up) -->
+    <div v-if="activeTab === 'return'" class="transaction-card-return bg-white mx-auto w-full max-w-7xl p-12 shadow-2xl border border-gray-100 min-h-[500px]">
+      <h2 class="text-4xl font-black mb-10 tracking-tight text-gray-900">Aktív kiadások (Visszavételre vár)</h2>
       
-      <div v-if="activeIssues.length === 0" class="text-center text-muted py-8">
+      <div v-if="activeIssues.length === 0" class="text-center text-muted py-16 text-2xl font-semibold opacity-30">
         Nincs jelenleg kint lévő ruha.
       </div>
 
       <div v-else class="overflow-x-auto">
-        <table class="w-full">
+        <table class="w-full border-collapse">
           <thead>
-            <tr class="text-left border-b border-gray-100">
-              <th class="pb-4">Dolgozó</th>
-              <th class="pb-4">Ruha</th>
-              <th class="pb-4">Kiadva</th>
-              <th class="pb-4">Művelet</th>
+            <tr class="text-left border-b-2 border-gray-100">
+              <th class="pb-6 text-xl font-black text-gray-500 uppercase tracking-widest pl-4">Dolgozó</th>
+              <th class="pb-6 text-xl font-black text-gray-500 uppercase tracking-widest">Ruha Típusa</th>
+              <th class="pb-6 text-xl font-black text-gray-500 uppercase tracking-widest">Kiadás Dátuma</th>
+              <th class="pb-6 text-xl font-black text-gray-500 uppercase tracking-widest text-right pr-4">Művelet</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="issue in activeIssues" :key="issue.RuhaKiBeID" class="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-              <td class="py-4 font-medium">{{ issue.Dolgozo?.DNev || issue.DolgozoID }}</td>
-              <td class="py-4">
+            <tr v-for="issue in activeIssues" :key="issue.RuhaKiBeID" class="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors group">
+              <td class="py-8 pl-4">
+                <div class="font-black text-2xl text-gray-800">{{ issue.Dolgozo?.DNev || issue.DolgozoID }}</div>
+              </td>
+              <td class="py-8">
                 <div class="flex flex-col">
-                  <span>{{ issue.Ruha?.Fajta || 'Ismeretlen' }}</span>
-                  <span class="text-xs text-muted">{{ issue.Ruha?.Cikkszam }}</span>
+                  <span class="text-2xl font-bold text-gray-700">{{ issue.Ruha?.Fajta || 'Ismeretlen' }}</span>
+                  <span class="text-lg text-blue-600 font-mono font-bold">{{ issue.Ruha?.Cikkszam }}</span>
                 </div>
               </td>
-              <td class="py-4 text-muted">{{ new Date(issue.KiadasDatum).toLocaleDateString() }}</td>
-              <td class="py-4">
-                <BaseButton variant="secondary" size="sm" @click="handleReturn(issue.RuhaKiBeID)">
+              <td class="py-8">
+                <div class="text-xl font-bold text-gray-500">{{ new Date(issue.KiadasDatum).toLocaleDateString('hu-HU') }}</div>
+              </td>
+              <td class="py-8 text-right pr-4">
+                <button class="btn-return scale-110" @click="handleReturn(issue.RuhaKiBeID)">
                   Visszavétel
-                </BaseButton>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -240,40 +250,108 @@ onMounted(() => {
   padding: 12px 12px 12px 0;
 }
 
-.header-card {
-  width: 100%;
+.header-card-box {
+  background-color: white !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 2rem !important; /* Matched to Dashboard rounding */
+  margin-bottom: 5px !important; /* Exactly 5px space under header */
+}
+
+.transaction-main-box,
+.transaction-card-return {
+  background-color: white !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 2rem !important; /* Matched to Dashboard rounding */
+  margin-top: 0px !important; 
+}
+
+.tabs-container {
+  margin-top: 0px !important;
+  margin-bottom: 5px !important; /* Exactly 5px space under tabs */
 }
 
 .tab-btn {
-  padding: 1rem 2rem;
-  border-radius: 9999px;
+  padding: 1rem 2.5rem;
+  border-radius: 1.5rem; /* More consistent rounding with boxes */
   background: white;
   border: 1px solid #e5e7eb;
-  font-weight: 600;
-  color: #6b7280;
+  font-weight: 800;
+  color: #64748b;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .tab-btn.active {
-  background: #1e3a8a;
+  background: #1e3a8a; /* Blue for the active tab */
   color: white;
   border-color: #1e3a8a;
   transform: translateY(-2px);
   box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
 }
 
-.form-input {
-  border: 1px solid #d1d5db;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  outline: none;
+.btn-return {
+  background-color: #f1f5f9;
+  color: #1e3a8a;
+  padding: 0.75rem 1.5rem;
+  border-radius: 1rem;
+  font-weight: 800;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
-.form-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+
+.btn-return:hover {
+  background-color: #1e3a8a;
+  color: white;
+  border-color: #1e3a8a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+}
+
+.form-input-large {
+  border: 1px solid #e2e8f0;
+  padding: 1.25rem 1.5rem;
+  border-radius: 1.25rem;
+  outline: none;
+  font-size: 1.1rem;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+}
+.form-input-large:focus {
+  background-color: white;
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
+}
+
+.btn-primary-large {
+  background-color: #1e3a8a;
+  color: white;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  font-weight: 800;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.2);
+}
+
+.btn-primary-large:hover {
+  background-color: #1e40af;
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(30, 58, 138, 0.3);
+}
+
+.btn-primary-large:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 </style>
