@@ -9,8 +9,8 @@ async function findByCikkszamAndMinoseg(cikkszam, minoseg) {
     });
 }
 
-async function create(data) {
-    return models.Raktar.create(data);
+async function create(data, options) {
+    return models.Raktar.create(data, options);
 }
 
 async function updateStock(raktarId, delta, transaction = null) {

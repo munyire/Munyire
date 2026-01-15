@@ -24,11 +24,11 @@ async function get(id) {
 
 async function create(data) {
   // Map RuhaID to Cikkszam if needed, or assume data.RuhaID holds the Cikkszam
-  const cikkszam = data.RuhaID; // Assuming input JSON uses RuhaID key
+  const cikkszam = data.Cikkszam || data.RuhaID; // Check both
 
   const ruha = await ruhaRepo.findByCikkszam(cikkszam);
   if (!ruha) {
-    const err = new Error("Ruha not found");
+    const err = new Error(`Ruha not found (Cikkszam: ${cikkszam})`);
     err.status = 404;
     throw err;
   }
