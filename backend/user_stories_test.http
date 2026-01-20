@@ -1,0 +1,183 @@
+@host = http://localhost:3000
+
+# INITIAL SETUP / VARIABLES
+# Ezeket a változókat a Login kérések fogják feltölteni
+@adminToken = {{loginAdmin.response.body.token}}
+@managerToken = {{loginManager.response.body.token}}
+@dolgozoToken = {{loginDolgozo.response.body.token}}
+@dolgozoId = {{loginDolgozo.response.body.user.id}}
+@managerId = {{loginManager.response.body.user.id}}
+
+# Teszt adatok
+@testCikkszam = 1000001
+@testRuhaKiBeId = 1
+@testRendelesId = 1
+
+### ═══════════════════════════════════════════════════════════════
+### 1. HITELESÍTÉS (US-01, US-02)
+### ═══════════════════════════════════════════════════════════════
+
+### US-01: Bejelentkezés (Admin)
+# @name loginAdmin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "alma"
+}
+
+### US-01: Bejelentkezés (Manager - Előfeltétel: létező manager user)
+# @name loginManager
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "manager",
+  "password": "alma"
+}
+
+### US-01: Bejelentkezés (Dolgozó - Előfeltétel: létező dolgozó)
+# @name loginDolgozo
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "janos",
+  "password": "alma"
+}
+
+### US-02: Kijelentkezés
+# A REST API állapotmentes (stateless), így a kijelentkezés kliens oldali művelet (token törlése).
+# A backend oldalon nincs teendő, de demonstrálhatjuk, hogy token nélkül nem érhető el védett végpont.
+GET {{host}}/api/dolgozok/{{dolgozoId}}
+
+### ═══════════════════════════════════════════════════════════════
+### 2. DOLGOZÓ (US-03, US-04)
+### ═══════════════════════════════════════════════════════════════
+
+### US-03: Saját adatok megtekintése
+# A bejelentkezett dolgozó lekéri a saját adatait az ID-ja alapján.
+GET {{host}}/api/dolgozok/{{dolgozoId}}
+Authorization: Bearer {{dolgozoToken}}
+
+### US-04: Saját kiadott ruhák megtekintése
+# A dolgozó lekéri a nála lévő (aktív) ruhákat.
+GET {{host}}/api/ruhakibe/mine
+Authorization: Bearer {{dolgozoToken}}
+
+### ═══════════════════════════════════════════════════════════════
+### 3. MANAGER (US-05 .. US-10)
+### ═══════════════════════════════════════════════════════════════
+
+### US-05: Dashboard megtekintése (Statisztikák)
+GET {{host}}/api/dashboard/stats
+Authorization: Bearer {{managerToken}}
+
+### US-05: Dashboard megtekintése (Alacsony készlet)
+GET {{host}}/api/dashboard/low-stock
+Authorization: Bearer {{managerToken}}
+
+### US-06: Raktárkészlet listázása
+GET {{host}}/api/ruhak
+Authorization: Bearer {{managerToken}}
+
+### US-06: Raktárkészlet keresés (Pl. "Nadrag")
+GET {{host}}/api/ruhak/search?q=Nadrag
+Authorization: Bearer {{managerToken}}
+
+### US-07: Munkaruha kiadása
+# Manager kiad egy ruhát a dolgozónak.
+# @name issueClothes
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "DolgozoID": {{dolgozoId}},
+  "Cikkszam": {{testCikkszam}},
+  "Mennyiseg": 1,
+  "Indok": "Igénylés US-07 alapján"
+}
+
+### US-08: Munkaruha visszavétele
+# Manager visszaveszi a ruhát (Minőség megjelölésével).
+# ID-t az előző válaszból vagy listából veszünk.
+@issueId = {{issueClothes.response.body.RuhaKiBeID}}
+PATCH {{host}}/api/ruhakibe/{{issueId}}
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "RuhaMinoseg": "Használt"
+}
+
+### US-09: Utánpótlás rendelés indítása
+# @name createOrder
+POST {{host}}/api/rendelesek
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "Cikkszam": {{testCikkszam}},
+  "Mennyiseg": 50,
+  "Statusz": "Leadva"
+}
+
+### US-10: Rendelés státuszának frissítése
+@orderId = {{createOrder.response.body.RendelesID}}
+PATCH {{host}}/api/rendelesek/{{orderId}}
+Content-Type: application/json
+Authorization: Bearer {{managerToken}}
+
+{
+  "Statusz": "Feldolgozas alatt"
+}
+
+### ═══════════════════════════════════════════════════════════════
+### 4. ADMINISZTRÁTOR (US-11 .. US-13)
+### ═══════════════════════════════════════════════════════════════
+
+### US-11: Új dolgozó felvétele
+# @name createUser
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Új Dolgozó Péter",
+  "email": "peter.uj@example.com",
+  "username": "peteruj",
+  "password": "Password123!",
+  "role": "Dolgozo"
+}
+
+### US-12: Dolgozó adatainak módosítása
+@newUserId = {{createUser.response.body.id}}
+PATCH {{host}}/api/dolgozok/{{newUserId}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "Telefonszam": "+36301234567"
+}
+
+### US-13: Új ruhatípus létrehozása
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "Fajta": "Láthatósági Mellény",
+  "Szin": "Sárga",
+  "Meret": "XL",
+  "Mennyiseg": 100,
+  "Minoseg": "Új"
+}
+
+### Extra: Rendelés teljesítése (Készlet növelés) - Admin funkció a kódban
+PATCH {{host}}/api/rendelesek/{{orderId}}/complete
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{}
