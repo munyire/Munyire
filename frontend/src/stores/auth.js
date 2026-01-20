@@ -17,7 +17,24 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (user.value) user.value = normalizeUser(user.value);
 
-    const isAuthenticated = () => !!token.value;
+    const isTokenExpired = (t) => {
+        if (!t) return true;
+        try {
+            const payload = JSON.parse(atob(t.split('.')[1]));
+            return payload.exp * 1000 < Date.now();
+        } catch (e) {
+            return true;
+        }
+    };
+
+    const isAuthenticated = () => {
+        if (!token.value) return false;
+        if (isTokenExpired(token.value)) {
+            logout();
+            return false;
+        }
+        return true;
+    };
     // Return role from backend (`role`) but fall back to legacy `Szerepkor` if present
     const getUserRole = () => user.value?.role || user.value?.Szerepkor;
 
