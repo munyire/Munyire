@@ -106,8 +106,17 @@ Authorization: Bearer {{loginErzsi.response.body.token}}
 GET {{host}}/api/dolgozok/search?q=kovacslaszlo
 Authorization: Bearer {{loginErzsi.response.body.token}}
 
+### 2.1b Keresünk első ruhát Lászlónak (Polo)
+# @name findRuhaLaszlo1
+GET {{host}}/api/ruhak/search?q=Polo
+Authorization: Bearer {{loginErzsi.response.body.token}}
 
-### 2.2a (Előkészület) - Póló kiadása (Cikkszám: 100001)
+### 2.1c Keresünk második ruhát Lászlónak (Nadrag)
+# @name findRuhaLaszlo2
+GET {{host}}/api/ruhak/search?q=Nadrag
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### 2.2a (Előkészület) - Első ruha kiadása
 # @name issueToLaszlo1
 POST {{host}}/api/ruhakibe/issue
 Content-Type: application/json
@@ -115,13 +124,13 @@ Authorization: Bearer {{loginErzsi.response.body.token}}
 
 {
   "DolgozoID": {{findLaszlo.response.body.$[0].DolgozoID}},
-  "RuhaID": 200001,
+  "RuhaID": {{findRuhaLaszlo1.response.body.$[0].Cikkszam}},
   "Mennyiseg": 1,
   "Indok": "Póló kiadása demohoz"
 }
 
 
-### 2.2b (Előkészület) - Másik ruha kiadása (Cikkszám: 100002)
+### 2.2b (Előkészület) - Másik ruha kiadása
 # @name issueToLaszlo2
 POST {{host}}/api/ruhakibe/issue
 Content-Type: application/json
@@ -129,9 +138,9 @@ Authorization: Bearer {{loginErzsi.response.body.token}}
 
 {
   "DolgozoID": {{findLaszlo.response.body.$[0].DolgozoID}},
-  "RuhaID": 200002,
+  "RuhaID": {{findRuhaLaszlo2.response.body.$[0].Cikkszam}},
   "Mennyiseg": 1,
-  "Indok": "Pót póló kiadása demohoz"
+  "Indok": "Pót ruha kiadása demohoz"
 }
 
 
