@@ -1,0 +1,233 @@
+@host = http://localhost:3000
+
+# ═══════════════════════════════════════════════════════════════
+# ELŐKÉSZÜLETEK (ADMIN)
+# ═══════════════════════════════════════════════════════════════
+
+### 0. Admin Bejelentkezés
+# @name loginAdmin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "alma"
+}
+
+### 0.1 Erzsi (Manager) létrehozása (hogy biztosan létezzen)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Erzsi Manager",
+  "email": "erzsi@munyire.hu",
+  "username": "erzsi",
+  "password": "alma",
+  "role": "Manager"
+}
+
+### 0.2 Varga Éva és Kovács László létrehozása (Dolgozók)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Varga Éva",
+  "email": "eva.varga@munyire.hu",
+  "username": "vargaeva",
+  "password": "password123",
+  "role": "Dolgozo"
+}
+
+### 
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Kovács László",
+  "email": "laszlo.kovacs@munyire.hu",
+  "username": "kovacslaszlo",
+  "password": "password123",
+  "role": "Dolgozo"
+}
+
+
+# ═══════════════════════════════════════════════════════════════
+# ERZSI MŰSZAKJA (SCENARIO START)
+# ═══════════════════════════════════════════════════════════════
+
+### 1. Erzsi Bejelentkezik
+# @name loginErzsi
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "erzsi",
+  "password": "alma"
+}
+
+### -----------------------------------------------------------
+### SZITUÁCIÓ 1: Varga Éva ruhát kér
+### -----------------------------------------------------------
+
+### 1.1 Erzsi megkeresi Varga Évát (Keresés endpointtal)
+# @name findEva
+GET {{host}}/api/dolgozok/search?q=vargaeva
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### 1.2 Erzsi megkeres egy Munkás Kabátot (Keresés endpointtal)
+# Feltételezzük, hogy van ilyen ruha, vagy használjunk általánosabbat.
+# A seed generált: Polo, Nadrag, etc. Keressünk 'Polo'-t.
+# @name findRuha
+GET {{host}}/api/ruhak/search?q=Polo
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### Kiadás rögzítése
+POST {{host}}/api/ruhakibe/issue
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{findEva.response.body.$[0].DolgozoID}},
+  "RuhaID": {{findRuha.response.body.$[0].Cikkszam}},
+  "Mennyiseg": 1,
+  "Indok": "Hideg van a csarnokban"
+}
+
+
+### -----------------------------------------------------------
+### SZITUÁCIÓ 2: Kovács László ruhát hoz vissza
+### -----------------------------------------------------------
+
+### 2.1 Erzsi megkeresi Lászlót (Keresés endpointtal)
+# @name findLaszlo
+GET {{host}}/api/dolgozok/search?q=kovacslaszlo
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+
+### 2.2a (Előkészület) - Póló kiadása (Cikkszám: 100001)
+# @name issueToLaszlo1
+POST {{host}}/api/ruhakibe/issue
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{findLaszlo.response.body.$[0].DolgozoID}},
+  "RuhaID": 200001,
+  "Mennyiseg": 1,
+  "Indok": "Póló kiadása demohoz"
+}
+
+
+### 2.2b (Előkészület) - Másik ruha kiadása (Cikkszám: 100002)
+# @name issueToLaszlo2
+POST {{host}}/api/ruhakibe/issue
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{findLaszlo.response.body.$[0].DolgozoID}},
+  "RuhaID": 200002,
+  "Mennyiseg": 1,
+  "Indok": "Pót póló kiadása demohoz"
+}
+
+
+### 2.3 Erzsi listázza László nálunk lévő (aktív) ruháit
+# @name listLaszloActive
+GET {{host}}/api/dolgozok/{{findLaszlo.response.body.$[0].DolgozoID}}/ruhak/aktiv
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+
+### 2.4 Erzsi visszaveszi a ruhákat (Tömeges visszavétel)
+POST {{host}}/api/ruhakibe/return-multiple
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "items": [
+    {
+      "RuhaKiBeID": {{issueToLaszlo1.response.body.RuhaKiBeID}},
+      "RuhaMinoseg": "Új"
+    },
+    {
+      "RuhaKiBeID": {{issueToLaszlo2.response.body.RuhaKiBeID}},
+      "RuhaMinoseg": "Használt"
+    }
+  ]
+}
+
+
+### -----------------------------------------------------------
+### SZITUÁCIÓ 3: Új dolgozó, Kurta Béla érkezik
+### -----------------------------------------------------------
+
+### 3.1 Erzsi regisztrálja Bélát (Rossz telefonszámmal véletlenül)
+# @name registerBela
+# FIGYELEM: Most már külön endpoint van a manager általi regisztrációra!
+POST {{host}}/api/dolgozok/register-managed
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "name": "Kurta Béla",
+  "email": "bela.kurta@munyire.hu",
+  "username": "kurtabela",
+  "password": "password123",
+  "role": "Dolgozo",
+  "Telefonszam": "06-20-ROSSZ-SZAM"
+}
+
+
+### -----------------------------------------------------------
+### SZITUÁCIÓ 4: Kiadás Bélának
+### -----------------------------------------------------------
+
+### 4.1 Kiadás (Póló)
+POST {{host}}/api/ruhakibe/issue
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{registerBela.response.body.id}},
+  "RuhaID": {{findRuha.response.body.$[0].Cikkszam}},
+  "Mennyiseg": 2,
+  "Indok": "Kezdőcsomag"
+}
+
+
+### -----------------------------------------------------------
+### SZITUÁCIÓ 5: Adatjavítás (Telefonszám)
+### -----------------------------------------------------------
+
+### 5.1 Erzsi észreveszi a hibát és javítja
+PATCH {{host}}/api/dolgozok/{{registerBela.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "Telefonszam": "+36309998877"
+}
+
+
+### -----------------------------------------------------------
+### SZITUÁCIÓ 6: Készlethiány és Rendelés
+### -----------------------------------------------------------
+
+### 6.1 Erzsi ránéz a Dashboardra az alacsony készlet miatt
+GET {{host}}/api/dashboard/low-stock
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### 6.2 Erzsi rendelést ad le a hiányzó ruhából
+# @name createOrderErzsi
+POST {{host}}/api/rendelesek/place
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "RuhaID": {{findRuha.response.body.$[0].Cikkszam}},
+  "Mennyiseg": 50,
+  "Statusz": "Leadva"
+}

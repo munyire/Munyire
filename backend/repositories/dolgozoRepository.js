@@ -12,6 +12,18 @@ async function findAll() {
   return models.Dolgozo.findAll();
 }
 
+async function search(query) {
+  const { Op } = require("sequelize");
+  return models.Dolgozo.findAll({
+    where: {
+      [Op.or]: [
+        { DNev: { [Op.like]: `%${query}%` } },
+        { FelhasznaloNev: { [Op.like]: `%${query}%` } }
+      ]
+    }
+  });
+}
+
 async function findAllNames() {
   return models.Dolgozo.findAll({
     attributes: ["DolgozoID", "DNev"],
@@ -34,4 +46,4 @@ async function remove(id) {
   return models.Dolgozo.destroy({ where: { DolgozoID: id } });
 }
 
-module.exports = { findById, findByUsername, findAll, findAllNames, create, update, remove };
+module.exports = { findById, findByUsername, findAll, findAllNames, create, update, remove, search };

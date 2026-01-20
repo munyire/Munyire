@@ -5,7 +5,7 @@ const requireRole = require("../middlewares/requireRoleMiddleware");
 const { ROLES } = require("../utils/roles");
 const validationHandler = require("../middlewares/validationHandler");
 const { issueValidator, returnValidator } = require("../validators/ruhakibeValidators");
-const controller = require("../controllers/ruhakibeController");
+const controller = require("../controllers/ruhaKiBeController");
 
 router.use(auth);
 
@@ -30,10 +30,19 @@ router.get("/stats", requireRole(ROLES.Manager), controller.stats);
 // Egy tranzakció részletei
 router.get("/:ruhaKiBeId", requireRole(ROLES.Manager), controller.get);
 
-// Új kiadás rögzítése
+// Új kiadás rögzítése (Standard REST)
 router.post("/", requireRole(ROLES.Manager), issueValidator, validationHandler, controller.create);
 
-// Visszavétel rögzítése
+// ACTION: Kiadás (Alias)
+router.post("/issue", requireRole(ROLES.Manager), issueValidator, validationHandler, controller.create);
+
+// ACTION: Visszavétel
+router.post("/return", requireRole(ROLES.Manager), returnValidator, validationHandler, controller.returnItem);
+
+// ACTION: Tömeges Visszavétel
+router.post("/return-multiple", requireRole(ROLES.Manager), controller.returnMultipleItems);
+
+// Visszavétel rögzítése (Standard REST)
 router.patch(
   "/:ruhaKiBeId",
   requireRole(ROLES.Manager),

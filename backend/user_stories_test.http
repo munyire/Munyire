@@ -75,6 +75,20 @@ GET {{host}}/api/dashboard/stats
 Authorization: Bearer {{managerToken}}
 
 ### US-05: Dashboard megtekintése (Alacsony készlet)
+# Hozzunk létre egy alacsony készletű ruhát a teszt kedvéért (Mennyiseg: 3)
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "Fajta": "Kevés Póló",
+  "Szin": "Piros",
+  "Meret": "S",
+  "Mennyiseg": 3,
+  "Minoseg": "Új"
+}
+
+### US-05: Dashboard megtekintése (Alacsony készlet - Ellenőrzés)
 GET {{host}}/api/dashboard/low-stock
 Authorization: Bearer {{managerToken}}
 
@@ -83,7 +97,7 @@ GET {{host}}/api/ruhak
 Authorization: Bearer {{managerToken}}
 
 ### US-06: Raktárkészlet keresés (Pl. "Nadrag")
-GET {{host}}/api/ruhak/search?q=Nadrag
+GET {{host}}/api/ruhak/search?q=tej
 Authorization: Bearer {{managerToken}}
 
 ### US-07: Munkaruha kiadása
@@ -95,7 +109,7 @@ Authorization: Bearer {{managerToken}}
 
 {
   "DolgozoID": {{dolgozoId}},
-  "Cikkszam": {{testCikkszam}},
+  "RuhaID": {{testCikkszam}},
   "Mennyiseg": 1,
   "Indok": "Igénylés US-07 alapján"
 }
@@ -119,7 +133,7 @@ Content-Type: application/json
 Authorization: Bearer {{managerToken}}
 
 {
-  "Cikkszam": {{testCikkszam}},
+  "RuhaID": {{testCikkszam}},
   "Mennyiseg": 50,
   "Statusz": "Leadva"
 }
@@ -131,7 +145,7 @@ Content-Type: application/json
 Authorization: Bearer {{managerToken}}
 
 {
-  "Statusz": "Feldolgozas alatt"
+  "Statusz": "Lemondva"
 }
 
 ### ═══════════════════════════════════════════════════════════════

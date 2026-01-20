@@ -145,3 +145,16 @@ Ez a dokumentum tartalmazza a rendszer összes felhasználói történetét (Use
 *   **Akceptációs Kritériumok:**
     *   Egyedi Cikkszám ellenőrzése.
     *   Sikeres létrehozás után megjelenik a választható listákban.
+
+---
+
+## 5. End-to-End Forgatókönyvek (E2E)
+
+### E2E-01: Erzsi (Manager) műszakja
+**Leírás:** Egy teljes munkafolyamat szimulációja, ahol a Manager (Erzsi) különböző feladatokat lát el.
+1.  **Kiadás:** Varga Éva munkaruhát igényel -> Erzsi kiadja.
+2.  **Visszavétel:** Kovács László visszahoz egy ruhát -> Erzsi visszaveszi "Új" állapottal.
+3.  **Új belépő:** Kurta Béla belép -> Erzsi regisztrálja.
+4.  **Kiadás új dolgozónak:** Erzsi kiad ruhákat Bélának.
+5.  **Adatjavítás:** Béla telefonszáma hibás volt -> Erzsi javítja.
+6.  **Készlethiány kezelése:** Erzsi észleli az alacsony készletet -> Utánpótlást rendel.

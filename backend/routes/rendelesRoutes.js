@@ -27,6 +27,9 @@ router.get("/:rendelesId", requireRole(ROLES.Manager), controller.get);
 // Új rendelés létrehozása
 router.post("/", requireRole(ROLES.Manager), createRendeles, validationHandler, controller.create);
 
+// ACTION: Rendelés leadása (Alias)
+router.post("/place", requireRole(ROLES.Manager), createRendeles, validationHandler, controller.create);
+
 // Rendelés módosítása
 router.patch(
   "/:rendelesId",

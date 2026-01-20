@@ -18,6 +18,19 @@ async function listNames(req, res, next) {
   }
 }
 
+async function search(req, res, next) {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({ error: "Query parameter 'q' is required" });
+    }
+    const items = await dolgozoService.search(q);
+    res.json(items);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function get(req, res, next) {
   try {
     const item = await dolgozoService.get(req.params.dolgozoId);
@@ -85,7 +98,9 @@ async function listWithActiveItems(req, res, next) {
 
 module.exports = {
   list,
+  list,
   listNames,
+  search,
   get,
   create,
   update,

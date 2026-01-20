@@ -16,6 +16,9 @@ router.get("/", requireRole(ROLES.Manager), controller.list);
 // Összes dolgozó neve (Frontend dropdownokhoz - Manager/Admin)
 router.get("/names", requireRole(ROLES.Manager), controller.listNames);
 
+// Keresés név/felhasználónév alapján
+router.get("/search", requireRole(ROLES.Manager), controller.search);
+
 // Dolgozók, akiknek van kint ruhája (Manager/Admin)
 router.get("/with-active-items", requireRole(ROLES.Manager), controller.listWithActiveItems);
 
@@ -53,5 +56,8 @@ router.get("/with-active-items", requireRole(ROLES.Manager), controller.listWith
 
 // Új dolgozó felvétele (Admin) – opcionális: külön /api/auth/register is tud user-t létrehozni
 router.post("/", requireRole(ROLES.Admin), createDolgozo, validationHandler, controller.create);
+
+// ACTION: Manager általi regisztráció
+router.post("/register-managed", requireRole(ROLES.Manager), createDolgozo, validationHandler, controller.create);
 
 module.exports = router;
