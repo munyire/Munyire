@@ -1,5 +1,5 @@
 @host = http://localhost:3000
-@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY4MjE1MDUwLCJleHAiOjE3NjgyNDM4NTB9.MtSvs3uvQ27NUZoyMihbPAWhEGL9OmNfMW5CRV17Cvs
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY4Mjg5MjU2LCJleHAiOjE3NjgzMTgwNTZ9.nppt5ntTcTF1rnypr-wFyd-Gy0z_GbtAfk0A_89-g-A
 @managerToken = {{managerToken}}
 @userToken = {{userToken}}
 

@@ -98,7 +98,6 @@ async function listWithActiveItems(req, res, next) {
 
 module.exports = {
   list,
-  list,
   listNames,
   search,
   get,

@@ -75,7 +75,14 @@ async function create(data) {
   let cikkszam = 1000000;
   const maxCikkszam = await ruhaRepo.findMaxCikkszam();
   if (maxCikkszam) {
-    cikkszam = maxCikkszam + 1;
+    // If the max is less than 1,000,000 (e.g. legacy data), we still want to jump to 1,000,000? 
+    // Or if max is 55, should we make it 56?
+    // The requirement says Cikkszam should be 7 digits (>= 1000000).
+    // So if max found is < 1000000, we stick to 1000000.
+    // If max found is >= 1000000, we take max + 1.
+    if (maxCikkszam >= 1000000) {
+      cikkszam = maxCikkszam + 1;
+    }
   }
 
   data.Cikkszam = cikkszam;

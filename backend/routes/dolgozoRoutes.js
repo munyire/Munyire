@@ -51,9 +51,6 @@ router.get(
   controller.listActiveClothes
 );
 
-// Dolgozók, akiknek van kint ruhája (Manager/Admin)
-router.get("/with-active-items", requireRole(ROLES.Manager), controller.listWithActiveItems);
-
 // Új dolgozó felvétele (Admin) – opcionális: külön /api/auth/register is tud user-t létrehozni
 router.post("/", requireRole(ROLES.Admin), createDolgozo, validationHandler, controller.create);
 

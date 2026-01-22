@@ -508,6 +508,7 @@ async function testSkuAndDuplicates() {
     const res = await request('POST', '/api/ruhak', baseRuha, testData.adminToken);
     assert(res.status === 201, 'Create auto-SKU Item 1 returns 201');
     assert(Number.isInteger(res.data.Cikkszam), 'Generated SKU is Integer');
+    console.log(`Generated SKU: ${res.data.Cikkszam}`);
     assert(res.data.Cikkszam >= 1000000, 'Generated SKU is >= 1000000');
 
     firstSku = res.data.Cikkszam;

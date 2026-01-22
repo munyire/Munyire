@@ -32,11 +32,9 @@ async function get(id) {
 }
 
 async function issue({ DolgozoID, RuhaID, Mennyiseg = 1, Indok }) {
-  // RuhaID is effectively Cikkszam now (7-digit int)
   const cikkszam = RuhaID;
 
   return sequelize.transaction(async (t) => {
-    // Check if Ruha exists
     const ruha = await ruhaRepo.findByCikkszam(cikkszam);
     if (!ruha) {
       const err = new Error("Ruha not found");
@@ -44,8 +42,7 @@ async function issue({ DolgozoID, RuhaID, Mennyiseg = 1, Indok }) {
       throw err;
     }
 
-    // Always take from 'Új' stock
-    const raktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, "Új");
+    const raktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, "Új", { transaction: t });
 
     if (!raktar || raktar.Mennyiseg < Mennyiseg) {
       const err = new Error("Insufficient stock (Új)");
@@ -53,35 +50,17 @@ async function issue({ DolgozoID, RuhaID, Mennyiseg = 1, Indok }) {
       throw err;
     }
 
-    // Decrement stock using raktarRepo or direct update
-    // raktarRepo.updateStock uses separate transaction param check?
-    // Let's use direct update here since we are in transaction t
     await raktar.update({ Mennyiseg: raktar.Mennyiseg - Mennyiseg }, { transaction: t });
-
-    // Create Issue Record
-    // Note: Database Schema for RuhaKiBe still has RuhaID column? 
-    // Yes, but I updated model index associations to map RuhaID (FK) to Cikkszam (PK).
-    // Wait, physically the column `RuhaID` in `RuhaKiBe` table MIGHT need to be renamed `Cikkszam` for clarity?
-    // User agreed to data loss/reset.
-    // In `RuhaKiBe.js` model definition, I did NOT rename `RuhaID` to `Cikkszam` on the define call, I only updated `index.js` associations.
-    // If I didn't change `RuhaKiBe.js`, the column name Sequelize uses might default to `RuhaCikkszam` or similar if I rely on `index.js`.
-    // BUT `RuhaKiBe.js` DOES NOT explicitly define the FK column in `attributes`. 
-    // So Sequelize adds it. 
-    // If I use `Ruha.hasMany(RuhaKiBe, { foreignKey: 'Cikkszam' })`, Sequelize expects column `Cikkszam` in `RuhaKiBe`.
-    // So `RuhaKiBe.create({ DolgozoID, Cikkszam: cikkszam, ... })` is correct.
-    // BUT the frontend/API likely sends `RuhaID`. 
-    // So I map `RuhaID` input -> `Cikkszam` field for DB creation.
 
     return models.RuhaKiBe.create({
       DolgozoID,
-      Cikkszam: cikkszam, // Use Cikkszam as the foreign key field
+      Cikkszam: cikkszam,
       Mennyiseg,
       Indok
     }, { transaction: t });
   });
 }
 
-// Helper function to handle single item return within a transaction
 async function _processReturn(id, RuhaMinoseg, VisszaDatum, t) {
   const record = await models.RuhaKiBe.findByPk(id, { transaction: t });
   if (!record) {
@@ -90,22 +69,16 @@ async function _processReturn(id, RuhaMinoseg, VisszaDatum, t) {
     throw err;
   }
   if (record.VisszaDatum) {
-    return record; // already returned
+    return record;
   }
 
   const cikkszam = record.Cikkszam;
   await record.update({ VisszaDatum, RuhaMinoseg }, { transaction: t });
 
-  // Increment Stock
   if (cikkszam && RuhaMinoseg) {
-    let raktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, RuhaMinoseg);
-    // Note: raktarRepo might not support transaction passing in find, but read is safe-ish.
-    // However, for update we must be careful.
-    // Ideally repo methods should accept transaction options.
-    // I will assume for now find is OK, but for CREATE/UPDATE I use models directly with t.
+    let raktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, RuhaMinoseg, { transaction: t });
 
     if (!raktar) {
-      // Create new Raktar entry
       raktar = await models.Raktar.create({
         Cikkszam: cikkszam,
         Minoseg: RuhaMinoseg,
@@ -125,15 +98,14 @@ async function markReturn(id, { RuhaMinoseg, VisszaDatum = new Date() }) {
 }
 
 async function markReturnMultiple(items) {
-  // items: [{ RuhaKiBeID, RuhaMinoseg }]
-  const VisszaDatum = new Date(); // Shared return date
+  const VisszaDatum = new Date();
   return sequelize.transaction(async (t) => {
     const results = [];
     for (const item of items) {
       if (!item.RuhaKiBeID) throw new Error("RuhaKiBeID missing in bulk return item");
       const updated = await _processReturn(
         item.RuhaKiBeID,
-        item.RuhaMinoseg || "Használt", // Default quality if missing
+        item.RuhaMinoseg || "Használt",
         VisszaDatum,
         t
       );

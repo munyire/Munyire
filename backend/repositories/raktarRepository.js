@@ -1,11 +1,12 @@
 const { models } = require("../db");
 
-async function findByCikkszamAndMinoseg(cikkszam, minoseg) {
+async function findByCikkszamAndMinoseg(cikkszam, minoseg, options = {}) {
     return models.Raktar.findOne({
         where: {
             Cikkszam: cikkszam,
             Minoseg: minoseg
-        }
+        },
+        ...options
     });
 }
 
