@@ -8,7 +8,7 @@ import {
   Users, 
   Shirt, 
   LogOut,
-  ArrowRightLeft,
+  MoveHorizontal,
   ShoppingCart,
   Repeat
 } from 'lucide-vue-next';
@@ -64,7 +64,7 @@ const logout = () => {
         </router-link>
 
         <router-link to="/transactions" class="nav-item" :class="{ active: isActive('/transactions') }">
-          <ArrowRightLeft size="22" />
+          <MoveHorizontal size="22" />
           <span>Kiadás/Visszavétel</span>
         </router-link>
 
@@ -92,7 +92,7 @@ const logout = () => {
 
 <style scoped>
 .sidebar {
-  width: 180px;
+  width: 250px;
   position: sticky;
   top: 12px;
   margin: 12px;
@@ -153,7 +153,7 @@ const logout = () => {
   border-radius: 8px;
   color: #64748b;
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   transition: all 0.2s ease;
   text-decoration: none;
   background-color: transparent;

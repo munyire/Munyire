@@ -34,16 +34,16 @@ onMounted(fetchMyItems);
 
 <template>
   <div class="my-clothes-view">
-    <div class="header mb-8">
-      <h1>Saját Ruháim</h1>
-      <p class="text-muted">Az önnél lévő munkaruhák nyilvántartása</p>
+    <div class="header-card p-14 shadow-xl bg-white rounded-[2rem] flex flex-col items-center justify-center text-center">
+      <h1 class="m-0 text-8xl font-black text-gray-900 tracking-tighter leading-none">Saját Ruháim</h1>
+      <p class="text-muted m-0 text-4xl mt-8 font-semibold">Az önnél lévő munkaruhák nyilvántartása</p>
     </div>
 
     <div v-if="loading" class="text-center py-12">
       <p>Betöltés...</p>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
       <div v-for="item in myItems" :key="item.RuhaKiBeID" class="card hover:shadow-md transition-shadow">
         <div class="flex items-start justify-between mb-4">
           <div class="p-3 bg-blue-100 text-blue-600 rounded-lg">
@@ -85,7 +85,16 @@ onMounted(fetchMyItems);
 
 <style scoped>
 .my-clothes-view {
-  max-width: 1200px;
+  width: 100%;
+  padding-right: 12px; /* Match dashboard padding if needed */
+}
+
+.header-card {
+  background-color: white;
+  border-radius: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100% !important;
+  margin-bottom: 12px;
 }
 
 .badge {
