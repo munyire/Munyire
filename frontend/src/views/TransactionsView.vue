@@ -3,7 +3,9 @@ import { ref, onMounted, computed } from 'vue';
 import api from '../api/axios';
 import SearchableSelect from '../components/common/SearchableSelect.vue';
 import BaseButton from '../components/common/BaseButton.vue';
-import { ArrowRightLeft, History } from 'lucide-vue-next';
+
+import Modal from '../components/ui/Modal.vue';
+import { ArrowRightLeft, History, Check } from 'lucide-vue-next';
 
 const activeTab = ref('issue'); // 'issue', 'return', 'history'
 const loading = ref(false);
@@ -22,12 +24,15 @@ const issueForm = ref({
   Indok: ''
 });
 
-// Return Data
-const returnForm = ref({
-  RuhaKiBeID: null,
-  RuhaMinoseg: 'Jo', // Default return quality
-  VisszaDatum: new Date().toISOString().split('T')[0]
-});
+
+
+
+// Modal State
+const showReturnModal = ref(false);
+const selectedReturnItem = ref(null);
+const returnQuality = ref('Jó');
+const qualityOptions = ['Új', 'Jó', 'Szakadt'];
+
 
 const fetchDropdownData = async () => {
   try {
@@ -95,25 +100,43 @@ const handleIssue = async () => {
   }
 };
 
-const handleReturn = async (issueId) => {
-  // We can open a modal or just verify quality and submit.
-  // For simplicity, let's assume "Jó" condition or allow prompt.
-  // The requirement says "Ruhák visszavétele (visszavételkori minőség rögzítése)".
-  // Let's use a small inline form or prompt.
-  
-  const quality = prompt('Milyen állapotban van a ruha? (Új, Jó, Szakadt, Használt)', 'Jó');
-  if (!quality) return;
+const handleReturn = (issue) => {
+  selectedReturnItem.value = issue;
+  returnQuality.value = 'Jó'; // Default
+  showReturnModal.value = true;
+};
+
+const confirmReturn = async () => {
+  if (!selectedReturnItem.value) return;
 
   try {
-    await api.patch(`/ruhakibe/${issueId}`, {
-      RuhaMinoseg: quality,
+    await api.patch(`/ruhakibe/${selectedReturnItem.value.RuhaKiBeID}`, {
+      RuhaMinoseg: returnQuality.value,
       VisszaDatum: new Date().toISOString().split('T')[0]
     });
+    
     // Remove from local list
-    activeIssues.value = activeIssues.value.filter(i => i.RuhaKiBeID !== issueId);
-    alert('Sikeres visszavétel!');
+    activeIssues.value = activeIssues.value.filter(i => i.RuhaKiBeID !== selectedReturnItem.value.RuhaKiBeID);
+    
+    // Success message
+    message.value = { type: 'success', text: 'Sikeres visszavétel!' };
+    
+    // Close modal
+    showReturnModal.value = false;
+    selectedReturnItem.value = null;
+    
+    // Optional: clear message after a few seconds
+    setTimeout(() => {
+      if (message.value.type === 'success') message.value = { type: '', text: '' };
+    }, 3000);
+
   } catch (err) {
-    alert('Hiba visszavételkor');
+    console.error('Hiba visszavételkor', err);
+    message.value = { type: 'error', text: 'Hiba a visszavétel során!' };
+    // Close modal even on error? Or keep it open?
+    // Let's keep it open but show error if we had a modal error state. 
+    // Here we just use the global message, so maybe close it.
+    showReturnModal.value = false;
   }
 };
 
@@ -132,7 +155,7 @@ onMounted(() => {
     </div>
 
     <!-- Larger Tabs -->
-    <div class="tabs-container flex justify-center gap-6">
+    <div class="tabs-container flex justify-center gap-6 relative z-10">
       <button 
         @click="activeTab = 'issue'" 
         class="tab-btn scale-110"
@@ -206,6 +229,11 @@ onMounted(() => {
       <div v-if="activeIssues.length === 0" class="text-center text-muted py-16 text-2xl font-semibold opacity-30">
         Nincs jelenleg kint lévő ruha.
       </div>
+      
+      <!-- Feedback Message for Returns -->
+      <div v-if="message.text && activeTab === 'return'" :class="`mb-6 p-6 rounded-2xl text-xl font-bold ${message.type === 'error' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`">
+        {{ message.text }}
+      </div>
 
       <div v-else class="overflow-x-auto">
         <table class="w-full border-collapse">
@@ -232,7 +260,7 @@ onMounted(() => {
                 <div class="text-xl font-bold text-gray-500">{{ new Date(issue.KiadasDatum).toLocaleDateString('hu-HU') }}</div>
               </td>
               <td class="py-8 text-right pr-4">
-                <button class="btn-return scale-110" @click="handleReturn(issue.RuhaKiBeID)">
+                <button class="btn-return scale-110" @click="handleReturn(issue)">
                   Visszavétel
                 </button>
               </td>
@@ -241,6 +269,49 @@ onMounted(() => {
         </table>
       </div>
     </div>
+
+    <!-- Return Quality Modal -->
+    <Modal :show="showReturnModal" title="Ruha Visszavétele - Minőség" @close="showReturnModal = false">
+      <template #body>
+        <div v-if="selectedReturnItem" class="flex flex-col gap-6">
+          <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
+            <h4 class="text-gray-500 font-bold uppercase text-sm mb-2">Visszavett tétel</h4>
+            <div class="text-2xl font-black text-gray-800 mb-1">{{ selectedReturnItem.Ruha?.Fajta }}</div>
+            <div class="text-lg text-blue-600 font-mono">{{ selectedReturnItem.Ruha?.Cikkszam }}</div>
+            <div class="mt-4 text-gray-600 font-semibold">Tőle: <span class="text-gray-900">{{ selectedReturnItem.Dolgozo?.DNev }}</span></div>
+          </div>
+
+          <div>
+            <label class="block mb-4 text-xl font-bold text-gray-800">Milyen állapotban van a ruha?</label>
+            <div class="grid grid-cols-3 gap-4">
+              <label 
+                v-for="opt in qualityOptions" 
+                :key="opt"
+                class="cursor-pointer relative"
+              >
+                <input 
+                  type="radio" 
+                  name="quality" 
+                  :value="opt" 
+                  v-model="returnQuality"
+                  class="peer sr-only"
+                >
+                <div class="p-4 rounded-xl border-2 border-gray-200 text-center font-bold text-gray-600 transition-all peer-checked:border-blue-600 peer-checked:text-blue-600 peer-checked:bg-blue-50 hover:border-blue-300">
+                  {{ opt }}
+                  <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 text-blue-600">
+                    <Check size="16" />
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <button class="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors" @click="showReturnModal = false">Mégse</button>
+        <button class="px-6 py-3 rounded-xl font-bold text-white bg-blue-800 hover:bg-blue-900 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1" @click="confirmReturn">Visszavétel Rögzítése</button>
+      </template>
+    </Modal>
 
   </div>
 </template>

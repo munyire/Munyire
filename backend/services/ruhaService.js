@@ -106,7 +106,28 @@ async function create(data) {
 }
 
 async function update(cikkszam, data) {
-  return ruhaRepo.update(cikkszam, data);
+  // Update Ruha details
+  const updatedRuha = await ruhaRepo.update(cikkszam, data);
+  if (!updatedRuha) return null;
+
+  // Update Stock if provided
+  if (data.Mennyiseg !== undefined) {
+    const minoseg = data.Minoseg || "Új";
+    let raktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, minoseg);
+
+    if (raktar) {
+      await raktar.update({ Mennyiseg: data.Mennyiseg });
+    } else {
+      await raktarRepo.create({
+        Cikkszam: cikkszam,
+        Minoseg: minoseg,
+        Mennyiseg: data.Mennyiseg
+      });
+    }
+  }
+
+  // Return complete object
+  return ruhaRepo.findById(cikkszam);
 }
 
 async function remove(cikkszam) {
