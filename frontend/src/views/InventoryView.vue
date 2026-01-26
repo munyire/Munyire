@@ -94,9 +94,9 @@ const saveItem = async () => {
   try {
     if (isEditing.value) {
       // Update
-      await api.patch(`/ruhak/${form.value.RuhaID}`, form.value);
+      await api.patch(`/ruhak/${form.value.Cikkszam}`, form.value);
       // Optimistic update
-      const index = clothes.value.findIndex(c => c.RuhaID === form.value.RuhaID);
+      const index = clothes.value.findIndex(c => c.Cikkszam === form.value.Cikkszam);
       if (index !== -1) clothes.value[index] = { ...form.value };
     } else {
       // Create
@@ -104,7 +104,7 @@ const saveItem = async () => {
       if (!payload.Cikkszam) delete payload.Cikkszam;
       
       const res = await api.post('/ruhak', payload);
-      clothes.value.push(res.data || { ...form.value, RuhaID: Date.now() }); // fallback ID if mock
+      clothes.value.push(res.data || { ...form.value }); // fallback ID if mock
     }
     showModal.value = false;
   } catch (error) {
@@ -170,7 +170,7 @@ onMounted(fetchClothes);
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
-            <tr v-for="item in filteredClothes" :key="item.RuhaID" class="hover:bg-gray-50 transition-colors">
+            <tr v-for="item in filteredClothes" :key="item.Cikkszam" class="hover:bg-gray-50 transition-colors">
               <td class="px-4 py-5 text-center font-medium">{{ item.Cikkszam }}</td>
               <td class="px-4 py-5 text-center">{{ item.Fajta }}</td>
               <td class="px-4 py-5 text-center">{{ item.Meret }}</td>
