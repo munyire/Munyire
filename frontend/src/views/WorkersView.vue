@@ -178,15 +178,19 @@ onMounted(fetchWorkers);
 
     <!-- Actions Row -->
     <div class="actions-row flex items-center gap-8 mb-10 px-8">
-      <button @click="openAddModal" class="btn-add scale-125 origin-left shadow-lg">
-        <Plus size="24" />
+      <button @click="openAddModal" class="btn-add shadow-lg text-lg px-8 py-4 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl transition-all hover:-translate-y-1">
+        <Plus size="28" />
         <span>Új dolgozó</span>
       </button>
-      <div class="stats-box bg-white px-8 py-4 rounded-3xl shadow-xl border border-gray-50 flex items-center gap-4">
-        <Users size="24" class="text-blue-600" />
+      
+      <!-- Total Workers Box -->
+      <div class="stats-box bg-white px-10 py-5 rounded-[2rem] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-6">
+        <div class="p-4 bg-blue-50 rounded-2xl text-blue-600">
+          <Users size="28" />
+        </div>
         <div class="flex flex-col">
-          <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Összesen</span>
-          <div class="text-2xl font-black text-gray-900">{{ workers.length }} alkalmazott</div>
+          <span class="text-sm text-gray-400 font-extrabold uppercase tracking-widest mb-1">Összesen</span>
+          <div class="text-3xl font-black text-gray-900 leading-none">{{ workers.length }} alkalmazott</div>
         </div>
       </div>
     </div>

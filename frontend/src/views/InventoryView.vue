@@ -135,24 +135,24 @@ onMounted(fetchClothes);
       <p class="text-muted m-0 text-4xl mt-8 font-semibold">Raktárkészlet kezelése</p>
     </div>
 
-    <!-- Actions Row -->
-    <div class="actions-row flex justify-end mt-5 mb-5">
-      <button @click="openAddModal" class="btn btn-primary px-8 py-4 text-lg font-bold shadow-lg">
-        <Plus size="24" />
-        Új termék
-      </button>
-    </div>
-
-    <div class="controls flex gap-4 mb-6">
-      <div class="search-box relative flex-1 max-w-sm">
-        <Search size="18" class="absolute left-3 top-3 text-muted" />
+    <!-- Controls Row -->
+    <div class="controls flex justify-between items-center">
+      <!-- Search Input -->
+      <div class="search-box flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-md border border-gray-100 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all w-96">
+        <Search size="20" class="text-gray-400" />
         <input 
           v-model="searchQuery" 
           type="text" 
           placeholder="Keresés cikkszám vagy név alapján..." 
-          class="pl-10"
+          class="bg-transparent border-none outline-none w-full text-gray-700 placeholder-gray-400 font-medium"
         />
       </div>
+
+      <!-- Add Button -->
+      <button @click="openAddModal" class="btn btn-primary px-8 py-3 text-lg font-bold shadow-lg flex items-center gap-2 rounded-2xl transition-transform hover:scale-105 active:scale-95">
+        <Plus size="24" />
+        Új termék
+      </button>
     </div>
 
     <div class="card bg-white rounded-[2rem] shadow-sm p-8 overflow-hidden">
@@ -262,12 +262,13 @@ onMounted(fetchClothes);
   width: 100% !important;
   display: flex;
   flex-direction: column;
+  gap: 24px;
 }
 
 .header-card {
   background-color: white;
   border-radius: 2rem;
-  margin-bottom: 12px;
+  border-radius: 2rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   width: 100% !important;
 }
