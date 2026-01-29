@@ -1,0 +1,769 @@
+@host = http://localhost:3000
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MUNYIRE - ÖSSZES USER STORY VÉGPONT
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Ez a fájl az összes User Story-t lefedi külön-külön végpontokkal.
+# A dolgozó keresés helyett a /names végpontot használjuk (valósabb dropdown szimul.)
+# Futtatás: Sorrendben hajtsd végre a kéréseket (először login-ok kellenek a tokenekhez)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ELŐKÉSZÜLETEK - TESZT ADATOK LÉTREHOZÁSA (Egyszer futtatandó)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+### [SETUP] Admin bejelentkezés (előfeltétel minden máshoz)
+# @name loginAdmin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "alma"
+}
+
+### [SETUP] Manager (Erzsi) létrehozása
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Erzsi Manager",
+  "email": "erzsi@munyire.hu",
+  "username": "erzsi",
+  "password": "alma",
+  "role": "Manager"
+}
+
+### [SETUP] Dolgozók létrehozása (különböző tesztekhez)
+# @name createJanos
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Kiss János",
+  "email": "janos.kiss@munyire.hu",
+  "username": "janos",
+  "password": "alma",
+  "role": "Dolgozo"
+}
+
+###
+# @name createEva
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Varga Éva",
+  "email": "eva.varga@munyire.hu",
+  "username": "vargaeva",
+  "password": "alma",
+  "role": "Dolgozo"
+}
+
+###
+# @name createLaszlo
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Kovács László",
+  "email": "laszlo.kovacs@munyire.hu",
+  "username": "kovacslaszlo",
+  "password": "alma",
+  "role": "Dolgozo"
+}
+
+### [SETUP] Teszt ruhák létrehozása
+# @name createPolo
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "Fajta": "Munka Póló",
+  "Szin": "Kék",
+  "Meret": "L",
+  "Mennyiseg": 50,
+  "Minoseg": "Új"
+}
+
+###
+# @name createNadrag
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "Fajta": "Munka Nadrág",
+  "Szin": "Fekete",
+  "Meret": "M",
+  "Mennyiseg": 30,
+  "Minoseg": "Új"
+}
+
+###
+# @name createAlacsonyKeszlet
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "Fajta": "Alacsony Készletű Cipő",
+  "Szin": "Fekete",
+  "Meret": "42",
+  "Mennyiseg": 3,
+  "Minoseg": "Új"
+}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 1. HITELESÍTÉS (US-01, US-02) - MINDEN SZEREPKÖR
+# ═══════════════════════════════════════════════════════════════════════════════
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-01: Bejelentkezés                                                        │
+### │ "Szeretnék bejelentkezni a felhasználónevem és jelszavam megadásával"       │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-01a: Admin bejelentkezés - Helyes adatok
+# @name loginAdmin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "alma"
+}
+
+### US-01b: Manager (Erzsi) bejelentkezés
+# @name loginErzsi
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "erzsi",
+  "password": "alma"
+}
+
+### US-01c: Dolgozó (János) bejelentkezés
+# @name loginJanos
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "janos",
+  "password": "alma"
+}
+
+### US-01d: Bejelentkezés HELYTELEN adatokkal (Elvárt: 401 - "Hibás felhasználónév vagy jelszó")
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "hibas_jelszo"
+}
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-02: Kijelentkezés                                                       │
+### │ "A munkamenet érvénytelenné váljon" - REST API stateless, kliens oldalon   │
+### │ töröljük a tokent. Demonstráció: token nélkül nincs hozzáférés.            │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-02: Token nélküli kérés védett végpontra (Elvárt: 401 Unauthorized)
+GET {{host}}/api/dolgozok/{{loginJanos.response.body.user.id}}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 2. DOLGOZÓ ALAPFUNKCIÓK (US-03, US-04)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-03: Saját adatok megtekintése                                           │
+### │ "Szeretnék hozzáférni a saját profil adataimhoz (név, email, méretek)"     │
+### │ Elvárt: Látszik név, email, telefonszám, munkakör                          │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-03a: Dolgozó (János) saját adatainak lekérdezése
+# A dolgozó a saját ID-jával lekéri saját profilját
+GET {{host}}/api/dolgozok/{{loginJanos.response.body.user.id}}
+Authorization: Bearer {{loginJanos.response.body.token}}
+
+### US-03b: Dolgozó MÁS adatainak lekérése (Elvárt: 403 Forbidden - nem láthatja mások adatait)
+# János megpróbálja megnézni az admin adatait
+GET {{host}}/api/dolgozok/1
+Authorization: Bearer {{loginJanos.response.body.token}}
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-04: Saját kiadott ruhák megtekintése                                    │
+### │ "Szeretnék listát látni a nálam lévő munkaruhákról"                        │
+### │ Elvárt: Ruha típus, méret, kiadás dátuma - csak "kint lévő" ruhák          │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-04a: Dolgozó saját aktív (kint lévő) ruháinak listázása
+GET {{host}}/api/ruhakibe/mine
+Authorization: Bearer {{loginJanos.response.body.token}}
+
+### US-04b: Dolgozó összes tranzakciójának megtekintése (visszavettek is)
+GET {{host}}/api/dolgozok/{{loginJanos.response.body.user.id}}/ruhak
+Authorization: Bearer {{loginJanos.response.body.token}}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 3. MANAGER FUNKCIÓK (US-05, US-06, US-07, US-08, US-09, US-10)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-05: Dashboard megtekintése                                              │
+### │ "Szeretnék áttekintő vezérlőpultot látni bejelentkezéskor"                 │
+### │ Elvárt: Alacsony készletű ruhák, folyamatban lévő rendelések               │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-05a: Dashboard statisztikák
+GET {{host}}/api/dashboard/stats
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-05b: Alacsony készletű ruhák listája
+GET {{host}}/api/dashboard/low-stock
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-05c: Legutóbbi tevékenységek
+GET {{host}}/api/dashboard/recent-activity
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-05d: Folyamatban lévő rendelések
+GET {{host}}/api/rendelesek/pending
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-06: Raktárkészlet megtekintése                                          │
+### │ "Szeretnék kereshető listát a raktárban lévő ruhákról"                     │
+### │ Szűrés: típus, méret, nem. Látható: Mennyiseg, Minoseg                     │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-06a: Teljes raktárkészlet listázása
+GET {{host}}/api/ruhak
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-06b: Ruhák keresése típus alapján (pl. "Póló")
+GET {{host}}/api/ruhak/search?q=Polo
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-06c: Ruhák keresése méret alapján ("L")
+GET {{host}}/api/ruhak/search?q=L
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-06d: Szűrési opciók lekérdezése (szín, fajta, méret)
+GET {{host}}/api/ruhak/options
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-06e: Egy konkrét ruha részletei (cikkszám alapján)
+GET {{host}}/api/ruhak/{{createPolo.response.body.Cikkszam}}
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-07: Munkaruha kiadása (Készletcsökkentés)                               │
+### │ "Szeretnék rögzíteni egy ruhakiadást egy adott dolgozónak"                 │
+### │ Elvárt: Készlet csökken, RuhaKiBe bejegyzés létrejön                       │
+### │ VALÓS MEGOLDÁS: /dolgozok/names végpontból választunk (dropdown szimul.)   │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-07 ELŐKÉSZÜLET: Dolgozók neveinek lekérdezése (Frontend dropdownhoz)
+# Ez a valóságban így működik: a Manager egy dropdownból választ nevet
+# @name getDolgozoNames
+GET {{host}}/api/dolgozok/names
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-07a: Ruha kiadása Varga Évának (ID: createEva-ból)
+# @name issueToEva
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{createEva.response.body.id}},
+  "RuhaID": {{createPolo.response.body.Cikkszam}},
+  "Mennyiseg": 1,
+  "Indok": "Új munkaterületre való áthelyezés miatt kap pólót"
+}
+
+### US-07b: Ellenőrzés - Készlet csökkent-e?
+GET {{host}}/api/ruhak/{{createPolo.response.body.Cikkszam}}
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-07c: Kiadás megtagadása - nincs készlet (Elvárt: 400 - Stock not available)
+# Először adjuk ki az összes alacsony készletű cipőt, majd próbáljuk újra
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{createEva.response.body.id}},
+  "RuhaID": {{createAlacsonyKeszlet.response.body.Cikkszam}},
+  "Mennyiseg": 100,
+  "Indok": "Túl sok cipőt próbálunk kiadni"
+}
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-08: Munkaruha visszavétele                                              │
+### │ "Szeretnék visszavenni egy ruhát és rögzíteni állapotát"                   │
+### │ Elvárt: RuhaKiBe lezárul, raktár készlet nő (megadott minőséggel)          │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-08 ELŐKÉSZÜLET: Kovács Lászlónak kiadunk ruhákat, hogy visszavehessük
+# @name issueToLaszlo1
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{createLaszlo.response.body.id}},
+  "RuhaID": {{createPolo.response.body.Cikkszam}},
+  "Mennyiseg": 1,
+  "Indok": "Kezdő ruhacsomag - Póló"
+}
+
+###
+# @name issueToLaszlo2
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{createLaszlo.response.body.id}},
+  "RuhaID": {{createNadrag.response.body.Cikkszam}},
+  "Mennyiseg": 1,
+  "Indok": "Kezdő ruhacsomag - Nadrág"
+}
+
+### US-08a: Dolgozók listázása, akiknek van kint ruhája
+GET {{host}}/api/dolgozok/with-active-items
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-08b: László kint lévő ruháinak listázása
+# @name listLaszloActive
+GET {{host}}/api/dolgozok/{{createLaszlo.response.body.id}}/ruhak/aktiv
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-08c: Ruha visszavétele (egy darab, "Jó" minőséggel)
+PATCH {{host}}/api/ruhakibe/{{issueToLaszlo1.response.body.RuhaKiBeID}}
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "RuhaMinoseg": "Jó"
+}
+
+### US-08d: Ruha visszavétele (sérült, "Selejt" minőséggel)
+PATCH {{host}}/api/ruhakibe/{{issueToLaszlo2.response.body.RuhaKiBeID}}
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "RuhaMinoseg": "Selejt"
+}
+
+### US-08e: Ellenőrzés - Készlet növekedett-e? (Jó minőségű visszament)
+GET {{host}}/api/ruhak/{{createPolo.response.body.Cikkszam}}
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-08f: Tömeges visszavétel (több ruha egyszerre)
+# Előkészület: újabb kiadások
+# @name bulkIssue1
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{createLaszlo.response.body.id}},
+  "RuhaID": {{createPolo.response.body.Cikkszam}},
+  "Mennyiseg": 1,
+  "Indok": "Tömeges visszavételhez"
+}
+
+###
+# @name bulkIssue2
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "DolgozoID": {{createLaszlo.response.body.id}},
+  "RuhaID": {{createNadrag.response.body.Cikkszam}},
+  "Mennyiseg": 1,
+  "Indok": "Tömeges visszavételhez"
+}
+
+### Tömeges visszavétel endpoint
+POST {{host}}/api/ruhakibe/return-multiple
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "items": [
+    {
+      "RuhaKiBeID": {{bulkIssue1.response.body.RuhaKiBeID}},
+      "RuhaMinoseg": "Új"
+    },
+    {
+      "RuhaKiBeID": {{bulkIssue2.response.body.RuhaKiBeID}},
+      "RuhaMinoseg": "Használt"
+    }
+  ]
+}
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-09: Utánpótlás rendelés indítása                                        │
+### │ "Szeretnék új rendelést rögzíteni hiányzó ruhákra"                         │
+### │ Elvárt: Rendelés "Leadva" státusszal jön létre                             │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-09a: Új rendelés létrehozása
+# @name createOrder
+POST {{host}}/api/rendelesek
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "RuhaID": {{createPolo.response.body.Cikkszam}},
+  "Mennyiseg": 100,
+  "Statusz": "Leadva"
+}
+
+### US-09b: Rendelés ellenőrzése
+GET {{host}}/api/rendelesek/{{createOrder.response.body.RendelesID}}
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### US-09c: Összes rendelés listázása
+GET {{host}}/api/rendelesek
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-10: Rendelés státuszának frissítése                                     │
+### │ "Szeretnék rendelést 'Teljesítve' státuszra állítani"                      │
+### │ Elvárt: Készlet automatikusan növekszik ha jóváhagyva                      │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-10a: Rendelés státusz módosítása "Szállítás alatt"-ra
+PATCH {{host}}/api/rendelesek/{{createOrder.response.body.RendelesID}}
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "Statusz": "Szállítás alatt"
+}
+
+### US-10b: Új rendelés létrehozása a teljesítés teszthez
+# @name orderForComplete
+POST {{host}}/api/rendelesek
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "RuhaID": {{createNadrag.response.body.Cikkszam}},
+  "Mennyiseg": 50,
+  "Statusz": "Leadva"
+}
+
+### US-10c: Rendelés teljesítése készletnöveléssel (Admin jogosultság kell!)
+# Ez a végpont automatikusan hozzáadja a készlethez a beérkezett mennyiséget
+PATCH {{host}}/api/rendelesek/{{orderForComplete.response.body.RendelesID}}/complete
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{}
+
+### US-10d: Ellenőrzés - Készlet növekedett-e?
+GET {{host}}/api/ruhak/{{createNadrag.response.body.Cikkszam}}
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 4. ADMINISZTRÁTOR FUNKCIÓK (US-11, US-12, US-13)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-11: Új dolgozó felvétele                                                │
+### │ "Szeretnék új dolgozót regisztrálni (személyes + belépési adatok)"         │
+### │ Elvárt: Kötelező mezők validálva, egyedi felhasználónév, hash-elt jelszó   │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-11a: Új dolgozó létrehozása minden kötelező mezővel
+# @name createNewEmployee
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Új Kolléga Béla",
+  "email": "bela.ujkolega@munyire.hu",
+  "username": "belauj",
+  "password": "Biztonsagos123!",
+  "role": "Dolgozo"
+}
+
+### US-11b: Validáció - Hiányzó kötelező mező (Elvárt: 400 Bad Request)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Hiányos Adatok",
+  "email": "hianyzik a username"
+}
+
+### US-11c: Validáció - Duplikált felhasználónév (Elvárt: 409 Conflict)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "name": "Másik Admin",
+  "email": "masik@admin.hu",
+  "username": "admin",
+  "password": "password123",
+  "role": "Dolgozo"
+}
+
+### US-11d: Manager által történő dolgozó regisztráció (speciális végpont)
+POST {{host}}/api/dolgozok/register-managed
+Content-Type: application/json
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+{
+  "name": "Manager Által Regisztrált",
+  "email": "manager.regisztralt@munyire.hu",
+  "username": "managerregisztralt",
+  "password": "password123",
+  "role": "Dolgozo",
+  "Telefonszam": "+36301234567"
+}
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-12: Dolgozó adatainak módosítása / törlése                              │
+### │ "Szeretnék meglévő dolgozói adatokat szerkeszteni vagy inaktiválni"        │
+### │ Elvárt: Admin módosíthat bármit, törlés helyett inaktiválás javasolt       │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-12a: Dolgozó adatainak módosítása (telefonszám javítás)
+PATCH {{host}}/api/dolgozok/{{createNewEmployee.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "Telefonszam": "+36309998877"
+}
+
+### US-12b: Dolgozó szerepkörének módosítása (előléptetés Manager-ré)
+PATCH {{host}}/api/dolgozok/{{createNewEmployee.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "Szerepkor": "Manager"
+}
+
+### US-12c: Dolgozó email módosítása
+PATCH {{host}}/api/dolgozok/{{createNewEmployee.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "Email": "bela.uj.email@munyire.hu"
+}
+
+### US-12d: Dolgozó törlése (VIGYÁZAT: végleges; éles rendszerben inaktiválás javasolt)
+# Ez törli a dolgozót - csak teszteléshez!
+# DELETE {{host}}/api/dolgozok/{{createNewEmployee.response.body.id}}
+# Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ US-13: Új ruhatípus létrehozása (Törzsadat)                                │
+### │ "Szeretnék új ruhatípust (Cikkszám, Fajta, Szín, Méret) felvenni"          │
+### │ Elvárt: Egyedi Cikkszám, megjelenik a listákban                            │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### US-13a: Új ruhatípus létrehozása
+# @name createNewClothType
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "Fajta": "Láthatósági Mellény",
+  "Szin": "Neon Sárga",
+  "Meret": "XL",
+  "Mennyiseg": 75,
+  "Minoseg": "Új"
+}
+
+### US-13b: Validáció - Duplikált cikkszám (Elvárt: 409 Conflict)
+# Próbáljuk létrehozni ugyanazzal a generált cikkszámmal
+POST {{host}}/api/ruhak
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "Cikkszam": {{createNewClothType.response.body.Cikkszam}},
+  "Fajta": "Duplikált Ruha",
+  "Szin": "Piros",
+  "Meret": "M",
+  "Mennyiseg": 10,
+  "Minoseg": "Új"
+}
+
+### US-13c: Ellenőrzés - Megjelenik-e a ruhák listájában?
+GET {{host}}/api/ruhak/search?q=Mellény
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 5. END-TO-END FORGATÓKÖNYV (E2E-01: Erzsi műszakja)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+### ┌─────────────────────────────────────────────────────────────────────────────┐
+### │ E2E-01: Egy teljes műszak szimulációja Manager (Erzsi) szemszögéből        │
+### └─────────────────────────────────────────────────────────────────────────────┘
+
+### === BEJELENTKEZÉS ===
+# @name erzsiLogin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "erzsi",
+  "password": "alma"
+}
+
+### === 1. KIADÁS: Varga Éva ruhát igényel ===
+
+### 1a. Dolgozók neveinek lekérdezése (dropdown)
+# @name e2eNames
+GET {{host}}/api/dolgozok/names
+Authorization: Bearer {{erzsiLogin.response.body.token}}
+
+### 1b. Elérhető ruhák keresése
+# @name e2eSearchRuha
+GET {{host}}/api/ruhak/search?q=Polo
+Authorization: Bearer {{erzsiLogin.response.body.token}}
+
+### 1c. Kiadás rögzítése
+# @name e2eIssueEva
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{erzsiLogin.response.body.token}}
+
+{
+  "DolgozoID": {{createEva.response.body.id}},
+  "RuhaID": {{e2eSearchRuha.response.body.$[0].Cikkszam}},
+  "Mennyiseg": 1,
+  "Indok": "Hideg van a csarnokban, Éva kért pólót"
+}
+
+### === 2. VISSZAVÉTEL: Kovács László visszahoz ruhát ===
+
+### 2a. László aktív ruháinak listázása
+# @name e2eLaszloActive
+GET {{host}}/api/dolgozok/{{createLaszlo.response.body.id}}/ruhak/aktiv
+Authorization: Bearer {{erzsiLogin.response.body.token}}
+
+### 2b. (Ha van aktív ruha, azt visszavesszük - lásd a fenti US-08 szekciót)
+
+### === 3. ÚJ BELÉPŐ: Kurta Béla regisztrálása ===
+
+# @name e2eRegisterBela
+POST {{host}}/api/dolgozok/register-managed
+Content-Type: application/json
+Authorization: Bearer {{erzsiLogin.response.body.token}}
+
+{
+  "name": "Kurta Béla",
+  "email": "bela.kurta@munyire.hu",
+  "username": "kurtabela",
+  "password": "password123",
+  "role": "Dolgozo",
+  "Telefonszam": "06-20-ROSSZ-SZAM"
+}
+
+### === 4. KIADÁS ÚJ DOLGOZÓNAK ===
+
+# @name e2eIssueToBela
+POST {{host}}/api/ruhakibe
+Content-Type: application/json
+Authorization: Bearer {{erzsiLogin.response.body.token}}
+
+{
+  "DolgozoID": {{e2eRegisterBela.response.body.id}},
+  "RuhaID": {{e2eSearchRuha.response.body.$[0].Cikkszam}},
+  "Mennyiseg": 2,
+  "Indok": "Kezdőcsomag új dolgozónak"
+}
+
+### === 5. ADATJAVÍTÁS: Béla telefonszáma hibás ===
+
+# Manager nem tudja módosítani! Csak admin.
+# De nézzük meg, mi történik:
+PATCH {{host}}/api/dolgozok/{{e2eRegisterBela.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+{
+  "Telefonszam": "+36309998877"
+}
+
+### === 6. KÉSZLETHIÁNY KEZELÉSE ===
+
+### 6a. Dashboard - Alacsony készlet figyelése
+GET {{host}}/api/dashboard/low-stock
+Authorization: Bearer {{erzsiLogin.response.body.token}}
+
+### 6b. Utánpótlás rendelés
+# @name e2eOrder
+POST {{host}}/api/rendelesek
+Content-Type: application/json
+Authorization: Bearer {{erzsiLogin.response.body.token}}
+
+{
+  "RuhaID": {{createAlacsonyKeszlet.response.body.Cikkszam}},
+  "Mennyiseg": 50,
+  "Statusz": "Leadva"
+}
+
+### === MŰSZAK VÉGE: KIJELENTKEZÉS ===
+# (Token törlése kliens oldalon - REST API stateless)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXTRA: JELENTÉSEK ÉS RIPORTOK
+# ═══════════════════════════════════════════════════════════════════════════════
+
+### Teljes készletjelentés
+GET {{host}}/api/reports/inventory
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### Dolgozónkénti összesítő
+GET {{host}}/api/reports/employee-summary
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### Havi riport (2026 január)
+GET {{host}}/api/reports/monthly?year=2026&month=1
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### Minőség szerinti összesítés (Admin only)
+GET {{host}}/api/reports/quality-summary
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### Tranzakciók időszak szerint
+GET {{host}}/api/ruhakibe/by-date?from=2026-01-01&to=2026-12-31
+Authorization: Bearer {{loginErzsi.response.body.token}}
+
+### Tranzakció statisztikák
+GET {{host}}/api/ruhakibe/stats
+Authorization: Bearer {{loginErzsi.response.body.token}}
