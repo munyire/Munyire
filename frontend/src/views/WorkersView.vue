@@ -56,7 +56,8 @@ const filteredWorkers = computed(() => {
   return workers.value.filter(w => 
     w.DNev.toLowerCase().includes(q) ||
     w.Email.toLowerCase().includes(q) ||
-    w.DolgozoID.toString().includes(q)
+    w.DolgozoID.toString().includes(q) ||
+    (w.FelhasznaloNev && w.FelhasznaloNev.toLowerCase().includes(q))
   );
 });
 

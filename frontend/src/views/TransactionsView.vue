@@ -44,7 +44,7 @@ const fetchDropdownData = async () => {
     // Transform for SearchableSelect
     // Based on API docs, /dolgozok/names returns [{ DolgozoID, DNev }]
     workers.value = workersRes.data.map(w => ({
-      label: w.DNev,
+      label: w.FelhasznaloNev ? `${w.DNev} (${w.FelhasznaloNev})` : w.DNev,
       value: w.DolgozoID
     }));
 

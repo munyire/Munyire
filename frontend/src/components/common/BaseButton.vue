@@ -12,6 +12,8 @@ defineProps({
   disabled: Boolean,
   loading: Boolean
 });
+
+defineEmits(['click']);
 </script>
 
 <template>
@@ -20,6 +22,7 @@ defineProps({
     class="base-button" 
     :class="[`variant-${variant}`, { 'is-loading': loading, 'is-disabled': disabled }]"
     :disabled="disabled || loading"
+    @click="$emit('click', $event)"
   >
     <span v-if="loading" class="spinner">↻</span>
     <slot />
