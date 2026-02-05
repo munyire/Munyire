@@ -8,7 +8,12 @@ async function getStats() {
     models.RuhaKiBe.count({ where: { VisszaDatum: null } }),
     models.Rendeles.count({ where: { Statusz: { [Op.ne]: "Teljesítve" } } }),
   ]);
-  return { dolgozoCount, ruhaCount, activeKibe, pendingOrders };
+  return {
+    totalWorkers: dolgozoCount,
+    totalClothes: ruhaCount,
+    activeIssues: activeKibe,
+    totalOrders: pendingOrders
+  };
 }
 
 async function getLowStock(threshold) {
@@ -51,12 +56,22 @@ async function getRecentActivity(limit = 10) {
     limit,
     include: [models.Dolgozo, models.Ruha],
   });
-  const recentOrders = await models.Rendeles.findAll({
-    order: [["createdAt", "DESC"]],
-    limit,
-    include: [models.Ruha],
-  });
-  return { recentKibe, recentOrders };
+
+  // Format activity items for frontend
+  const activities = recentKibe.map(kibe => ({
+    user: kibe.Dolgozo ? kibe.Dolgozo.DNev : 'Ismeretlen',
+    action: kibe.VisszaDatum ? 'Visszavétel' : 'Kiadás',
+    item: kibe.Ruha ? `${kibe.Ruha.Fajta} (${kibe.Ruha.Meret})` : 'Ismeretlen ruha',
+    date: new Date(kibe.createdAt).toLocaleDateString('hu-HU', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }));
+
+  return activities;
 }
 
 module.exports = { getStats, getLowStock, getRecentActivity };
