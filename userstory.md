@@ -36,5 +36,11 @@ Erzsi látja a Dashboardon, vagy munka közben, hogy fogy a kesztyű. Átmegy a 
 ## 8. Új dolgozó jön (Dolgozók)
 A HR telefonál. Az Admin (vagy Erzsi, ha van joga) belép a **Dolgozók** menübe. Itt felveszi az új ember adatait, így mire leér a raktárba, már benne lesz a rendszerben a neve a kiadásnál.
 
-## 9. Kilépés
+## 9. Dolgozó törlése (Dolgozók)
+A HR telefonál. Az Admin (vagy Erzsi, ha van joga) belép a **Dolgozók** menübe. Itt rákeres a törölni kivánt dolgozóra, és a sor végén a **Törlés** gombra kattint. Az oldal rakerdez hogy biztos? --> Ok
+
+## 10. Ruhakészlet alakulás lekérdezése lehatárolt időben(új pont - adminisztrátori feladat)
+Az adminisztrátor bejelentkezik. A menüben a **Ruhakészlet alakulás** gombra kattint. A keresőmezőbe beírja, hogy (cikkszám, vagy megnevezés), a táblázatban azonnal látja, hogy egy meghatározott időintervallumban hogyan változott a készlet.(db + - mikor)
+
+## 11. Kilépés
 Erzsi végez. A menü alján rányom a **Kijelentkezés** gombra. A rendszer visszadobja a bejelentkező ablakra, hogy más ne férjen hozzá.
