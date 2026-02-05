@@ -1,160 +1,40 @@
-# User Stories - Munyire Munkaruhakezelő Rendszer
+# User Stories - Munyire (Valós folyamatok)
 
-Ez a dokumentum tartalmazza a rendszer összes felhasználói történetét (User Story), szerepkörök szerinti bontásban.
+Ez a dokumentum a valós életbeli eseményeket írja le, pontosan úgy, ahogy a szoftverben történnek.
 
-## Szerepkörök definíciója
-*   **Dolgozó:** Alapfelhasználó, aki csak a saját adatait látja.
-*   **Manager:** Raktáros/Vezető, aki kezeli a ruhakiadást, visszavételt és a rendeléseket.
-*   **Admin:** Rendszergazda, teljes hozzáféréssel (felhasználók kezelése, törzsadatok).
+## 1. Műszak kezdése (Bejelentkezés)
+Béla megérkezik reggel, odaáll a géphez. Beírja a nevét és a jelszavát a **Bejelentkezés** oldalon, majd rányom a gombra. A rendszer felismeri, hogy ő csak egy dolgozó, ezért egyből a **Ruháim** oldalra dobja, nem a bonyolult menübe.
 
----
+## 2. Saját cuccok csekkolása (Ruháim)
+Béla a **Ruháim** oldalon van. Nem kell kattintania sehova, egyből látja a listát: nála van egy bakancs meg két póló. Megnyugszik, hogy minden stimmel, és nem vonnak le tőle semmit.
 
-## 1. Hitelesítés (Minden szerepkör)
+## 3. Manager reggeli (Dashboard)
+Erzsi, a raktáros bejön. Belép a saját fiókjába. Mivel ő Manager, a rendszer a **Dashboardra** (Vezérlőpult) viszi. Itt piros kártyákon látja a figyelmeztetéseket ("Kevés a készlet!"), nem kell keresgélnie a teendőket.
 
-### US-01: Bejelentkezés
-**Mint** regisztrált felhasználó,  
-**szeretnék** bejelentkezni a felhasználónevem és jelszavam megadásával,  
-**azért, hogy** hozzáférjek a jogosultságaimnak megfelelő funkciókhoz.
+## 4. Keresés a raktárban (Készlet)
+Józsi beesik, hogy kéne neki egy L-es kabát. Erzsi a menüben a **Készlet** gombra kattint. A keresőmezőbe beírja, hogy "kabát", és a táblázatban azonnal látja, hogy van-e raktáron.
 
-*   **Akceptációs Kritériumok:**
-    *   Helyes adatok esetén a rendszer léptessen be és irányítson a szerepkörömnek megfelelő kezdőoldalra.
-    *   Helytelen adatok esetén jelenjen meg hibaüzenet ("Hibás felhasználónév vagy jelszó").
-    *   A jelszó rejtett karakterekkel jelenjen meg beíráskor.
+## 5. Ruha kiadása (Tranzakciók)
+Jön az új fiú, Pisti. Erzsi a **Tranzakciók** menübe lép. Alapból a **Kiadás** fülön van.
+1. A legördülő listából kiválasztja Pisti nevét.
+2. A másik listából kiválasztja a sisakot.
+3. Megnyomja a **Kiadás Rögzítése** gombot.
+A gép levonja a készletből, és Pisti nevén megjelenik a ruha.
 
-### US-02: Kijelentkezés
-**Mint** bejelentkezett felhasználó,  
-**szeretnék** kijelentkezni,  
-**azért, hogy** más ne férhessen hozzá a fiókomhoz a gépemen.
+## 6. Ruha visszavétele (Tranzakciók / Visszavétel)
+Éva odamegy Erzsihez, hogy leadja a ruháját.
+1. Erzsi a **Tranzakciók** oldalon átkattint a **Visszavétel** fülre.
+2. Itt látja az összes kint lévő ruhát listázva.
+3. Megkeresi a listában Éva nevét és a nadrágot.
+4. Rányom a sor végén a **Visszavétel** gombra.
+5. Felugrik egy ablak, ahol kiválasztja, hogy a ruha "Szakadt".
+6. A **Visszavétel Rögzítése** gombbal kész is.
 
-*   **Akceptációs Kritériumok:**
-    *   Kijelentkezés után a rendszer irányítson vissza a bejelentkezési képernyőre.
-    *   A munkamenet (token) érvénytelenné váljon (vagy törlődjön a kliensről).
+## 7. Ha fogy a készlet (Rendelés)
+Erzsi látja a Dashboardon, vagy munka közben, hogy fogy a kesztyű. Átmegy a **Rendelések** oldalra. Felvesz egy új tételt a beszállítónak.
 
----
+## 8. Új dolgozó jön (Dolgozók)
+A HR telefonál. Az Admin (vagy Erzsi, ha van joga) belép a **Dolgozók** menübe. Itt felveszi az új ember adatait, így mire leér a raktárba, már benne lesz a rendszerben a neve a kiadásnál.
 
-## 2. Dolgozó (Alapfunkciók)
-
-### US-03: Saját adatok megtekintése
-**Mint** Dolgozó,  
-**szeretnék** hiba nélkül hozzáférni a saját profil adataimhoz (név, email, méretek),  
-**azért, hogy** ellenőrizhessem, helyesek-e a nyilvántartott adataim.
-
-*   **Akceptációs Kritériumok:**
-    *   Látnom kell a nevemet, email címemet, telefonszámomat és munkakörömet.
-    *   Nem láthatom és nem módosíthatom mások adatait.
-
-### US-04: Saját kiadott ruhák megtekintése
-**Mint** Dolgozó,  
-**szeretnék** egy listát látni a nálam lévő munkaruhákról,  
-**azért, hogy** tudjam, mivel kell elszámolnom.
-
-*   **Akceptációs Kritériumok:**
-    *   A lista tartalmazza a ruha típusát, méretét és a kiadás dátumát.
-    *   Csak a "kint lévő" (vissza nem vett) ruhákat lássam alapértelmezetten.
-
----
-
-## 3. Manager (Raktár és Folyamatok)
-
-### US-05: Dashboard megtekintése
-**Mint** Manager,  
-**szeretnék** egy áttekintő vezérlőpultot látni bejelentkezéskor,  
-**azért, hogy** gyorsan informálódjak a kritikus készletekről és nyitott feladatokról.
-
-*   **Akceptációs Kritériumok:**
-    *   Megjelenik az alacsony készletű ruhák listája.
-    *   Látható a folyamatban lévő rendelések száma.
-
-### US-06: Raktárkészlet megtekintése
-**Mint** Manager,  
-**szeretnék** kereshető listát a raktárban lévő ruhákról,  
-**azért, hogy** tudjam, miből mennyi áll rendelkezésre.
-
-*   **Akceptációs Kritériumok:**
-    *   Szűrés típusra, méretre, nemre.
-    *   Látható az aktuális `Mennyiseg` és `Minoseg`.
-
-### US-07: Munkaruha kiadása (Készletcsökkentés)
-**Mint** Manager,  
-**szeretnék** rögzíteni egy ruhakiadást egy adott dolgozónak,  
-**azért, hogy** a rendszerben naprakész legyen, kinél van a ruha.
-
-*   **Akceptációs Kritériumok:**
-    *   Kiválasztható a dolgozó és a ruha.
-    *   Csak akkor engedje a rendszer, ha van készlet.
-    *   Mentéskor csökkenjen a raktárkészlet 1-gyel.
-    *   Létrejöjjön egy bejegyzés a `RuhaKiBe` táblában kiadási dátummal.
-
-### US-08: Munkaruha visszavétele
-**Mint** Manager,  
-**szeretnék** visszavenni egy ruhát a dolgozótól és rögzíteni annak állapotát,  
-**azért, hogy** a készletbe visszakerüljön vagy selejtezésre kerüljön.
-
-*   **Akceptációs Kritériumok:**
-    *   A dolgozónál lévő ruhák listájából kiválasztható a visszavétel.
-    *   Kötelező megadni a visszavételi minőséget (pl. "Jó", "Sérült", "Selejt").
-    *   A `RuhaKiBe` bejegyzés lezárul (VisszaDatum kitöltése).
-    *   A `Raktar` készlet nő 1-gyel (a megadott minőséggel).
-
-### US-09: Utánpótlás rendelés indítása
-**Mint** Manager,  
-**szeretnék** új rendelést rögzíteni hiányzó ruhákra,  
-**azért, hogy** biztosítsam a jövőbeli ellátást.
-
-*   **Akceptációs Kritériumok:**
-    *   Rögzíthető a cikkszám és a rendelt mennyiség.
-    *   A rendelés "Leadva" státusszal jön létre.
-
-### US-10: Rendelés státuszának frissítése
-**Mint** Manager,  
-**szeretnék** egy rendelést "Teljesítve" státuszra állítani, amikor megérkezik az áru,  
-**azért, hogy** a rendszer tudja, hogy a folyamat lezárult.
-
-*   **Akceptációs Kritériumok:**
-    *   Státuszváltáskor a rendszer kérdezze meg, hogy a beérkezett ruhákat adja-e hozzá a raktárkészlethez.
-    *   Igen válasz esetén a készlet automatikusan növekedjen.
-
----
-
-## 4. Adminisztrátor (Törzsadatok és Felhasználók)
-
-### US-11: Új dolgozó felvétele
-**Mint** Admin,  
-**szeretnék** új dolgozót regisztrálni a rendszerbe (személyes adatok + belépési adatok),  
-**azért, hogy** az új kolléga is használhassa a rendszert és ruhát kaphasson.
-
-*   **Akceptációs Kritériumok:**
-    *   Minden kötelező mező (Név, Email, Szerepkör) validálása.
-    *   Egyedi felhasználónév ellenőrzése.
-    *   Jelszó hash-elése mentés előtt.
-
-### US-12: Dolgozó adatainak módosítása / törlése
-**Mint** Admin,  
-**szeretnék** meglévő dolgozói adatokat szerkeszteni vagy dolgozót inaktiválni,  
-**azért, hogy** az adatbázis naprakész legyen (pl. kilépés esetén).
-
-*   **Akceptációs Kritériumok:**
-    *   Admin módosíthatja bárki jogosultságát (Szerepkör).
-    *   Törlés helyett ajánlott az "Inaktív" státusz (ha az adatbázis támogatja), hogy a korábbi kiadások előzménye megmaradjon.
-
-### US-13: Új ruhatípus létrehozása (Törzsadat)
-**Mint** Admin,  
-**szeretnék** új ruhatípust (Cikkszám, Fajta, Szín, Méret) felvenni,  
-**azért, hogy** a raktárba lehessen készletet rendelni belőle.
-
-*   **Akceptációs Kritériumok:**
-    *   Egyedi Cikkszám ellenőrzése.
-    *   Sikeres létrehozás után megjelenik a választható listákban.
-
----
-
-## 5. End-to-End Forgatókönyvek (E2E)
-
-### E2E-01: Erzsi (Manager) műszakja
-**Leírás:** Egy teljes munkafolyamat szimulációja, ahol a Manager (Erzsi) különböző feladatokat lát el.
-1.  **Kiadás:** Varga Éva munkaruhát igényel -> Erzsi kiadja.
-2.  **Visszavétel:** Kovács László visszahoz egy ruhát -> Erzsi visszaveszi "Új" állapottal.
-3.  **Új belépő:** Kurta Béla belép -> Erzsi regisztrálja.
-4.  **Kiadás új dolgozónak:** Erzsi kiad ruhákat Bélának.
-5.  **Adatjavítás:** Béla telefonszáma hibás volt -> Erzsi javítja.
-6.  **Készlethiány kezelése:** Erzsi észleli az alacsony készletet -> Utánpótlást rendel.
+## 9. Kilépés
+Erzsi végez. A menü alján rányom a **Kijelentkezés** gombra. A rendszer visszadobja a bejelentkező ablakra, hogy más ne férjen hozzá.
