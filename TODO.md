@@ -1,23 +1,40 @@
-##Dahboard:
-[ ] A Raktárkészlet mutassa az összes ruha darabszámát ne a fajtaszámát
-##Készlet:
-[ ] A keresésdoboz és az új termék felvétele doboz legyen ugyan akkora
-[ ] A törlés gomb ne egy alertboxba hozza ki az elfogdást
-[ ] Törlésnél ne törölje az összes minőségből hanam csak azt a minőséget
-[ ] Módosításnál ha megváltöztatja a minőséget akkor adja hozzás a számot a már meglévő más minőségühöz. 
-##Dolgozók: 
-[ ] Az új dolgozók és a dolgozók száma doboz legyen ugyan akkora
-[ ] Dolgozó képeinek törlése
-[ ] Kereséshez munkakör és szerepkör hozzáadása
-##Tranzakció:
-[ ] Visszavétel: Lehessen keresni ember és ruha alján is
-##Rendelés:
-[ ] A keresésdoboz és az új rendelés felvétele doboz legyen ugyan akkora
-[ ] Az átvétel gomb ne egy alertboxba hozza ki az elfogdást
-##Saját ruha:
-[ ] Fix: Sötét módba fehér dobozba írja ki hogy nincs ruha nálad
+# 🚀 Fejlesztési Feladatlista (Backlog)
 
-#Takarítás:
-[ ] Felesleges fájlok törlése
-#Dokumentáció:
-[ ] Miután ez mind kész az összes dokumentáció frissítése és összeszedése
+## 📊 Dashboard
+- [ ] **Raktárkészlet összesítés:** A mutató az összes ruha **darabszámát** összegezze a különböző fajták száma helyett.
+
+---
+
+## 📦 Készletkezelés
+- [ ] **Egységes UI:** A keresődoboz és az "Új termék felvétele" box legyen azonos méretű.
+- [ ] **UX javítás:** A törlés megerősítése ne böngészős `alertbox`-ban, hanem egyedi modálban jelenjen meg.
+- [ ] **Szelektív törlés:** Törlésnél ne a teljes termék törlődjön, hanem **csak az adott minőségű** tétel.
+- [ ] **Logikai összefűzés:** Módosításkor, ha megváltozik a minőség, a rendszer adja hozzá a darabszámot a már meglévő, azonos minőségű rekordhoz.
+
+---
+
+## 👥 Dolgozók kezelése
+- [ ] **Box méretezés:** Az "Új dolgozók" és a "Dolgozók száma" dobozok legyenek egyforma méretűek.
+- [ ] **Profilkép kezelés:** Dolgozói képek funkció törlése(Ne legyenek a  dolgozóknak képeik).
+- [ ] **Bővített keresés:** Keresési lehetőség hozzáadása **munkakör** és **szerepkör** alapján is.
+
+---
+
+## 🔄 Tranzakciók & Rendelések
+### Visszavétel
+- [ ] **Kétirányú keresés:** Lehessen keresni dolgozó neve és ruha típusa alapján is a visszavételi listában.
+
+### Rendelés
+- [ ] **UI szinkron:** A keresődoboz és az "Új rendelés felvétele" box legyen azonos méretű.
+- [ ] **Visszajelzés:** Az átvétel gomb ne `alertbox`-ot használjon a megerősítéshez.
+
+---
+
+## 🌙 UI / Megjelenítés
+- [ ] **Dark Mode javítás:** A "Saját ruha" oldalon a "Nincs ruha nálad" üzenet sötét módban ne fehér háttérrel jelenjen meg.
+
+---
+
+## 🧹 Karbantartás & Dokumentáció
+- [ ] **Clean Code:** Felesleges, nem használt fájlok és kódmaradványok törlése.
+- [ ] **Záró dokumentáció:** Miután a fenti fejlesztések készek, a teljes technikai dokumentáció frissítése és összesítése.
