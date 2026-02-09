@@ -12,7 +12,9 @@ import {
   Briefcase,
   ShieldCheck,
   User,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft,
+  X
 } from 'lucide-vue-next';
 import Modal from '../components/ui/Modal.vue';
 
@@ -20,6 +22,8 @@ const workers = ref([]);
 const loading = ref(true);
 const searchQuery = ref('');
 const selectedWorker = ref(null);
+const isMobile = ref(false);
+const showMobileDetail = ref(false);
 
 const showModal = ref(false);
 const isEditing = ref(false);
@@ -33,6 +37,17 @@ const form = ref({
   Szerepkor: 'Dolgozo',
   FelhasznaloNev: '',
   Jelszo: ''
+});
+
+// Check mobile on mount and resize
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 1024;
+};
+
+onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  fetchWorkers();
 });
 
 const fetchWorkers = async () => {
@@ -61,7 +76,6 @@ const filteredWorkers = computed(() => {
   );
 });
 
-// Watch for search filter changes to potentially update selected worker
 watch(filteredWorkers, (newVal) => {
   if (newVal.length > 0 && (!selectedWorker.value || !newVal.find(w => w.DolgozoID === selectedWorker.value.DolgozoID))) {
     selectedWorker.value = newVal[0];
@@ -80,6 +94,13 @@ const getAvatar = (worker) => {
 
 const selectWorker = (worker) => {
   selectedWorker.value = worker;
+  if (isMobile.value) {
+    showMobileDetail.value = true;
+  }
+};
+
+const closeMobileDetail = () => {
+  showMobileDetail.value = false;
 };
 
 const openAddModal = () => {
@@ -165,168 +186,170 @@ const deleteWorker = async (id) => {
     alert('Hiba történt a törlés során.');
   }
 };
-
-onMounted(fetchWorkers);
 </script>
 
 <template>
-  <div class="workers-page h-full flex flex-col overflow-hidden">
+  <div class="workers-page">
     <!-- Header Card -->
-    <div class="header-card p-12 shadow-2xl bg-white rounded-[2.5rem] flex flex-col items-center justify-center text-center mb-10 mx-6 border border-gray-100">
-      <h1 class="text-7xl font-black tracking-tighter leading-none text-gray-900 m-0">Dolgozók</h1>
-      <p class="text-3xl mt-4 font-semibold text-gray-500">Munkavállalók központi kezelése</p>
+    <div class="header-card">
+      <h1 class="header-title">Dolgozók</h1>
+      <p class="header-subtitle">Munkavállalók központi kezelése</p>
     </div>
 
     <!-- Actions Row -->
-    <div class="actions-row flex items-center gap-8 mb-10 px-8">
-      <button @click="openAddModal" class="btn-add shadow-lg text-lg px-8 py-4 bg-blue-900 hover:bg-blue-800 text-white rounded-2xl transition-all hover:-translate-y-1">
-        <Plus size="28" />
+    <div class="actions-row">
+      <button @click="openAddModal" class="btn-add">
+        <Plus size="24" />
         <span>Új dolgozó</span>
       </button>
       
       <!-- Total Workers Box -->
-      <div class="stats-box bg-white px-10 py-5 rounded-[2rem] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-6">
-        <div class="p-4 bg-blue-50 rounded-2xl text-blue-600">
-          <Users size="28" />
+      <div class="stats-box">
+        <div class="stats-icon">
+          <Users size="24" />
         </div>
-        <div class="flex flex-col">
-          <span class="text-sm text-gray-400 font-extrabold uppercase tracking-widest mb-1">Összesen</span>
-          <div class="text-3xl font-black text-gray-900 leading-none">{{ workers.length }} alkalmazott</div>
+        <div class="stats-info">
+          <span class="stats-label">Összesen</span>
+          <div class="stats-value">{{ workers.length }} alkalmazott</div>
         </div>
       </div>
     </div>
 
-    <!-- Main Content Area: Sidebar on left, Large Card on right -->
-    <div class="flex-1 flex gap-16 overflow-hidden px-12 pb-12">
-      <!-- Left: Worker List (No Box) -->
-      <aside class="w-[30rem] flex flex-col pt-4">
-        <div class="mb-10">
-          <div class="search-container relative">
-            <Search size="22" class="search-icon-fixed" />
-            <input 
-              v-model="searchQuery" 
-              type="text" 
-              placeholder="Keress név vagy ID alapján..." 
-              class="sidebar-search-input"
-            />
-          </div>
+    <!-- Main Content Area -->
+    <div class="main-content-area">
+      <!-- Left: Worker List -->
+      <aside class="worker-list-section" :class="{ 'hidden-mobile': showMobileDetail && isMobile }">
+        <div class="search-container">
+          <Search size="20" class="search-icon" />
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Keress név vagy ID alapján..." 
+            class="sidebar-search-input"
+          />
         </div>
 
-        <div class="worker-list flex-1 overflow-y-auto pr-4 pb-8">
+        <div class="worker-list">
           <div 
             v-for="worker in filteredWorkers" 
             :key="worker.DolgozoID"
             @click="selectWorker(worker)"
-            class="worker-list-item group"
+            class="worker-list-item"
             :class="{ 'active': selectedWorker?.DolgozoID === worker.DolgozoID }"
           >
-            <div class="avatar-mini-new">
+            <div class="avatar-mini">
               <img :src="getAvatar(worker)" :alt="worker.DNev">
             </div>
-            <div class="item-info ml-5">
-              <span class="item-name-new text-xl">{{ worker.DNev }}</span>
-              <span class="item-id text-sm opacity-50">ID: #{{ worker.DolgozoID }}</span>
+            <div class="item-info">
+              <span class="item-name">{{ worker.DNev }}</span>
+              <span class="item-id">ID: #{{ worker.DolgozoID }}</span>
             </div>
-            <ChevronRight size="20" class="arrow-icon opacity-0 group-hover:opacity-100 transition-all" />
+            <ChevronRight size="18" class="arrow-icon" />
           </div>
 
-          <div v-if="filteredWorkers.length === 0" class="flex flex-col items-center justify-center py-10 opacity-30">
-            <Users size="48" class="mb-2" />
-            <p class="font-bold">Nincs találat</p>
+          <div v-if="filteredWorkers.length === 0" class="empty-list">
+            <Users size="40" />
+            <p>Nincs találat</p>
           </div>
         </div>
       </aside>
 
-      <!-- Right Box: Worker Details (THE BOX) -->
-      <main class="standalone-card flex-1 bg-white shadow-2xl rounded-[3rem] border border-gray-100 overflow-hidden flex flex-col">
-        <div v-if="selectedWorker" class="h-full flex flex-col overflow-y-auto">
-          <div class="details-container p-12">
-            <!-- Profile Top info -->
-            <div class="details-header flex items-center gap-12 mb-12">
-              <div class="avatar-large w-56 h-56 rounded-[2.5rem] shadow-2xl">
+      <!-- Right: Worker Details -->
+      <main class="worker-detail-section" :class="{ 'mobile-open': showMobileDetail && isMobile }">
+        <!-- Mobile Back Button -->
+        <button v-if="isMobile && showMobileDetail" @click="closeMobileDetail" class="mobile-back-btn">
+          <ChevronLeft size="20" />
+          <span>Vissza a listához</span>
+        </button>
+
+        <div v-if="selectedWorker" class="detail-card">
+          <div class="detail-content">
+            <!-- Profile Header -->
+            <div class="detail-header">
+              <div class="avatar-large">
                 <img :src="getAvatar(selectedWorker)" :alt="selectedWorker.DNev">
               </div>
-              <div class="flex-1">
-                <div class="flex justify-between items-start">
+              <div class="header-info">
+                <div class="header-top">
                   <div>
-                    <h2 class="text-6xl font-black text-gray-900 mb-4 tracking-tighter">{{ selectedWorker.DNev }}</h2>
-                    <div class="flex items-center gap-4">
-                      <span class="tag tag-blue text-lg px-5 py-2">{{ selectedWorker.Munkakor || 'Nincs munkakör' }}</span>
-                      <span class="tag text-lg px-5 py-2" :class="{
+                    <h2 class="worker-name">{{ selectedWorker.DNev }}</h2>
+                    <div class="tags">
+                      <span class="tag tag-blue">{{ selectedWorker.Munkakor || 'Nincs munkakör' }}</span>
+                      <span class="tag" :class="{
                         'tag-purple': selectedWorker.Szerepkor === 'Admin',
                         'tag-orange': selectedWorker.Szerepkor === 'Manager',
                         'tag-green': selectedWorker.Szerepkor === 'Dolgozo'
                       }">{{ selectedWorker.Szerepkor }}</span>
                     </div>
                   </div>
-                  <div class="flex gap-4">
-                    <button @click="openEditModal(selectedWorker)" class="action-btn edit p-4 rounded-2xl shadow-md" title="Szerkesztés">
-                      <Edit size="28" />
+                  <div class="header-actions">
+                    <button @click="openEditModal(selectedWorker)" class="action-btn edit" title="Szerkesztés">
+                      <Edit size="20" />
                     </button>
-                    <button @click="deleteWorker(selectedWorker.DolgozoID)" class="action-btn delete p-4 rounded-2xl shadow-md" title="Törlés">
-                      <Trash2 size="28" />
+                    <button @click="deleteWorker(selectedWorker.DolgozoID)" class="action-btn delete" title="Törlés">
+                      <Trash2 size="20" />
                     </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Detailed Stats (Vertical Stacked Boxes) -->
-            <div class="details-body flex flex-col gap-6">
-              <div class="data-box w-full shadow-sm hover:shadow-md">
-                <Mail size="26" class="data-icon" />
+            <!-- Detailed Info Grid -->
+            <div class="detail-grid">
+              <div class="data-box">
+                <Mail size="20" class="data-icon" />
                 <div class="data-content">
                   <span class="data-label">Email cím</span>
-                  <span class="data-value text-2xl font-black">{{ selectedWorker.Email }}</span>
+                  <span class="data-value">{{ selectedWorker.Email }}</span>
                 </div>
               </div>
 
-              <div class="data-box w-full shadow-sm hover:shadow-md">
-                <Phone size="26" class="data-icon" />
+              <div class="data-box">
+                <Phone size="20" class="data-icon" />
                 <div class="data-content">
                   <span class="data-label">Telefonszám</span>
-                  <span class="data-value text-2xl font-black">{{ selectedWorker.Telefonszam || '-' }}</span>
+                  <span class="data-value">{{ selectedWorker.Telefonszam || '-' }}</span>
                 </div>
               </div>
 
-              <div class="data-box w-full shadow-sm hover:shadow-md">
-                <Briefcase size="26" class="data-icon" />
+              <div class="data-box">
+                <Briefcase size="20" class="data-icon" />
                 <div class="data-content">
                   <span class="data-label">Munkakör</span>
-                  <span class="data-value text-2xl font-black">{{ selectedWorker.Munkakor || 'Nincs megadva' }}</span>
+                  <span class="data-value">{{ selectedWorker.Munkakor || 'Nincs megadva' }}</span>
                 </div>
               </div>
 
-              <div class="data-box w-full shadow-sm hover:shadow-md">
-                <ShieldCheck size="26" class="data-icon" />
+              <div class="data-box">
+                <ShieldCheck size="20" class="data-icon" />
                 <div class="data-content">
                   <span class="data-label">Szerepkör</span>
-                  <span class="data-value text-2xl font-black">{{ selectedWorker.Szerepkor }}</span>
+                  <span class="data-value">{{ selectedWorker.Szerepkor }}</span>
                 </div>
               </div>
 
-              <div class="data-box w-full shadow-sm hover:shadow-md">
-                <User size="26" class="data-icon" />
+              <div class="data-box">
+                <User size="20" class="data-icon" />
                 <div class="data-content">
                   <span class="data-label">Azonosító</span>
-                  <span class="data-value text-2xl font-black">#{{ selectedWorker.DolgozoID }}</span>
+                  <span class="data-value">#{{ selectedWorker.DolgozoID }}</span>
                 </div>
               </div>
 
-              <div class="data-box w-full shadow-sm hover:shadow-md">
-                <Users size="26" class="data-icon" />
+              <div class="data-box">
+                <Users size="20" class="data-icon" />
                 <div class="data-content">
                   <span class="data-label">Nem</span>
-                  <span class="data-value text-2xl font-black">{{ selectedWorker.Nem }}</span>
+                  <span class="data-value">{{ selectedWorker.Nem }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div v-else class="h-full flex flex-col items-center justify-center opacity-40 select-none">
-          <Users size="100" class="mb-6 text-gray-300" />
-          <p class="text-2xl font-black text-gray-400">Válassz egy dolgozót a megtekintéshez</p>
+        <div v-else class="empty-detail">
+          <Users size="64" />
+          <p>Válassz egy dolgozót a megtekintéshez</p>
         </div>
       </main>
     </div>
@@ -334,32 +357,32 @@ onMounted(fetchWorkers);
     <!-- Modal for Add/Edit -->
     <Modal :show="showModal" :title="isEditing ? 'Dolgozó szerkesztése' : 'Új dolgozó felvétele'" @close="showModal = false">
       <template #body>
-        <form @submit.prevent="saveWorker" id="workerForm" class="grid grid-cols-2 gap-6 p-2">
-          <div class="col-span-2">
+        <form @submit.prevent="saveWorker" id="workerForm" class="worker-form">
+          <div class="form-group full-width">
             <label class="form-label">Teljes Név</label>
             <input v-model="form.DNev" required class="form-input" placeholder="Példa János" />
           </div>
-          <div>
+          <div class="form-group">
             <label class="form-label">Email cím</label>
             <input type="email" v-model="form.Email" required class="form-input" placeholder="janos@example.com" />
           </div>
-          <div>
+          <div class="form-group">
             <label class="form-label">Telefonszám</label>
             <input v-model="form.Telefonszam" class="form-input" placeholder="+36 30 123 4567" />
           </div>
-          <div>
+          <div class="form-group">
             <label class="form-label">Felhasználónév</label>
             <input v-model="form.FelhasznaloNev" required :disabled="isEditing" class="form-input" />
           </div>
-          <div>
+          <div class="form-group">
             <label class="form-label">Jelszó</label>
             <input type="password" v-model="form.Jelszo" :placeholder="isEditing ? 'Hagyja üresen ha nem változik' : ''" :required="!isEditing" class="form-input" />
           </div>
-          <div>
+          <div class="form-group">
             <label class="form-label">Munkakör</label>
             <input v-model="form.Munkakor" class="form-input" placeholder="Pl. Raktáros" />
           </div>
-          <div>
+          <div class="form-group">
             <label class="form-label">Szerepkör</label>
             <select v-model="form.Szerepkor" required class="form-select">
               <option value="Dolgozo">Dolgozó</option>
@@ -367,7 +390,7 @@ onMounted(fetchWorkers);
               <option value="Admin">Admin</option>
             </select>
           </div>
-          <div class="col-span-2">
+          <div class="form-group full-width">
             <label class="form-label">Nem</label>
             <select v-model="form.Nem" class="form-select">
               <option value="Férfi">Férfi</option>
@@ -377,9 +400,9 @@ onMounted(fetchWorkers);
         </form>
       </template>
       <template #footer>
-        <div class="flex gap-3 justify-end w-full px-2">
+        <div class="modal-footer">
           <button class="btn-secondary" @click="showModal = false">Mégse</button>
-          <button type="submit" form="workerForm" class="btn-primary-small">Mentés</button>
+          <button type="submit" form="workerForm" class="btn-primary">Mentés</button>
         </div>
       </template>
     </Modal>
@@ -388,22 +411,56 @@ onMounted(fetchWorkers);
 
 <style scoped>
 .workers-page {
-  background-color: #f1f5f9; /* Darker gray background for better contrast */
-  height: calc(100vh - 0px);
+  background-color: #f1f5f9;
+  height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 12px 0;
+  overflow: hidden;
 }
 
-/* Header Card (Restored) */
+/* Header Card */
 .header-card {
   background-color: white;
   border-radius: 2rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  width: 100% !important;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.header-title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.header-subtitle {
+  font-size: 1.25rem;
+  color: #6b7280;
+  margin: 0.5rem 0 0;
+  font-weight: 600;
+}
+
+/* Actions Row */
+.actions-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0 0.5rem;
 }
 
 .btn-add {
   background-color: #1e3a8a;
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 1.5rem;
   border-radius: 1rem;
   font-weight: 700;
   display: flex;
@@ -411,6 +468,9 @@ onMounted(fetchWorkers);
   gap: 0.5rem;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+  border: none;
+  cursor: pointer;
+  font-size: 0.9375rem;
 }
 
 .btn-add:hover {
@@ -419,9 +479,71 @@ onMounted(fetchWorkers);
   box-shadow: 0 6px 15px rgba(30, 58, 138, 0.3);
 }
 
-/* Sidebar */
+.stats-box {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stats-icon {
+  padding: 0.75rem;
+  background: #eff6ff;
+  border-radius: 1rem;
+  color: #1e40af;
+}
+
+.stats-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats-label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stats-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+/* Main Content Area */
+.main-content-area {
+  flex: 1;
+  display: flex;
+  gap: 1.5rem;
+  overflow: hidden;
+  padding: 0 0.5rem;
+  min-height: 0;
+}
+
+/* Worker List Section - White Card */
+.worker-list-section {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  background: white;
+  border-radius: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f3f4f6;
+  padding: 1.5rem;
+}
+
 .search-container {
   position: relative;
+  margin-bottom: 1rem;
 }
 
 .search-icon {
@@ -429,54 +551,63 @@ onMounted(fetchWorkers);
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: #9ca3af;
 }
 
-.search-input {
+.sidebar-search-input {
   width: 100%;
-  padding: 0.8rem 1rem 0.8rem 2.8rem;
-  background-color: #f8fafc;
-  border: 1px border-gray-100;
-  border-radius: 1rem;
-  font-size: 0.95rem;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.875rem;
+  font-size: 0.9375rem;
   transition: all 0.2s ease;
 }
 
-.search-input:focus {
-  background-color: #fff;
+.sidebar-search-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
   border-color: #1e3a8a;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
-.worker-item {
+.worker-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  min-height: 0;
+}
+
+.worker-list-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
   padding: 1rem;
-  border-radius: 1.25rem;
+  border-radius: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 0.5rem;
+  background: transparent;
   border: 1px solid transparent;
 }
 
-.worker-item:hover {
-  background-color: #f8fafc;
+.worker-list-item:hover {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  transform: translateX(4px);
 }
 
-.worker-item.active {
-  background-color: #eff6ff;
+.worker-list-item.active {
+  background: #eff6ff;
   border-color: #bfdbfe;
 }
 
 .avatar-mini {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 1rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
   overflow: hidden;
-  background-color: #f1f5f9;
+  background: #f3f4f6;
   flex-shrink: 0;
+  border: 2px solid white;
 }
 
 .avatar-mini img {
@@ -489,35 +620,98 @@ onMounted(fetchWorkers);
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin-left: 0.75rem;
+  min-width: 0;
 }
 
 .item-name {
   font-weight: 700;
-  color: #1e293b;
-  font-size: 1rem;
+  color: #1f2937;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .item-id {
-  font-size: 0.8rem;
-  color: #64748b;
+  font-size: 0.75rem;
+  color: #9ca3af;
   font-weight: 500;
 }
 
 .arrow-icon {
-  color: #cbd5e1;
+  color: #d1d5db;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
-.active .item-name { color: #1e3a8a; }
-.active .arrow-icon { color: #1e3a8a; }
+.worker-list-item:hover .arrow-icon,
+.worker-list-item.active .arrow-icon {
+  opacity: 1;
+  color: #1e3a8a;
+}
 
-/* Content Details */
+.empty-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: #9ca3af;
+}
+
+/* Worker Detail Section */
+/* Worker Detail Section */
+.worker-detail-section {
+  flex: 1;
+  background: white;
+  border-radius: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f3f4f6;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.mobile-back-btn {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: #f9fafb;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  color: #1e3a8a;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.detail-card {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.detail-content {
+  padding: 2rem;
+}
+
+.detail-header {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
 .avatar-large {
-  width: 10rem;
-  height: 10rem;
-  border-radius: 2.5rem;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 1.5rem;
   overflow: hidden;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   border: 4px solid white;
+  flex-shrink: 0;
 }
 
 .avatar-large img {
@@ -526,40 +720,80 @@ onMounted(fetchWorkers);
   object-fit: cover;
 }
 
-.tag {
-  padding: 0.4rem 1rem;
-  border-radius: 2rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  background-color: #f1f5f9;
-  color: #475569;
+.header-info {
+  flex: 1;
+  min-width: 0;
 }
 
-.tag-blue { background-color: #e0f2fe; color: #0369a1; }
-.tag-purple { background-color: #f3e8ff; color: #7e22ce; }
-.tag-orange { background-color: #ffedd5; color: #c2410c; }
-.tag-green { background-color: #dcfce7; color: #15803d; }
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.worker-name {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #111827;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.025em;
+}
+
+.tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 0.375rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.tag-blue { background: #dbeafe; color: #1d4ed8; }
+.tag-purple { background: #f3e8ff; color: #7e22ce; }
+.tag-orange { background: #ffedd5; color: #c2410c; }
+.tag-green { background: #dcfce7; color: #15803d; }
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
 
 .action-btn {
-  padding: 0.75rem;
+  padding: 0.625rem;
   border-radius: 0.75rem;
   transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  background: none;
 }
 
-.action-btn.edit { color: #4f46e5; background-color: #f5f3ff; }
-.action-btn.edit:hover { background-color: #ede9fe; transform: scale(1.05); }
-.action-btn.delete { color: #e11d48; background-color: #fff1f2; }
-.action-btn.delete:hover { background-color: #ffe4e6; transform: scale(1.05); }
+.action-btn.edit { color: #4f46e5; background: #f5f3ff; }
+.action-btn.edit:hover { background: #ede9fe; transform: scale(1.05); }
+.action-btn.delete { color: #e11d48; background: #fff1f2; }
+.action-btn.delete:hover { background: #ffe4e6; transform: scale(1.05); }
 
-/* Data Boxes */
+/* Detail Grid */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
 .data-box {
-  background-color: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 1.5rem;
-  padding: 1.75rem 2rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1.25rem;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
   transition: all 0.2s ease;
 }
 
@@ -572,118 +806,81 @@ onMounted(fetchWorkers);
 .data-icon {
   color: #1e3a8a;
   opacity: 0.7;
+  flex-shrink: 0;
 }
 
 .data-content {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .data-label {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.25rem;
 }
 
 .data-value {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #1e293b;
-}
-
-.sidebar-search-input {
-  width: 100%;
-  padding: 1.25rem 1rem 1.25rem 3.5rem;
-  background-color: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 1.5rem;
-  font-size: 1.1rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-search-input:focus {
-  outline: none;
-  border-color: #1e3a8a;
-  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.1);
-}
-
-.search-icon-fixed {
-  position: absolute;
-  left: 1.25rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  z-index: 10;
-}
-
-/* Worker List Items (New Style) */
-.worker-list-item {
-  display: flex;
-  align-items: center;
-  padding: 1.25rem;
-  border-radius: 1.5rem;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 0.75rem;
-  border: 1px solid transparent;
-}
-
-.worker-list-item:hover {
-  background-color: white;
-  border-color: #e2e8f0;
-  transform: translateX(8px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-}
-
-.worker-list-item.active {
-  background-color: #eff6ff;
-  border-color: #bfdbfe;
-  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.08);
-}
-
-.avatar-mini-new {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 1.25rem;
-  overflow: hidden;
-  background-color: #f1f5f9;
-  flex-shrink: 0;
-  border: 2px solid white;
-}
-
-.avatar-mini-new img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.item-name-new {
-  font-weight: 800;
-  color: #1e293b;
-}
-
-.active .item-name-new { color: #1e3a8a; }
-
-/* Form Elements */
-.form-label {
-  display: block;
-  font-size: 0.85rem;
+  font-size: 0.9375rem;
   font-weight: 700;
-  color: #475569;
-  margin-bottom: 0.5rem;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty-detail {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #d1d5db;
+  gap: 1rem;
+}
+
+.empty-detail p {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #9ca3af;
+}
+
+/* Form Styles */
+.worker-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: span 2;
+}
+
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #4b5563;
+  margin-bottom: 0.375rem;
 }
 
 .form-input, .form-select {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.625rem;
+  border: 1px solid #e5e7eb;
   font-family: inherit;
+  font-size: 0.9375rem;
   transition: all 0.2s ease;
+  background: white;
 }
 
 .form-input:focus, .form-select:focus {
@@ -692,45 +889,207 @@ onMounted(fetchWorkers);
   box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
-.btn-secondary {
-  padding: 0.6rem 1.2rem;
-  border-radius: 0.75rem;
-  background-color: #f1f5f9;
-  color: #475569;
-  font-weight: 700;
-  transition: all 0.2s ease;
+.form-input:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
 }
 
-.btn-secondary:hover { background-color: #e2e8f0; }
+.modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
 
-.btn-primary-small {
-  padding: 0.6rem 1.5rem;
-  border-radius: 0.75rem;
-  background-color: #1e3a8a;
+.btn-secondary {
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.625rem;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9375rem;
+}
+
+.btn-secondary:hover { background: #e5e7eb; }
+
+.btn-primary {
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.625rem;
+  background: #1e3a8a;
   color: white;
   font-weight: 700;
+  border: none;
+  cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 0.9375rem;
 }
 
-.btn-primary-small:hover { background-color: #1e40af; transform: translateY(-1px); }
+.btn-primary:hover { background: #1e40af; transform: translateY(-1px); }
 
-/* Main Card Wrapper */
-.main-card {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+/* Tablet Breakpoint */
+@media (max-width: 1024px) {
+  .worker-list-section {
+    width: 280px;
+  }
+  
+  .header-title {
+    font-size: 2.5rem;
+  }
+  
+  .detail-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .header-top {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Sidebar */
-.worker-sidebar {
-  background-color: white;
+/* Mobile Breakpoint */
+@media (max-width: 768px) {
+  .workers-page {
+    padding: 8px;
+    height: auto;
+    min-height: calc(100vh - 72px);
+    overflow: visible;
+  }
+  
+  .header-card {
+    padding: 1.5rem 1rem;
+    border-radius: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .header-title {
+    font-size: 1.75rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1rem;
+  }
+  
+  .actions-row {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0;
+  }
+  
+  .btn-add {
+    flex: 1;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .stats-box {
+    padding: 0.75rem 1rem;
+  }
+  
+  .stats-value {
+    font-size: 1rem;
+  }
+  
+  .main-content-area {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
+  }
+  
+  .worker-list-section {
+    width: 100%;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    border-radius: 0;
+  }
+  
+  .worker-list-section.hidden-mobile {
+    display: none;
+  }
+  
+  .worker-detail-section {
+    position: fixed;
+    inset: 56px 0 0 0;
+    z-index: 50;
+    border-radius: 0;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .worker-detail-section.mobile-open {
+    transform: translateX(0);
+  }
+  
+  .mobile-back-btn {
+    display: flex;
+  }
+  
+  .detail-content {
+    padding: 1.5rem;
+  }
+  
+  .avatar-large {
+    width: 5rem;
+    height: 5rem;
+    border-radius: 1rem;
+  }
+  
+  .worker-name {
+    font-size: 1.5rem;
+  }
+  
+  .data-box {
+    padding: 1rem;
+  }
+  
+  .data-value {
+    font-size: 0.875rem;
+  }
+  
+  /* Modal adjustments */
+  .worker-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group.full-width {
+    grid-column: span 1;
+  }
+  
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+  
+  .modal-footer button {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  color: #94a3b8;
-  font-weight: 600;
+/* Scrollbar for worker list */
+.worker-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.worker-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
 }
 </style>

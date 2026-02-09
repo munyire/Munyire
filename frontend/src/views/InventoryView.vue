@@ -5,8 +5,7 @@ import {
   Search, 
   Plus, 
   Edit, 
-  Trash2, 
-  Filter
+  Trash2
 } from 'lucide-vue-next';
 import Modal from '../components/ui/Modal.vue';
 
@@ -40,11 +39,9 @@ const fetchClothes = async () => {
               ...ruha,
               Mennyiseg: raktar.Mennyiseg,
               Minoseg: raktar.Minoseg,
-              // Keep original ID reference if needed, though Cikkszam is PK
             });
           });
         } else {
-          // Listed item with no stock info (should rely on defaults)
           flattened.push({
             ...ruha,
             Mennyiseg: 0,
@@ -93,18 +90,15 @@ const openEditModal = (item) => {
 const saveItem = async () => {
   try {
     if (isEditing.value) {
-      // Update
       await api.patch(`/ruhak/${form.value.Cikkszam}`, form.value);
-      // Optimistic update
       const index = clothes.value.findIndex(c => c.Cikkszam === form.value.Cikkszam);
       if (index !== -1) clothes.value[index] = { ...form.value };
     } else {
-      // Create
       const payload = { ...form.value };
       if (!payload.Cikkszam) delete payload.Cikkszam;
       
       const res = await api.post('/ruhak', payload);
-      clothes.value.push(res.data || { ...form.value }); // fallback ID if mock
+      clothes.value.push(res.data || { ...form.value });
     }
     showModal.value = false;
   } catch (error) {
@@ -128,76 +122,75 @@ onMounted(fetchClothes);
 </script>
 
 <template>
-  <div class="inventory-container w-full">
+  <div class="inventory-container">
     <!-- Header Card -->
-    <div class="header-card p-14 shadow-xl bg-white rounded-[2rem] flex flex-col items-center justify-center text-center">
-      <h1 class="m-0 text-8xl font-black text-gray-900 tracking-tighter leading-none">Készlet</h1>
-      <p class="text-muted m-0 text-4xl mt-8 font-semibold">Raktárkészlet kezelése</p>
+    <div class="header-card">
+      <h1 class="header-title">Készlet</h1>
+      <p class="header-subtitle">Raktárkészlet kezelése</p>
     </div>
 
     <!-- Controls Row -->
-    <div class="controls flex justify-between items-center">
+    <div class="controls">
       <!-- Search Input -->
-      <div class="search-box flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-md border border-gray-100 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all w-96">
-        <Search size="20" class="text-gray-400" />
+      <div class="search-box">
+        <Search size="20" class="search-icon" />
         <input 
           v-model="searchQuery" 
           type="text" 
           placeholder="Keresés cikkszám vagy név alapján..." 
-          class="bg-transparent border-none outline-none w-full text-gray-700 placeholder-gray-400 font-medium"
+          class="search-input"
         />
       </div>
 
       <!-- Add Button -->
-      <button @click="openAddModal" class="btn btn-primary px-8 py-3 text-lg font-bold shadow-lg flex items-center gap-2 rounded-2xl transition-transform hover:scale-105 active:scale-95">
-        <Plus size="24" />
-        Új termék
+      <button @click="openAddModal" class="btn-add">
+        <Plus size="22" />
+        <span>Új termék</span>
       </button>
     </div>
 
-    <div class="card bg-white rounded-[2rem] shadow-sm p-8 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full">
+    <!-- Data Table Card -->
+    <div class="data-card">
+      <div class="table-wrapper">
+        <table class="data-table">
           <thead>
-            <tr class="bg-gray-50 text-sm font-semibold text-muted border-b border-gray-100">
-              <th class="px-4 py-5 text-center">Cikkszám</th>
-              <th class="px-4 py-5 text-center">Fajta</th>
-              <th class="px-4 py-5 text-center">Méret</th>
-              <th class="px-4 py-5 text-center">Szín</th>
-              <th class="px-4 py-5 text-center">Minőség</th>
-              <th class="px-4 py-5 text-center">Mennyiség</th>
-              <th class="px-4 py-5 text-center">Műveletek</th>
+            <tr>
+              <th>Cikkszám</th>
+              <th>Fajta</th>
+              <th>Méret</th>
+              <th>Szín</th>
+              <th>Minőség</th>
+              <th>Mennyiség</th>
+              <th class="actions-col">Műveletek</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr v-for="item in filteredClothes" :key="item.Cikkszam" class="hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-5 text-center font-medium">{{ item.Cikkszam }}</td>
-              <td class="px-4 py-5 text-center">{{ item.Fajta }}</td>
-              <td class="px-4 py-5 text-center">{{ item.Meret }}</td>
-              <td class="px-4 py-5 text-center">{{ item.Szin }}</td>
-              <td class="px-4 py-5 text-center">
+          <tbody>
+            <tr v-for="item in filteredClothes" :key="item.Cikkszam">
+              <td class="font-medium">{{ item.Cikkszam }}</td>
+              <td>{{ item.Fajta }}</td>
+              <td>{{ item.Meret }}</td>
+              <td>{{ item.Szin }}</td>
+              <td>
                 <span class="badge" :class="{
-                  'bg-green-100 text-green-700': item.Minoseg === 'Új',
-                  'bg-blue-100 text-blue-700': item.Minoseg === 'Jó',
-                  'bg-red-100 text-red-700': item.Minoseg === 'Szakadt'
+                  'badge-new': item.Minoseg === 'Új',
+                  'badge-good': item.Minoseg === 'Jó',
+                  'badge-damaged': item.Minoseg === 'Szakadt'
                 }">{{ item.Minoseg }}</span>
               </td>
-              <td class="px-4 py-5 text-center font-bold">
-                {{ item.Mennyiseg }} db
-              </td>
-              <td class="px-4 py-5 text-center">
-                <div class="inline-flex items-center gap-4">
-                  <button @click="openEditModal(item)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Szerkesztés">
-                    <Edit size="20" />
+              <td class="font-semibold">{{ item.Mennyiseg }} db</td>
+              <td class="actions-col">
+                <div class="action-buttons">
+                  <button @click="openEditModal(item)" class="btn-edit" title="Szerkesztés">
+                    <Edit size="18" />
                   </button>
-                  <button @click="deleteItem(item.Cikkszam)" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Törlés">
-                    <Trash2 size="20" />
+                  <button @click="deleteItem(item.Cikkszam)" class="btn-delete" title="Törlés">
+                    <Trash2 size="18" />
                   </button>
                 </div>
               </td>
             </tr>
             <tr v-if="filteredClothes.length === 0 && !loading">
-              <td colspan="7" class="px-6 py-8 text-center text-muted">Nincs megjeleníthető elem.</td>
+              <td colspan="7" class="empty-cell">Nincs megjeleníthető elem.</td>
             </tr>
           </tbody>
         </table>
@@ -207,40 +200,40 @@ onMounted(fetchClothes);
     <!-- Add/Edit Modal -->
     <Modal :show="showModal" :title="isEditing ? 'Termék szerkesztése' : 'Új termék felvétele'" @close="showModal = false">
       <template #body>
-        <form @submit.prevent="saveItem" id="itemForm" class="flex flex-col gap-4">
-          <div>
-            <label class="block mb-1 text-sm font-medium">Cikkszám</label>
+        <form @submit.prevent="saveItem" id="itemForm" class="item-form">
+          <div class="form-group full-width">
+            <label class="form-label">Cikkszám</label>
             <input 
               v-model="form.Cikkszam" 
               :placeholder="isEditing ? '' : 'Automatikusan generálás...'" 
               :disabled="true" 
-              class="bg-gray-100 cursor-not-allowed"
+              class="form-input disabled"
             />
-            <p v-if="!isEditing" class="text-xs text-muted mt-1">A rendszer automatikusan generálja a cikkszámot.</p>
+            <p v-if="!isEditing" class="help-text">A rendszer automatikusan generálja a cikkszámot.</p>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block mb-1 text-sm font-medium">Fajta</label>
-              <input v-model="form.Fajta" required />
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Fajta</label>
+              <input v-model="form.Fajta" required class="form-input" />
             </div>
-            <div>
-              <label class="block mb-1 text-sm font-medium">Szín</label>
-              <input v-model="form.Szin" required />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block mb-1 text-sm font-medium">Méret</label>
-              <input v-model="form.Meret" required />
-            </div>
-            <div>
-              <label class="block mb-1 text-sm font-medium">Mennyiség</label>
-              <input type="number" v-model="form.Mennyiseg" required min="0" />
+            <div class="form-group">
+              <label class="form-label">Szín</label>
+              <input v-model="form.Szin" required class="form-input" />
             </div>
           </div>
-          <div>
-            <label class="block mb-1 text-sm font-medium">Minőség</label>
-            <select v-model="form.Minoseg">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Méret</label>
+              <input v-model="form.Meret" required class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mennyiség</label>
+              <input type="number" v-model="form.Mennyiseg" required min="0" class="form-input" />
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label">Minőség</label>
+            <select v-model="form.Minoseg" class="form-select">
               <option value="Új">Új</option>
               <option value="Jó">Jó</option>
               <option value="Szakadt">Szakadt</option>
@@ -249,8 +242,8 @@ onMounted(fetchClothes);
         </form>
       </template>
       <template #footer>
-        <button class="btn btn-secondary" @click="showModal = false">Mégse</button>
-        <button type="submit" form="itemForm" class="btn btn-primary">Mentés</button>
+        <button class="btn-secondary" @click="showModal = false">Mégse</button>
+        <button type="submit" form="itemForm" class="btn-primary">Mentés</button>
       </template>
     </Modal>
   </div>
@@ -259,30 +252,413 @@ onMounted(fetchClothes);
 <style scoped>
 .inventory-container {
   padding: 12px 12px 12px 0;
-  width: 100% !important;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 1.5rem;
 }
 
+/* Header Card */
 .header-card {
   background-color: white;
   border-radius: 2rem;
-  border-radius: 2rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  width: 100% !important;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 4rem;
+  font-weight: 900;
+  color: #111827;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+
+.header-subtitle {
+  color: #6b7280;
+  margin: 0.75rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  border-radius: 1rem;
+  padding: 0.875rem 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  flex: 1;
+  max-width: 400px;
+  transition: all 0.2s;
+}
+
+.search-box:focus-within {
+  border-color: #1e40af;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.search-icon {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.9375rem;
+  color: #374151;
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1e3a8a;
+  color: white;
+  padding: 0.875rem 1.5rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+}
+
+.btn-add:hover {
+  background: #1e40af;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.35);
+}
+
+/* Data Card */
+.data-card {
+  background: white;
+  border-radius: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin: -1.5rem;
+  padding: 1.5rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.data-table th {
+  background: #f9fafb;
+  padding: 1rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 1rem 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+}
+
+.data-table tr:hover td {
+  background: #f9fafb;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
 }
 
 .badge {
-  padding: 0.25rem 0.6rem;
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
 }
-.bg-green-100 { background-color: #dcfce7; }
-.text-green-700 { color: #15803d; }
-.bg-blue-100 { background-color: #dbeafe; }
-.text-blue-700 { color: #1d4ed8; }
-.bg-red-100 { background-color: #fee2e2; }
-.text-red-700 { color: #b91c1c; }
+
+.badge-new {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-good {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-damaged {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.actions-col {
+  text-align: center;
+  width: 100px;
+}
+
+.action-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-edit, .btn-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+}
+
+.btn-edit {
+  color: #2563eb;
+}
+
+.btn-edit:hover {
+  background: #eff6ff;
+}
+
+.btn-delete {
+  color: #dc2626;
+}
+
+.btn-delete:hover {
+  background: #fef2f2;
+}
+
+.empty-cell {
+  text-align: center;
+  padding: 3rem;
+  color: #9ca3af;
+}
+
+/* Modal Form */
+.item-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: span 2;
+}
+
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 0.375rem;
+}
+
+.form-input, .form-select {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.625rem;
+  font-size: 0.9375rem;
+  transition: all 0.2s;
+  background: white;
+  width: 100%;
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: #1e40af;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.form-input.disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.help-text {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin: 0.25rem 0 0;
+}
+
+.btn-secondary {
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.625rem;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9375rem;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.btn-primary {
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.625rem;
+  background: #1e3a8a;
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9375rem;
+}
+
+.btn-primary:hover {
+  background: #1e40af;
+}
+
+/* Tablet Breakpoint */
+@media (max-width: 1024px) {
+  .header-title {
+    font-size: 3rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1.25rem;
+  }
+  
+  .data-table {
+    font-size: 0.875rem;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.875rem 0.625rem;
+  }
+}
+
+/* Mobile Breakpoint */
+@media (max-width: 768px) {
+  .inventory-container {
+    padding: 8px;
+    gap: 1rem;
+  }
+  
+  .header-card {
+    padding: 1.5rem 1rem;
+    border-radius: 1.5rem;
+  }
+  
+  .header-title {
+    font-size: 2rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1rem;
+  }
+  
+  .controls {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .search-box {
+    max-width: none;
+    width: 100%;
+    padding: 0.75rem 1rem;
+  }
+  
+  .btn-add {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+  
+  .btn-add span {
+    display: inline;
+  }
+  
+  .data-card {
+    border-radius: 1.5rem;
+    padding: 1rem;
+  }
+  
+  .table-wrapper {
+    margin: -1rem;
+    padding: 1rem;
+  }
+  
+  .data-table {
+    min-width: 700px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group.full-width {
+    grid-column: span 1;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 1.75rem;
+  }
+  
+  .btn-add span {
+    font-size: 0.875rem;
+  }
+}
 </style>

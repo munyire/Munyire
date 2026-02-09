@@ -71,4 +71,15 @@ defineEmits(['update:modelValue']);
   cursor: not-allowed;
   color: #6b7280;
 }
+
+@media (max-width: 768px) {
+  .input-field {
+    padding: 0.875rem 1rem;
+    font-size: 16px; /* Prevents zoom on iOS Safari */
+  }
+  
+  .input-label {
+    font-size: 0.875rem;
+  }
+}
 </style>

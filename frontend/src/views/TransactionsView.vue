@@ -3,20 +3,17 @@ import { ref, onMounted, computed } from 'vue';
 import api from '../api/axios';
 import SearchableSelect from '../components/common/SearchableSelect.vue';
 import BaseButton from '../components/common/BaseButton.vue';
-
 import Modal from '../components/ui/Modal.vue';
 import { ArrowRightLeft, History, Check } from 'lucide-vue-next';
 
-const activeTab = ref('issue'); // 'issue', 'return', 'history'
+const activeTab = ref('issue');
 const loading = ref(false);
 const message = ref({ type: '', text: '' });
 
-// Data for selects
-const workers = ref([]); // { label: 'Name', value: id }
-const clothes = ref([]); // { label: 'Name (Size)', value: cikkszam }
-const activeIssues = ref([]); // List of active issues for return tab
+const workers = ref([]);
+const clothes = ref([]);
+const activeIssues = ref([]);
 
-// Issue Form
 const issueForm = ref({
   DolgozoID: null,
   Cikkszam: null,
@@ -24,39 +21,27 @@ const issueForm = ref({
   Indok: ''
 });
 
-
-
-
-// Modal State
 const showReturnModal = ref(false);
 const selectedReturnItem = ref(null);
 const returnQuality = ref('Jó');
 const qualityOptions = ['Új', 'Jó', 'Szakadt'];
 
-
 const fetchDropdownData = async () => {
   try {
-    const [workersRes, clothesRes] = await Promise.all([
-      api.get('/dolgozok/names'), // Assuming endpoint returns { DolgozoID, DNev }
-      api.get('/ruhak/options')   // Assuming endpoint returns list of clothes
+    const [workersRes] = await Promise.all([
+      api.get('/dolgozok/names')
     ]);
 
-    // Transform for SearchableSelect
-    // Based on API docs, /dolgozok/names returns [{ DolgozoID, DNev }]
     workers.value = workersRes.data.map(w => ({
       label: w.FelhasznaloNev ? `${w.DNev} (${w.FelhasznaloNev})` : w.DNev,
       value: w.DolgozoID
     }));
 
-    // Based on API docs /ruhak/options might return metadata, checking /ruhak might be better if options not sufficient
-    // Actually /ruhak returns all clothes. Let's use that for now if options is just metadata.
-    // Wait, let's try /ruhak for full info
     const allClothes = await api.get('/ruhak');
     clothes.value = allClothes.data.map(c => ({
       label: `${c.Fajta} - ${c.Szin} (${c.Meret}) [${c.Cikkszam}]`,
       value: c.Cikkszam
     }));
-
   } catch (err) {
     console.error('Error loading dropdown data', err);
   }
@@ -64,7 +49,7 @@ const fetchDropdownData = async () => {
 
 const fetchActiveIssues = async () => {
   try {
-    const res = await api.get('/ruhakibe/active'); // Endpoint check
+    const res = await api.get('/ruhakibe/active');
     activeIssues.value = res.data;
   } catch (err) {
     console.error('Error loading active issues', err);
@@ -83,15 +68,13 @@ const handleIssue = async () => {
   try {
     const payload = {
       DolgozoID: Number(issueForm.value.DolgozoID),
-      RuhaID: Number(issueForm.value.Cikkszam), // Backend validator requires RuhaID
+      RuhaID: Number(issueForm.value.Cikkszam),
       Mennyiseg: Number(issueForm.value.Mennyiseg),
       Indok: issueForm.value.Indok
     };
     await api.post('/ruhakibe', payload);
     message.value = { type: 'success', text: 'Ruha sikeresen kiadva!' };
-    // Reset form
     issueForm.value = { DolgozoID: null, Cikkszam: null, Mennyiseg: 1, Indok: '' };
-    // Refresh active issues if we switch tabs
     fetchActiveIssues();
   } catch (err) {
     message.value = { type: 'error', text: 'Hiba a kiadás során: ' + (err.response?.data?.error || err.message) };
@@ -102,7 +85,7 @@ const handleIssue = async () => {
 
 const handleReturn = (issue) => {
   selectedReturnItem.value = issue;
-  returnQuality.value = 'Jó'; // Default
+  returnQuality.value = 'Jó';
   showReturnModal.value = true;
 };
 
@@ -115,27 +98,17 @@ const confirmReturn = async () => {
       VisszaDatum: new Date().toISOString().split('T')[0]
     });
     
-    // Remove from local list
     activeIssues.value = activeIssues.value.filter(i => i.RuhaKiBeID !== selectedReturnItem.value.RuhaKiBeID);
-    
-    // Success message
     message.value = { type: 'success', text: 'Sikeres visszavétel!' };
-    
-    // Close modal
     showReturnModal.value = false;
     selectedReturnItem.value = null;
     
-    // Optional: clear message after a few seconds
     setTimeout(() => {
       if (message.value.type === 'success') message.value = { type: '', text: '' };
     }, 3000);
-
   } catch (err) {
     console.error('Hiba visszavételkor', err);
     message.value = { type: 'error', text: 'Hiba a visszavétel során!' };
-    // Close modal even on error? Or keep it open?
-    // Let's keep it open but show error if we had a modal error state. 
-    // Here we just use the global message, so maybe close it.
     showReturnModal.value = false;
   }
 };
@@ -147,120 +120,117 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="transactions-container w-full">
-    <!-- RESTORED: Header Card with Shadow -->
-    <div class="header-card-box p-12 shadow-2xl bg-white flex flex-col items-center justify-center text-center mx-8 border border-gray-100">
-      <h1 class="text-8xl font-black tracking-tighter leading-none text-gray-900 m-0">Tranzakciók</h1>
-      <p class="text-4xl mt-8 font-semibold text-gray-500">Kiadás és visszavétel kezelése</p>
+  <div class="transactions-container">
+    <!-- Header Card -->
+    <div class="header-card">
+      <h1 class="header-title">Tranzakciók</h1>
+      <p class="header-subtitle">Kiadás és visszavétel kezelése</p>
     </div>
 
-    <!-- Larger Tabs -->
-    <div class="tabs-container flex justify-center gap-6 relative z-10">
+    <!-- Tabs -->
+    <div class="tabs-container">
       <button 
         @click="activeTab = 'issue'" 
-        class="tab-btn scale-110"
+        class="tab-btn"
         :class="{ active: activeTab === 'issue' }"
       >
-        <ArrowRightLeft size="22" />
+        <ArrowRightLeft size="20" />
         <span>Kiadás</span>
       </button>
       <button 
         @click="activeTab = 'return'" 
-        class="tab-btn scale-110"
+        class="tab-btn"
         :class="{ active: activeTab === 'return' }"
       >
-        <History size="22" />
+        <History size="20" />
         <span>Visszavétel</span>
       </button>
     </div>
 
-    <!-- Issue View (BOXED with Shadow) -->
-    <div v-if="activeTab === 'issue'" class="transaction-main-box bg-white mx-auto max-w-5xl p-16 shadow-2xl border border-gray-100 min-h-[700px] flex flex-col">
-      <h2 class="text-5xl font-black mb-12 tracking-tight text-gray-900 text-center">Új ruha kiadása</h2>
+    <!-- Issue View -->
+    <div v-if="activeTab === 'issue'" class="transaction-card">
+      <h2 class="card-title">Új ruha kiadása</h2>
       
-      <form @submit.prevent="handleIssue" class="flex flex-col gap-10">
+      <form @submit.prevent="handleIssue" class="issue-form">
         <div class="form-group">
-          <label class="block mb-4 text-2xl font-bold text-gray-700">Dolgozó kiválasztása</label>
+          <label class="form-label">Dolgozó kiválasztása</label>
           <SearchableSelect 
             :items="workers" 
             v-model="issueForm.DolgozoID" 
             placeholder="Keresés név vagy ID alapján..."
-            class="scale-110 origin-left"
           />
         </div>
 
         <div class="form-group">
-          <label class="block mb-4 text-2xl font-bold text-gray-700">Ruha kiválasztása</label>
+          <label class="form-label">Ruha kiválasztása</label>
           <SearchableSelect 
             :items="clothes" 
             v-model="issueForm.Cikkszam" 
             placeholder="Szűrés típus vagy cikkszám szerint..."
-            class="scale-110 origin-left"
           />
         </div>
 
-        <div class="grid grid-cols-2 gap-12">
+        <div class="form-row">
           <div class="form-group">
-            <label class="block mb-4 text-2xl font-bold text-gray-700">Mennyiség</label>
-            <input type="number" v-model="issueForm.Mennyiseg" min="1" class="form-input-large w-full" />
+            <label class="form-label">Mennyiség</label>
+            <input type="number" v-model="issueForm.Mennyiseg" min="1" class="form-input" />
           </div>
 
           <div class="form-group">
-            <label class="block mb-4 text-2xl font-bold text-gray-700">Indoklás / Megjegyzés</label>
-            <input type="text" v-model="issueForm.Indok" placeholder="Pl. Csere, Új belépő" class="form-input-large w-full" />
+            <label class="form-label">Indoklás / Megjegyzés</label>
+            <input type="text" v-model="issueForm.Indok" placeholder="Pl. Csere, Új belépő" class="form-input" />
           </div>
         </div>
 
-        <div v-if="message.text" :class="`message mt-4 p-6 rounded-2xl text-xl font-bold ${message.type === 'error' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`">
+        <div v-if="message.text" :class="['message', message.type]">
           {{ message.text }}
         </div>
 
-        <button type="submit" :disabled="loading" class="btn-primary-large mt-8">
+        <button type="submit" :disabled="loading" class="btn-submit">
           <span v-if="!loading">Kiadás Rögzítése</span>
           <span v-else>Feldolgozás...</span>
         </button>
       </form>
     </div>
 
-    <!-- Return View (Scaled Up) -->
-    <div v-if="activeTab === 'return'" class="transaction-card-return bg-white mx-auto w-full max-w-7xl p-12 shadow-2xl border border-gray-100 min-h-[500px]">
-      <h2 class="text-4xl font-black mb-10 tracking-tight text-gray-900">Aktív kiadások (Visszavételre vár)</h2>
+    <!-- Return View -->
+    <div v-if="activeTab === 'return'" class="transaction-card">
+      <h2 class="card-title">Aktív kiadások (Visszavételre vár)</h2>
       
-      <div v-if="activeIssues.length === 0" class="text-center text-muted py-16 text-2xl font-semibold opacity-30">
+      <div v-if="activeIssues.length === 0" class="empty-state">
         Nincs jelenleg kint lévő ruha.
       </div>
       
-      <!-- Feedback Message for Returns -->
-      <div v-if="message.text && activeTab === 'return'" :class="`mb-6 p-6 rounded-2xl text-xl font-bold ${message.type === 'error' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`">
+      <div v-if="message.text && activeTab === 'return'" :class="['message', message.type]">
         {{ message.text }}
       </div>
 
-      <div v-else class="overflow-x-auto">
-        <table class="w-full border-collapse">
+      <div v-else class="table-wrapper">
+        <table class="data-table">
           <thead>
-            <tr class="text-left border-b-2 border-gray-100">
-              <th class="pb-6 text-xl font-black text-gray-500 uppercase tracking-widest pl-4">Dolgozó</th>
-              <th class="pb-6 text-xl font-black text-gray-500 uppercase tracking-widest">Ruha Típusa</th>
-              <th class="pb-6 text-xl font-black text-gray-500 uppercase tracking-widest">Kiadás Dátuma</th>
-              <th class="pb-6 text-xl font-black text-gray-500 uppercase tracking-widest text-right pr-4">Művelet</th>
+            <tr>
+              <th>Dolgozó</th>
+              <th>Ruha Típusa</th>
+              <th>Kiadás Dátuma</th>
+              <th class="actions-col">Művelet</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="issue in activeIssues" :key="issue.RuhaKiBeID" class="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors group">
-              <td class="py-8 pl-4">
-                <div class="font-black text-2xl text-gray-800">{{ issue.Dolgozo?.DNev || issue.DolgozoID }}</div>
+            <tr v-for="issue in activeIssues" :key="issue.RuhaKiBeID">
+              <td>
+                <div class="worker-name">{{ issue.Dolgozo?.DNev || issue.DolgozoID }}</div>
               </td>
-              <td class="py-8">
-                <div class="flex flex-col">
-                  <span class="text-2xl font-bold text-gray-700">{{ issue.Ruha?.Fajta || 'Ismeretlen' }}</span>
-                  <span class="text-lg text-blue-600 font-mono font-bold">{{ issue.Ruha?.Cikkszam }}</span>
+              <td>
+                <div class="item-info">
+                  <span class="item-name">{{ issue.Ruha?.Fajta || 'Ismeretlen' }}</span>
+                  <span class="item-code">{{ issue.Ruha?.Cikkszam }}</span>
                 </div>
               </td>
-              <td class="py-8">
-                <div class="text-xl font-bold text-gray-500">{{ new Date(issue.KiadasDatum).toLocaleDateString('hu-HU') }}</div>
+              <td>
+                <span class="date">{{ new Date(issue.KiadasDatum).toLocaleDateString('hu-HU') }}</span>
               </td>
-              <td class="py-8 text-right pr-4">
-                <button class="btn-return scale-110" @click="handleReturn(issue)">
+              <td class="actions-col">
+                <button class="btn-return" @click="handleReturn(issue)">
                   Visszavétel
                 </button>
               </td>
@@ -273,34 +243,32 @@ onMounted(() => {
     <!-- Return Quality Modal -->
     <Modal :show="showReturnModal" title="Ruha Visszavétele - Minőség" @close="showReturnModal = false">
       <template #body>
-        <div v-if="selectedReturnItem" class="flex flex-col gap-6">
-          <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-            <h4 class="text-gray-500 font-bold uppercase text-sm mb-2">Visszavett tétel</h4>
-            <div class="text-2xl font-black text-gray-800 mb-1">{{ selectedReturnItem.Ruha?.Fajta }}</div>
-            <div class="text-lg text-blue-600 font-mono">{{ selectedReturnItem.Ruha?.Cikkszam }}</div>
-            <div class="mt-4 text-gray-600 font-semibold">Tőle: <span class="text-gray-900">{{ selectedReturnItem.Dolgozo?.DNev }}</span></div>
+        <div v-if="selectedReturnItem" class="return-modal-content">
+          <div class="return-item-info">
+            <h4>Visszavett tétel</h4>
+            <div class="item-name">{{ selectedReturnItem.Ruha?.Fajta }}</div>
+            <div class="item-code">{{ selectedReturnItem.Ruha?.Cikkszam }}</div>
+            <div class="item-from">Tőle: <span>{{ selectedReturnItem.Dolgozo?.DNev }}</span></div>
           </div>
 
-          <div>
-            <label class="block mb-4 text-xl font-bold text-gray-800">Milyen állapotban van a ruha?</label>
-            <div class="grid grid-cols-3 gap-4">
+          <div class="quality-selection">
+            <label class="form-label">Milyen állapotban van a ruha?</label>
+            <div class="quality-options">
               <label 
                 v-for="opt in qualityOptions" 
                 :key="opt"
-                class="cursor-pointer relative"
+                class="quality-option"
               >
                 <input 
                   type="radio" 
                   name="quality" 
                   :value="opt" 
                   v-model="returnQuality"
-                  class="peer sr-only"
+                  class="sr-only"
                 >
-                <div class="p-4 rounded-xl border-2 border-gray-200 text-center font-bold text-gray-600 transition-all peer-checked:border-blue-600 peer-checked:text-blue-600 peer-checked:bg-blue-50 hover:border-blue-300">
+                <div class="quality-card" :class="{ selected: returnQuality === opt }">
                   {{ opt }}
-                  <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 text-blue-600">
-                    <Check size="16" />
-                  </div>
+                  <Check v-if="returnQuality === opt" size="16" class="check-icon" />
                 </div>
               </label>
             </div>
@@ -308,121 +276,504 @@ onMounted(() => {
         </div>
       </template>
       <template #footer>
-        <button class="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors" @click="showReturnModal = false">Mégse</button>
-        <button class="px-6 py-3 rounded-xl font-bold text-white bg-blue-800 hover:bg-blue-900 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1" @click="confirmReturn">Visszavétel Rögzítése</button>
+        <button class="btn-secondary" @click="showReturnModal = false">Mégse</button>
+        <button class="btn-primary" @click="confirmReturn">Visszavétel Rögzítése</button>
       </template>
     </Modal>
-
   </div>
 </template>
 
 <style scoped>
 .transactions-container {
   padding: 12px 12px 12px 0;
+  width: 100%;
 }
 
-.header-card-box {
-  background-color: white !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2) !important;
-  border-radius: 2rem !important; /* Matched to Dashboard rounding */
-  margin-bottom: 5px !important; /* Exactly 5px space under header */
+/* Header Card */
+.header-card {
+  background-color: white;
+  border-radius: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 0.75rem;
 }
 
-.transaction-main-box,
-.transaction-card-return {
-  background-color: white !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2) !important;
-  border-radius: 2rem !important; /* Matched to Dashboard rounding */
-  margin-top: 0px !important; 
+.header-title {
+  margin: 0;
+  font-size: 4rem;
+  font-weight: 900;
+  color: #111827;
+  letter-spacing: -0.025em;
+  line-height: 1;
 }
 
+.header-subtitle {
+  color: #6b7280;
+  margin: 0.75rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Tabs */
 .tabs-container {
-  margin-top: 0px !important;
-  margin-bottom: 5px !important; /* Exactly 5px space under tabs */
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .tab-btn {
-  padding: 1rem 2.5rem;
-  border-radius: 1.5rem; /* More consistent rounding with boxes */
-  background: white;
-  border: 1px solid #e5e7eb;
-  font-weight: 800;
-  color: #64748b;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  border-radius: 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  font-weight: 600;
+  color: #6b7280;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 0.9375rem;
+}
+
+.tab-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
 .tab-btn.active {
-  background: #1e3a8a; /* Blue for the active tab */
+  background: #1e3a8a;
   color: white;
   border-color: #1e3a8a;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+}
+
+/* Transaction Card */
+.transaction-card {
+  background: white;
+  border-radius: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+  padding: 2.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.card-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 2rem;
+  text-align: center;
+}
+
+/* Issue Form */
+.issue-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.form-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  padding: 0.875rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  background: #f9fafb;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  background: white;
+  border-color: #1e40af;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.message.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.message.success {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.btn-submit {
+  background: #1e3a8a;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+  margin-top: 0.5rem;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #1e40af;
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
+  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.35);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #9ca3af;
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+/* Table */
+.table-wrapper {
+  overflow-x: auto;
+  margin: -1rem;
+  padding: 1rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 1rem 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 1.25rem 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.data-table tr:hover td {
+  background: #f9fafb;
+}
+
+.worker-name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.item-name {
+  font-weight: 600;
+  color: #374151;
+}
+
+.item-code {
+  font-size: 0.8125rem;
+  color: #2563eb;
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.date {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.actions-col {
+  text-align: right;
 }
 
 .btn-return {
-  background-color: #f1f5f9;
+  background: #f3f4f6;
   color: #1e3a8a;
-  padding: 0.75rem 1.5rem;
-  border-radius: 1rem;
-  font-weight: 800;
-  border: 1px solid #e2e8f0;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.625rem;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+  font-size: 0.875rem;
 }
 
 .btn-return:hover {
-  background-color: #1e3a8a;
+  background: #1e3a8a;
   color: white;
   border-color: #1e3a8a;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
 }
 
-.form-input-large {
-  border: 1px solid #e2e8f0;
-  padding: 1.25rem 1.5rem;
-  border-radius: 1.25rem;
-  outline: none;
-  font-size: 1.1rem;
-  background-color: #f8fafc;
-  transition: all 0.2s ease;
-}
-.form-input-large:focus {
-  background-color: white;
-  border-color: #1e3a8a;
-  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
-}
-
-.btn-primary-large {
-  background-color: #1e3a8a;
-  color: white;
-  padding: 1.5rem;
-  border-radius: 1.5rem;
-  font-weight: 800;
-  font-size: 1.25rem;
+/* Return Modal */
+.return-modal-content {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  transition: all 0.2s ease;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.return-item-info {
+  background: #f9fafb;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.return-item-info h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.75rem;
+}
+
+.return-item-info .item-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.return-item-info .item-code {
+  font-size: 0.9375rem;
+  margin-bottom: 0.75rem;
+}
+
+.return-item-info .item-from {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.return-item-info .item-from span {
+  color: #111827;
+  font-weight: 600;
+}
+
+.quality-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.quality-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.quality-option {
+  cursor: pointer;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.quality-card {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid #e5e7eb;
+  text-align: center;
+  font-weight: 600;
+  color: #6b7280;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.quality-card:hover {
+  border-color: #1e40af;
+}
+
+.quality-card.selected {
+  border-color: #1e40af;
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.check-icon {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+/* Modal Footer Buttons */
+.btn-secondary {
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.625rem;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-weight: 600;
   border: none;
   cursor: pointer;
-  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.2);
+  transition: all 0.2s;
+  font-size: 0.9375rem;
 }
 
-.btn-primary-large:hover {
-  background-color: #1e40af;
-  transform: translateY(-2px);
-  box-shadow: 0 20px 25px -5px rgba(30, 58, 138, 0.3);
+.btn-secondary:hover {
+  background: #e5e7eb;
 }
 
-.btn-primary-large:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
+.btn-primary {
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.625rem;
+  background: #1e3a8a;
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9375rem;
+}
+
+.btn-primary:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .header-title {
+    font-size: 3rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1.25rem;
+  }
+  
+  .transaction-card {
+    padding: 2rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .transactions-container {
+    padding: 8px;
+  }
+  
+  .header-card {
+    padding: 1.5rem 1rem;
+    border-radius: 1.5rem;
+  }
+  
+  .header-title {
+    font-size: 2rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1rem;
+  }
+  
+  .tabs-container {
+    gap: 0.5rem;
+  }
+  
+  .tab-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .transaction-card {
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+  }
+  
+  .card-title {
+    font-size: 1.375rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .issue-form {
+    gap: 1.25rem;
+  }
+  
+  .table-wrapper {
+    margin: -0.5rem;
+    padding: 0.5rem;
+  }
+  
+  .data-table {
+    min-width: 600px;
+  }
+  
+  .quality-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 1.75rem;
+  }
+  
+  .transaction-card {
+    padding: 1.25rem;
+  }
+  
+  .btn-submit {
+    padding: 0.875rem 1.5rem;
+  }
 }
 </style>

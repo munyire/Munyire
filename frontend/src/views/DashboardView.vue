@@ -47,113 +47,113 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="dashboard-container w-full">
+  <div class="dashboard-container">
     <!-- Header Card -->
-    <div class="header-card p-14 shadow-xl bg-white rounded-[2rem] flex flex-col items-center justify-center text-center">
-      <h1 class="m-0 text-8xl font-black text-gray-900 tracking-tighter leading-none">Áttekintés</h1>
-      <p class="text-muted m-0 text-4xl mt-8 font-semibold">Rendszerstatisztikák és aktivitás</p>
+    <div class="header-card">
+      <h1 class="header-title">Áttekintés</h1>
+      <p class="header-subtitle">Rendszerstatisztikák és aktivitás</p>
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-grid mt-5">
+    <div class="stats-grid">
       <!-- Hero Card: Workers (Blue) -->
-      <div class="stat-card hero-blue p-10">
-        <div class="flex justify-between items-start mb-8">
-          <div>
-            <h3 class="text-white/90 text-2xl font-medium m-0 mb-3">Összes Dolgozó</h3>
-            <p class="text-8xl font-bold text-white m-0">{{ stats.totalWorkers }}</p>
+      <div class="stat-card hero-blue">
+        <div class="stat-card-header">
+          <div class="stat-card-info">
+            <h3 class="stat-card-label">Összes Dolgozó</h3>
+            <p class="stat-card-value">{{ stats.totalWorkers }}</p>
           </div>
-          <div class="icon-circle bg-white/20 text-white">
-             <Users size="40" />
+          <div class="icon-circle">
+             <Users size="32" />
           </div>
         </div>
-        <div class="mt-auto">
-           <span class="badge bg-white/20 text-white text-md px-5 py-2 rounded-full">Aktív állomány</span>
+        <div class="stat-card-footer">
+           <span class="badge">Aktív állomány</span>
         </div>
       </div>
 
       <!-- Card: Clothes (Orange) -->
-      <div class="stat-card hero-orange p-10">
-        <div class="flex justify-between items-start mb-8">
-          <div>
-            <h3 class="text-white/90 text-2xl font-medium m-0 mb-3">Raktárkészlet</h3>
-            <p class="text-8xl font-bold text-white m-0">{{ stats.totalClothes }}</p>
+      <div class="stat-card hero-orange">
+        <div class="stat-card-header">
+          <div class="stat-card-info">
+            <h3 class="stat-card-label">Raktárkészlet</h3>
+            <p class="stat-card-value">{{ stats.totalClothes }}</p>
           </div>
-          <div class="icon-circle bg-white/20 text-white">
-            <Package size="40" />
+          <div class="icon-circle">
+            <Package size="32" />
           </div>
         </div>
-        <div class="mt-auto">
-           <span class="badge bg-white/20 text-white text-md px-5 py-2 rounded-full">Összes rögzített ruha</span>
+        <div class="stat-card-footer">
+           <span class="badge">Összes rögzített ruha</span>
         </div>
       </div>
 
       <!-- Card: Issued (Purple) -->
-      <div class="stat-card hero-purple p-10">
-         <div class="flex justify-between items-start mb-8">
-          <div>
-            <h3 class="text-white/90 text-2xl font-medium m-0 mb-3">Kiadott Ruhák</h3>
-            <p class="text-8xl font-bold text-white m-0">{{ stats.activeIssues }}</p>
+      <div class="stat-card hero-purple">
+         <div class="stat-card-header">
+          <div class="stat-card-info">
+            <h3 class="stat-card-label">Kiadott Ruhák</h3>
+            <p class="stat-card-value">{{ stats.activeIssues }}</p>
           </div>
-          <div class="icon-circle bg-white/20 text-white">
-             <ArrowUpRight size="40" />
+          <div class="icon-circle">
+             <ArrowUpRight size="32" />
           </div>
         </div>
-        <div class="mt-auto">
-           <span class="badge bg-white/20 text-white text-md px-5 py-2 rounded-full">Jelenleg használatban</span>
+        <div class="stat-card-footer">
+           <span class="badge">Jelenleg használatban</span>
         </div>
       </div>
 
       <!-- Card: Orders (Green) -->
-      <div class="stat-card hero-green p-10">
-         <div class="flex justify-between items-start mb-8">
-          <div>
-            <h3 class="text-white/90 text-2xl font-medium m-0 mb-3">Rendelések</h3>
-            <p class="text-8xl font-bold text-white m-0">{{ stats.totalOrders }}</p>
+      <div class="stat-card hero-green">
+         <div class="stat-card-header">
+          <div class="stat-card-info">
+            <h3 class="stat-card-label">Rendelések</h3>
+            <p class="stat-card-value">{{ stats.totalOrders }}</p>
           </div>
-          <div class="icon-circle bg-white/20 text-white">
-             <Activity size="40" />
+          <div class="icon-circle">
+             <Activity size="32" />
           </div>
         </div>
-         <div class="mt-auto">
-           <span class="badge bg-white/20 text-white text-md px-5 py-2 rounded-full">Függőben lévő</span>
+         <div class="stat-card-footer">
+           <span class="badge">Függőben lévő</span>
         </div>
       </div>
     </div>
 
 
-    <div class="content-grid mt-5">
+    <div class="content-grid">
       <!-- Low Stock Section -->
-      <div class="card bg-white rounded-[2rem] shadow-sm p-10 flex flex-col" style="min-height: 486px;">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-semibold m-0 flex items-center gap-3">
-            <AlertTriangle size="28" class="text-amber-500" />
+      <div class="content-card">
+        <div class="content-card-header">
+          <h2 class="content-card-title">
+            <AlertTriangle size="24" class="text-amber-500" />
             Alacsony Készlet
           </h2>
-          <router-link to="/inventory" class="text-lg text-primary hover:underline">Összes &rarr;</router-link>
+          <router-link to="/inventory" class="view-all-link">Összes &rarr;</router-link>
         </div>
         
-        <div class="overflow-x-auto">
-          <table class="w-full text-base">
+        <div class="table-container">
+          <table class="data-table">
             <thead>
-              <tr class="text-left border-b border-gray-100">
-                <th class="pb-4 font-medium text-muted">Cikkszám</th>
-                <th class="pb-4 font-medium text-muted">Termék</th>
-                <th class="pb-4 font-medium text-muted">Méret</th>
-                <th class="pb-4 font-medium text-muted text-right">Készlet</th>
+              <tr>
+                <th>Cikkszám</th>
+                <th>Termék</th>
+                <th>Méret</th>
+                <th class="text-right">Készlet</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in lowStockItems" :key="item.RuhaID" class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
-                <td class="py-4 font-medium">{{ item.Cikkszam }}</td>
-                <td class="py-4">{{ item.Fajta }}</td>
-                <td class="py-4 text-muted">{{ item.Meret }}</td>
-                <td class="py-4 text-right">
-                  <span class="badge badge-warning text-sm">{{ item.Mennyiseg }} db</span>
+              <tr v-for="item in lowStockItems" :key="item.RuhaID">
+                <td class="font-medium">{{ item.Cikkszam }}</td>
+                <td>{{ item.Fajta }}</td>
+                <td class="text-muted">{{ item.Meret }}</td>
+                <td class="text-right">
+                  <span class="stock-badge">{{ item.Mennyiseg }} db</span>
                 </td>
               </tr>
               <tr v-if="lowStockItems.length === 0">
-                <td colspan="4" class="py-6 text-center text-muted">Nincs alacsony készletű termék.</td>
+                <td colspan="4" class="empty-cell">Nincs alacsony készletű termék.</td>
               </tr>
             </tbody>
           </table>
@@ -161,32 +161,32 @@ onMounted(() => {
       </div>
 
       <!-- Recent Activity Section -->
-      <div class="card bg-white rounded-[2rem] shadow-sm p-10 flex flex-col" style="min-height: 430px;">
-         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-semibold m-0 flex items-center gap-3">
-            <Activity size="28" class="text-blue-500" />
+      <div class="content-card">
+         <div class="content-card-header">
+          <h2 class="content-card-title">
+            <Activity size="24" class="text-blue-500" />
             Legutóbbi Aktivitás
           </h2>
         </div>
         
-        <div class="activity-list flex flex-col gap-6">
-          <div v-for="(act, index) in recentActivity" :key="index" class="activity-item flex gap-4 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
-            <div class="activity-icon rounded-full bg-gray-100 p-3 h-fit">
-              <ArrowUpRight v-if="act.action === 'Kiadás'" size="20" class="text-orange-500" />
-              <ArrowDownRight v-else-if="act.action === 'Visszavétel'" size="20" class="text-green-500" />
-              <Activity v-else size="20" class="text-blue-500" />
+        <div class="activity-list">
+          <div v-for="(act, index) in recentActivity" :key="index" class="activity-item">
+            <div class="activity-icon">
+              <ArrowUpRight v-if="act.action === 'Kiadás'" size="18" class="text-orange-500" />
+              <ArrowDownRight v-else-if="act.action === 'Visszavétel'" size="18" class="text-green-500" />
+              <Activity v-else size="18" class="text-blue-500" />
             </div>
-            <div>
-              <p class="text-lg font-medium m-0">
-                {{ act.user }} <span class="text-muted font-normal">- {{ act.action }}</span>
+            <div class="activity-content">
+              <p class="activity-text">
+                {{ act.user }} <span class="activity-action">- {{ act.action }}</span>
               </p>
-              <p class="text-sm text-muted m-0 mt-2">
+              <p class="activity-meta">
                 {{ act.item }} &bull; {{ act.date }}
               </p>
             </div>
           </div>
-          <div v-if="recentActivity.length === 0">
-            <p class="text-center text-muted">Nincs legutóbbi aktivitás.</p>
+          <div v-if="recentActivity.length === 0" class="empty-activity">
+            <p>Nincs legutóbbi aktivitás.</p>
           </div>
         </div>
       </div>
@@ -196,121 +196,415 @@ onMounted(() => {
 
 <style scoped>
 .dashboard-container {
-  padding: 12px 12px 12px 0; /* Match sidebar's right margin gap */
-  width: 100% !important;
+  padding: 12px 12px 12px 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* Force 4 columns on large screens */
-  gap: 12px;
-  margin-bottom: 12px;
-  width: 100% !important;
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Force 2 columns */
-  gap: 12px;
-  width: 100% !important;
-}
-
+/* Header Card */
 .header-card {
   background-color: white;
   border-radius: 2rem;
-  margin-bottom: 12px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  width: 100% !important;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 12px;
 }
 
-@media (min-width: 768px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.header-title {
+  margin: 0;
+  font-size: 4rem;
+  font-weight: 900;
+  color: #111827;
+  letter-spacing: -0.025em;
+  line-height: 1;
 }
 
-@media (min-width: 1024px) {
-  .stats-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  
-  .content-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.header-subtitle {
+  color: #6b7280;
+  margin: 0.75rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+  width: 100%;
 }
 
 .stat-card {
-  height: 100%;
-  min-height: 300px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   border-radius: 1.5rem;
-  padding: 2.5rem;
+  padding: 1.5rem;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.stat-card-info {
+  flex: 1;
+}
+
+.stat-card-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0 0 0.5rem;
+}
+
+.stat-card-value {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  line-height: 1;
+}
+
+.stat-card-footer {
+  margin-top: auto;
+}
+
+.icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .hero-blue {
   background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   color: white;
-  border: none;
 }
 
 .hero-orange {
   background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
   color: white;
-  border: none;
 }
 
 .hero-purple {
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
   color: white;
-  border: none;
 }
 
 .hero-green {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   color: white;
-  border: none;
 }
 
-.icon-circle {
-  width: 72px;
-  height: 72px;
+.badge {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Content Grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.content-card {
+  background: white;
+  border-radius: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.content-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.content-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #111827;
+}
+
+.view-all-link {
+  color: #1e40af;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+/* Table */
+.table-container {
+  overflow-x: auto;
+  flex: 1;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 0.75rem 0.5rem;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.data-table td {
+  padding: 0.875rem 0.5rem;
+  border-bottom: 1px solid #f9fafb;
+}
+
+.data-table tr:hover td {
+  background: #f9fafb;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-muted {
+  color: #6b7280;
+}
+
+.stock-badge {
+  background: #fef3c7;
+  color: #d97706;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.empty-cell {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+/* Activity List */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activity-item {
+  display: flex;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
+  background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-/* Keep generic badge styles */
-.badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-text {
+  font-size: 0.875rem;
   font-weight: 500;
-  display: inline-block;
+  color: #111827;
+  margin: 0 0 0.25rem;
 }
 
-.badge-warning {
-  background-color: #fef3c7;
-  color: #d97706;
+.activity-action {
+  color: #6b7280;
+  font-weight: 400;
 }
 
-/* Utilities needed for lower sections */
-.text-amber-500 { color: #f59e0b; }
-.text-blue-500 { color: #3b82f6; }
-.text-orange-500 { color: #f97316; }
-.text-green-500 { color: #22c55e; }
-.text-primary { color: #1e40af; }
-.text-muted { color: #64748b; }
+.activity-meta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.empty-activity {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+/* Tablet Breakpoint */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-title {
+    font-size: 3rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1.25rem;
+  }
+}
+
+/* Mobile Breakpoint */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 8px;
+  }
+  
+  .header-card {
+    padding: 1.5rem 1rem;
+    border-radius: 1.5rem;
+  }
+  
+  .header-title {
+    font-size: 2rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .stat-card {
+    min-height: 160px;
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+  
+  .stat-card-value {
+    font-size: 1.75rem;
+  }
+  
+  .stat-card-label {
+    font-size: 0.75rem;
+  }
+  
+  .icon-circle {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .icon-circle svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .badge {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.625rem;
+  }
+  
+  .content-card {
+    border-radius: 1.5rem;
+    padding: 1rem;
+    min-height: auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  .content-card-title {
+    font-size: 1.125rem;
+  }
+  
+  /* Make table horizontally scrollable */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .data-table {
+    font-size: 0.8125rem;
+    min-width: 400px;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.625rem 0.375rem;
+    white-space: nowrap;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    min-height: 140px;
+  }
+  
+  .activity-item {
+    padding-bottom: 0.75rem;
+  }
+  
+  .activity-icon {
+    width: 36px;
+    height: 36px;
+  }
+}
 </style>
-

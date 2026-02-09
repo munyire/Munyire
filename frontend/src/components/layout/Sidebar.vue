@@ -10,15 +10,27 @@ import {
   LogOut,
   MoveHorizontal,
   ShoppingCart,
-  Repeat
+  X
 } from 'lucide-vue-next';
+
+const props = defineProps({
+  isMobile: {
+    type: Boolean,
+    default: false
+  },
+  isOpen: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const emit = defineEmits(['close']);
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
 const userRole = computed(() => authStore.getUserRole());
-// Fallback to safe defaults if user is null (though usage usually implies auth)
 const userName = computed(() => authStore.user?.username || authStore.user?.Username || authStore.user?.nev || 'Felhasználó');
 const userInitials = computed(() => {
   const name = userName.value;
@@ -33,57 +45,79 @@ const isActive = (path) => route.path.startsWith(path);
 
 const logout = () => {
   authStore.logout();
+  emit('close');
   router.push('/login');
+};
+
+const navigate = (path) => {
+  router.push(path);
+  if (props.isMobile) {
+    emit('close');
+  }
 };
 </script>
 
 <template>
-  <aside class="sidebar bg-white">
+  <aside :class="['sidebar', { 'mobile': isMobile, 'open': isOpen }]">
+    <!-- Mobile Close Button -->
+    <button v-if="isMobile" @click="$emit('close')" class="mobile-close-btn" aria-label="Bezárás">
+      <X size="24" />
+    </button>
+
     <!-- Header: Centered Blue Logo & Text -->
     <div class="logo-area">
-      <Shirt :size="24" class="logo-blue" stroke-width="2.5" />
+      <Shirt :size="isMobile ? 28 : 24" class="logo-blue" stroke-width="2.5" />
       <h2 class="title-blue">Munyire</h2>
+    </div>
+
+    <!-- User Info - Always Visible -->
+    <div class="user-info-section">
+      <div class="user-avatar">{{ userInitials }}</div>
+      <div class="user-details">
+        <span class="user-name">{{ userName }}</span>
+        <span class="user-role">{{ userRoleLabel }}</span>
+      </div>
     </div>
 
     <!-- Navigation Area -->
     <nav class="nav-container">
       <template v-if="['Manager', 'Admin'].includes(userRole)">
-        <router-link to="/dashboard" class="nav-item" :class="{ active: isActive('/dashboard') }">
-          <LayoutDashboard size="22" />
+        <button @click="navigate('/dashboard')" class="nav-item" :class="{ active: isActive('/dashboard') }">
+          <LayoutDashboard :size="isMobile ? 24 : 22" />
           <span>Dashboard</span>
-        </router-link>
+        </button>
 
-        <router-link to="/inventory" class="nav-item" :class="{ active: isActive('/inventory') }">
-          <Package size="22" />
+        <button @click="navigate('/inventory')" class="nav-item" :class="{ active: isActive('/inventory') }">
+          <Package :size="isMobile ? 24 : 22" />
           <span>Készlet</span>
-        </router-link>
+        </button>
 
-        <router-link to="/workers" class="nav-item" :class="{ active: isActive('/workers') }">
-          <Users size="22" />
+        <button @click="navigate('/workers')" class="nav-item" :class="{ active: isActive('/workers') }">
+          <Users :size="isMobile ? 24 : 22" />
           <span>Dolgozók</span>
-        </router-link>
+        </button>
 
-        <router-link to="/transactions" class="nav-item" :class="{ active: isActive('/transactions') }">
-          <MoveHorizontal size="22" />
+        <button @click="navigate('/transactions')" class="nav-item" :class="{ active: isActive('/transactions') }">
+          <MoveHorizontal :size="isMobile ? 24 : 22" />
           <span>Kiadás/Visszavétel</span>
-        </router-link>
+        </button>
 
-        <router-link to="/orders" class="nav-item" :class="{ active: isActive('/orders') }">
-          <ShoppingCart size="22" />
+        <button @click="navigate('/orders')" class="nav-item" :class="{ active: isActive('/orders') }">
+          <ShoppingCart :size="isMobile ? 24 : 22" />
           <span>Rendelések</span>
-        </router-link>
+        </button>
       </template>
 
-      <router-link to="/my-clothes" class="nav-item" :class="{ active: isActive('/my-clothes') }">
-        <Shirt size="22" />
+      <button @click="navigate('/my-clothes')" class="nav-item" :class="{ active: isActive('/my-clothes') }">
+        <Shirt :size="isMobile ? 24 : 22" />
         <span>Saját Ruháim</span>
-      </router-link>
+      </button>
     </nav>
 
     <!-- Footer: Logout Area -->
     <div class="footer-area">
       <button @click="logout" class="nav-item logout-btn">
-        <LogOut size="18" stroke-width="2" />
+        <LogOut :size="isMobile ? 22 : 18" stroke-width="2" />
         <span>Kijelentkezés</span>
       </button>
     </div>
@@ -103,6 +137,89 @@ const logout = () => {
   z-index: 100;
   display: flex;
   flex-direction: column;
+  background: white;
+  flex-shrink: 0;
+}
+
+/* Mobile Sidebar Styles */
+.sidebar.mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  height: 100vh;
+  border-radius: 0;
+  z-index: 300;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  width: 280px;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar.mobile.open {
+  transform: translateX(0);
+}
+
+.mobile-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #64748b;
+  border-radius: 8px;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.mobile-close-btn:hover {
+  background: #f1f5f9;
+  color: #1e3a8a;
+}
+
+.user-info-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 0 12px 12px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role {
+  font-size: 12px;
+  opacity: 0.8;
 }
 
 .logo-area {
@@ -114,6 +231,11 @@ const logout = () => {
   width: 100%;
   padding-top: 2rem;
   padding-bottom: 2rem;
+}
+
+.sidebar.mobile .logo-area {
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
 }
 
 .logo-blue {
@@ -139,10 +261,20 @@ const logout = () => {
   overflow-y: auto;
 }
 
+.sidebar.mobile .nav-container {
+  padding: 0 12px;
+  gap: 4px;
+}
+
 .footer-area {
   margin-top: auto;
   padding: 1rem 0.5rem 1.5rem 0.5rem;
   border-top: 1px solid #f1f5f9;
+}
+
+.sidebar.mobile .footer-area {
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .nav-item {
@@ -159,6 +291,15 @@ const logout = () => {
   background-color: transparent;
   border: none;
   width: 100%;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.sidebar.mobile .nav-item {
+  padding: 14px 16px;
+  font-size: 15px;
+  border-radius: 12px;
 }
 
 .nav-item:hover {
@@ -172,6 +313,12 @@ const logout = () => {
   font-weight: 600;
 }
 
+.sidebar.mobile .nav-item.active {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+}
+
 .logout-btn {
   color: #dc2626;
   cursor: pointer;
@@ -179,5 +326,47 @@ const logout = () => {
 
 .logout-btn:hover {
   background-color: #fef2f2;
+}
+
+.sidebar.mobile .logout-btn {
+  justify-content: center;
+  border: 1px solid #fecaca;
+  margin-top: 8px;
+}
+
+/* Mobile user info larger */
+.sidebar.mobile .user-info-section {
+  padding: 16px 20px;
+  margin: 0 16px 16px;
+  border-radius: 16px;
+}
+
+/* Desktop - Hide scrollbar but keep functionality */
+.nav-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nav-container::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+}
+
+.nav-container:hover::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+/* Responsive breakpoints for tablet */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .sidebar {
+    width: 220px;
+  }
+}
+
+/* Hide sidebar completely on very small screens when closed */
+@media (max-width: 480px) {
+  .sidebar.mobile {
+    width: 100%;
+    max-width: 300px;
+  }
 }
 </style>

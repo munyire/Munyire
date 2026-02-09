@@ -282,9 +282,14 @@ input:focus {
 }
 
 @media (max-width: 768px) {
+  .login-wrapper {
+    position: fixed;
+    padding: 0;
+  }
+  
   .login-container {
     flex-direction: column;
-    height: auto;
+    height: 100vh;
     min-height: 100vh;
     width: 100%;
     max-width: none;
@@ -296,17 +301,62 @@ input:focus {
   }
 
   .form-side {
-    padding: 2rem;
+    padding: 1.5rem;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  
+  .header {
+    margin-bottom: 2rem;
+  }
+  
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .app-logo {
+    width: 40px;
+    height: 40px;
   }
 
   .footer-left, .footer-right {
     position: static;
-    margin-top: 2rem;
+    margin-top: auto;
+    padding-top: 2rem;
     text-align: center;
   }
   
   .footer-left {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .form-side {
+    padding: 1.25rem;
+  }
+  
+  .header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .subtitle {
+    font-size: 0.9375rem;
+  }
+  
+  .login-form {
+    gap: 1.25rem;
+  }
+  
+  input {
+    padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .input-icon {
+    left: 10px;
+    width: 18px;
+    height: 18px;
   }
 }
 
