@@ -97,9 +97,9 @@ onMounted(fetchMyItems);
 
 /* Header Card */
 .header-card {
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-lg);
   padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
@@ -107,22 +107,25 @@ onMounted(fetchMyItems);
   justify-content: center;
   text-align: center;
   margin-bottom: 1.5rem;
+  transition: background-color 0.3s ease;
 }
 
 .header-title {
   margin: 0;
   font-size: 4rem;
   font-weight: 900;
-  color: #111827;
+  color: var(--color-text);
   letter-spacing: -0.025em;
   line-height: 1;
+  transition: color 0.3s ease;
 }
 
 .header-subtitle {
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0.75rem 0 0;
   font-size: 1.5rem;
   font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 /* Loading State */
@@ -133,14 +136,14 @@ onMounted(fetchMyItems);
   justify-content: center;
   padding: 4rem;
   gap: 1rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #1e3a8a;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -158,16 +161,16 @@ onMounted(fetchMyItems);
 
 /* Item Card */
 .item-card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 1.5rem;
   padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s;
 }
 
 .item-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .item-header {
@@ -181,16 +184,16 @@ onMounted(fetchMyItems);
   width: 48px;
   height: 48px;
   border-radius: 1rem;
-  background: #eff6ff;
-  color: #2563eb;
+  background: var(--color-sidebar-active);
+  color: var(--color-sidebar-active-text);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .item-qty {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--color-bg);
+  color: var(--color-text);
   padding: 0.375rem 0.875rem;
   border-radius: 9999px;
   font-size: 0.875rem;

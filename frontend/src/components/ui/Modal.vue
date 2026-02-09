@@ -68,9 +68,9 @@ defineEmits(['close']);
   width: 100%;
   max-width: 560px;
   max-height: calc(100vh - 2rem);
-  background: white;
+  background: var(--color-surface);
   border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -82,15 +82,16 @@ defineEmits(['close']);
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .modal-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
   margin: 0;
+  transition: color 0.3s ease;
 }
 
 .close-btn {
@@ -102,14 +103,14 @@ defineEmits(['close']);
   border-radius: 0.5rem;
   border: none;
   background: transparent;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .close-btn:hover {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .modal-body {
@@ -124,25 +125,26 @@ defineEmits(['close']);
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-top: 1px solid #f3f4f6;
-  background: #f9fafb;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
   flex-shrink: 0;
+  transition: background-color 0.3s ease;
 }
 
 .btn-secondary {
   padding: 0.625rem 1.25rem;
   border-radius: 0.625rem;
-  background: white;
-  color: #4b5563;
+  background: var(--color-surface);
+  color: var(--color-text);
   font-weight: 600;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.9375rem;
 }
 
 .btn-secondary:hover {
-  background: #f3f4f6;
+  background: var(--color-sidebar-hover);
 }
 
 /* Transitions */

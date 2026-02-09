@@ -8,11 +8,17 @@
   --color-primary-dark: hsl(var(--primary-hue), var(--primary-sat), 40%);
   --color-primary-light: hsl(var(--primary-hue), var(--primary-sat), 95%);
   
+  /* Light mode colors (default) */
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
   --color-text: #0f172a;
   --color-text-muted: #64748b;
   --color-border: #e2e8f0;
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-text: #64748b;
+  --color-sidebar-hover: #f8fafc;
+  --color-sidebar-active: #eff6ff;
+  --color-sidebar-active-text: #1e40af;
   
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -21,6 +27,30 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
+}
+
+/* Dark mode colors */
+:root.dark {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-border: #334155;
+  --color-sidebar-bg: #1e293b;
+  --color-sidebar-text: #94a3b8;
+  --color-sidebar-hover: #334155;
+  --color-sidebar-active: #1e3a8a;
+  --color-sidebar-active-text: #60a5fa;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+}
+
+/* Ensure dark mode is applied immediately to prevent flash */
+:root.dark body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 body {

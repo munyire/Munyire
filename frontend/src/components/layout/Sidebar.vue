@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
+import { useThemeStore } from '../../stores/theme';
 import { 
   LayoutDashboard, 
   Package, 
@@ -10,7 +11,9 @@ import {
   LogOut,
   MoveHorizontal,
   ShoppingCart,
-  X
+  X,
+  Sun,
+  Moon
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -29,6 +32,7 @@ const emit = defineEmits(['close']);
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 
 const userRole = computed(() => authStore.getUserRole());
 const userName = computed(() => authStore.user?.username || authStore.user?.Username || authStore.user?.nev || 'Felhasználó');
@@ -114,8 +118,13 @@ const navigate = (path) => {
       </button>
     </nav>
 
-    <!-- Footer: Logout Area -->
+    <!-- Footer: Theme Toggle & Logout Area -->
     <div class="footer-area">
+      <button @click="themeStore.toggleTheme" class="nav-item theme-btn" :title="themeStore.themeLabel">
+        <Sun v-if="themeStore.isDark" :size="isMobile ? 22 : 18" stroke-width="2" />
+        <Moon v-else :size="isMobile ? 22 : 18" stroke-width="2" />
+        <span>{{ themeStore.themeLabel }}</span>
+      </button>
       <button @click="logout" class="nav-item logout-btn">
         <LogOut :size="isMobile ? 22 : 18" stroke-width="2" />
         <span>Kijelentkezés</span>
@@ -132,13 +141,14 @@ const navigate = (path) => {
   margin: 12px;
   height: calc(100vh - 24px);
   border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
   z-index: 100;
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--color-sidebar-bg);
   flex-shrink: 0;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Mobile Sidebar Styles */
@@ -175,8 +185,8 @@ const navigate = (path) => {
 }
 
 .mobile-close-btn:hover {
-  background: #f1f5f9;
-  color: #1e3a8a;
+  background: var(--color-sidebar-hover);
+  color: var(--color-primary);
 }
 
 .user-info-section {
@@ -269,12 +279,15 @@ const navigate = (path) => {
 .footer-area {
   margin-top: auto;
   padding: 1rem 0.5rem 1.5rem 0.5rem;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .sidebar.mobile .footer-area {
   padding: 16px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-border);
 }
 
 .nav-item {
@@ -283,7 +296,7 @@ const navigate = (path) => {
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  color: #64748b;
+  color: var(--color-sidebar-text);
   font-weight: 500;
   font-size: 0.85rem;
   transition: all 0.2s ease;
@@ -303,20 +316,24 @@ const navigate = (path) => {
 }
 
 .nav-item:hover {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--color-sidebar-hover);
+  color: var(--color-text);
 }
 
 .nav-item.active {
-  background-color: #eff6ff;
-  color: #1e40af;
+  background-color: var(--color-sidebar-active);
+  color: var(--color-sidebar-active-text);
   font-weight: 600;
 }
 
 .sidebar.mobile .nav-item.active {
   background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);
+}
+
+:root.dark .sidebar.mobile .nav-item.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 .logout-btn {
@@ -325,13 +342,28 @@ const navigate = (path) => {
 }
 
 .logout-btn:hover {
-  background-color: #fef2f2;
+  background-color: rgba(220, 38, 38, 0.1);
 }
 
 .sidebar.mobile .logout-btn {
   justify-content: center;
-  border: 1px solid #fecaca;
+  border: 1px solid rgba(220, 38, 38, 0.3);
   margin-top: 8px;
+}
+
+.theme-btn {
+  color: var(--color-sidebar-text);
+  cursor: pointer;
+}
+
+.theme-btn:hover {
+  background-color: var(--color-sidebar-hover);
+  color: var(--color-text);
+}
+
+.sidebar.mobile .theme-btn {
+  justify-content: center;
+  border: 1px solid var(--color-border);
 }
 
 /* Mobile user info larger */

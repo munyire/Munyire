@@ -204,9 +204,9 @@ onMounted(() => {
 
 /* Header Card */
 .header-card {
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-lg);
   padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
@@ -214,22 +214,25 @@ onMounted(() => {
   justify-content: center;
   text-align: center;
   margin-bottom: 12px;
+  transition: background-color 0.3s ease;
 }
 
 .header-title {
   margin: 0;
   font-size: 4rem;
   font-weight: 900;
-  color: #111827;
+  color: var(--color-text);
   letter-spacing: -0.025em;
   line-height: 1;
+  transition: color 0.3s ease;
 }
 
 .header-subtitle {
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0.75rem 0 0;
   font-size: 1.5rem;
   font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 /* Stats Grid */
@@ -337,13 +340,14 @@ onMounted(() => {
 }
 
 .content-card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   min-height: 400px;
+  transition: background-color 0.3s ease;
 }
 
 .content-card-header {
@@ -360,11 +364,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #111827;
+  color: var(--color-text);
+  transition: color 0.3s ease;
 }
 
 .view-all-link {
-  color: #1e40af;
+  color: var(--color-primary);
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
@@ -372,6 +377,7 @@ onMounted(() => {
 
 .view-all-link:hover {
   text-decoration: underline;
+  color: var(--color-primary-dark);
 }
 
 /* Table */
@@ -390,17 +396,18 @@ onMounted(() => {
   text-align: left;
   padding: 0.75rem 0.5rem;
   font-weight: 500;
-  color: #6b7280;
-  border-bottom: 1px solid #f3f4f6;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .data-table td {
   padding: 0.875rem 0.5rem;
-  border-bottom: 1px solid #f9fafb;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
 .data-table tr:hover td {
-  background: #f9fafb;
+  background: var(--color-bg);
 }
 
 .text-right {
@@ -408,7 +415,7 @@ onMounted(() => {
 }
 
 .text-muted {
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .stock-badge {
@@ -423,7 +430,7 @@ onMounted(() => {
 .empty-cell {
   text-align: center;
   padding: 2rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 /* Activity List */
@@ -437,7 +444,7 @@ onMounted(() => {
   display: flex;
   gap: 0.75rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .activity-item:last-child {
@@ -449,7 +456,7 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #f3f4f6;
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -464,25 +471,25 @@ onMounted(() => {
 .activity-text {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111827;
+  color: var(--color-text);
   margin: 0 0 0.25rem;
 }
 
 .activity-action {
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 400;
 }
 
 .activity-meta {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .empty-activity {
   text-align: center;
   padding: 2rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 /* Tablet Breakpoint */

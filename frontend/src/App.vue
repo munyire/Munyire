@@ -85,7 +85,9 @@ onUnmounted(() => {
   font-family: 'Inter', sans-serif;
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
@@ -100,9 +102,10 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   height: 56px;
-  background: white;
+  background: var(--color-surface);
   z-index: 200;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
+  transition: background-color 0.3s ease;
 }
 
 .mobile-header-content {
@@ -124,13 +127,13 @@ onUnmounted(() => {
 }
 
 .menu-btn:hover {
-  background: #f1f5f9;
+  background: var(--color-sidebar-hover);
 }
 
 .mobile-title {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #1e3a8a;
+  color: var(--color-primary);
   margin: 0;
 }
 
@@ -205,17 +208,17 @@ onUnmounted(() => {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--color-surface);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--color-border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-text-muted);
 }
 
 /* Mobile scrollbar */

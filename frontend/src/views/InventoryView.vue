@@ -258,33 +258,42 @@ onMounted(fetchClothes);
   gap: 1.5rem;
 }
 
+/* Dark mode compatibility for modal content */
+:deep(.modal-content) {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
 /* Header Card */
 .header-card {
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-lg);
   padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  transition: background-color 0.3s ease;
 }
 
 .header-title {
   margin: 0;
   font-size: 4rem;
   font-weight: 900;
-  color: #111827;
+  color: var(--color-text);
   letter-spacing: -0.025em;
   line-height: 1;
+  transition: color 0.3s ease;
 }
 
 .header-subtitle {
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0.75rem 0 0;
   font-size: 1.5rem;
   font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 /* Controls */
@@ -299,23 +308,23 @@ onMounted(fetchClothes);
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: white;
+  background: var(--color-surface);
   border-radius: 1rem;
   padding: 0.875rem 1.25rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   flex: 1;
   max-width: 400px;
   transition: all 0.2s;
 }
 
 .search-box:focus-within {
-  border-color: #1e40af;
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .search-icon {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
@@ -325,11 +334,11 @@ onMounted(fetchClothes);
   outline: none;
   width: 100%;
   font-size: 0.9375rem;
-  color: #374151;
+  color: var(--color-text);
 }
 
 .search-input::placeholder {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .btn-add {
@@ -356,11 +365,12 @@ onMounted(fetchClothes);
 
 /* Data Card */
 .data-card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   overflow: hidden;
+  transition: background-color 0.3s ease;
 }
 
 .table-wrapper {
@@ -376,26 +386,26 @@ onMounted(fetchClothes);
 }
 
 .data-table th {
-  background: #f9fafb;
+  background: var(--color-bg);
   padding: 1rem 0.75rem;
   text-align: left;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 0.8125rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
   white-space: nowrap;
 }
 
 .data-table td {
   padding: 1rem 0.75rem;
-  border-bottom: 1px solid #f3f4f6;
-  color: #374151;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
 .data-table tr:hover td {
-  background: #f9fafb;
+  background: var(--color-bg);
 }
 
 .data-table tr:last-child td {
@@ -476,7 +486,7 @@ onMounted(fetchClothes);
 .empty-cell {
   text-align: center;
   padding: 3rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 /* Modal Form */
@@ -504,51 +514,53 @@ onMounted(fetchClothes);
 .form-label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #4b5563;
+  color: var(--color-text);
   margin-bottom: 0.375rem;
 }
 
 .form-input, .form-select {
   padding: 0.625rem 0.875rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 0.625rem;
   font-size: 0.9375rem;
   transition: all 0.2s;
-  background: white;
+  background: var(--color-bg);
+  color: var(--color-text);
   width: 100%;
 }
 
 .form-input:focus, .form-select:focus {
   outline: none;
-  border-color: #1e40af;
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .form-input.disabled {
-  background: #f3f4f6;
+  background: var(--color-bg);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .help-text {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   margin: 0.25rem 0 0;
 }
 
 .btn-secondary {
   padding: 0.625rem 1.25rem;
   border-radius: 0.625rem;
-  background: #f3f4f6;
-  color: #4b5563;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-weight: 600;
-  border: none;
+  border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.9375rem;
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
+  background: var(--color-sidebar-hover);
 }
 
 .btn-primary {

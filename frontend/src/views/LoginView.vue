@@ -105,11 +105,12 @@ const handleLogin = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  transition: background-color 0.3s ease;
 }
 
 .login-container {
@@ -117,12 +118,13 @@ const handleLogin = async () => {
   width: 900px;
   max-width: 90%;
   height: 600px;
-  background: white;
+  background: var(--color-surface);
   border-radius: 20px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
   position: relative;
   z-index: 10;
+  transition: background-color 0.3s ease;
 }
 
 .form-side {
@@ -138,7 +140,7 @@ const handleLogin = async () => {
   position: absolute;
   bottom: 2rem;
   left: 3rem;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   font-size: 0.8rem;
 }
 
@@ -149,14 +151,14 @@ const handleLogin = async () => {
 }
 
 .footer-right a {
-  color: #64748b;
+  color: var(--color-text-muted);
   text-decoration: none;
   font-size: 0.8rem;
   transition: color 0.2s;
 }
 
 .footer-right a:hover {
-  color: #1e40af;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 
@@ -188,7 +190,7 @@ const handleLogin = async () => {
 }
 
 .subtitle {
-  color: #64748b;
+  color: var(--color-text-muted);
   margin-top: 0.5rem;
   font-size: 1.1rem;
 }
@@ -220,25 +222,26 @@ const handleLogin = async () => {
 
 label {
   font-weight: 500;
-  color: #334155;
+  color: var(--color-text);
   font-size: 0.95rem;
 }
 
 input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.75rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.2s;
-  background-color: #f8fafc;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  background-color: white;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+  background-color: var(--color-surface);
 }
 
 .forgot-password {
@@ -261,7 +264,7 @@ input:focus {
   font-size: 0.9rem;
   text-align: center;
   padding: 0.5rem;
-  background-color: #fef2f2;
+  background-color: rgba(239, 68, 68, 0.1);
   border-radius: 6px;
 }
 

@@ -409,27 +409,30 @@ onMounted(() => {
 
 /* Header */
 .header-card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
   padding: 2.5rem 2rem;
   text-align: center;
   margin-bottom: 1.5rem;
+  transition: background-color 0.3s ease;
 }
 
 .page-title {
   font-size: 3rem;
   font-weight: 900;
-  color: #111827;
+  color: var(--color-text);
   margin: 0;
   letter-spacing: -0.025em;
+  transition: color 0.3s ease;
 }
 
 .page-subtitle {
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0.5rem 0 0;
   font-size: 1.125rem;
   font-weight: 500;
+  transition: color 0.3s ease;
 }
 
 /* Controls */
@@ -448,18 +451,18 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: white;
+  background: var(--color-surface);
   border-radius: 1rem;
   padding: 0.875rem 1.25rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   flex: 1;
   max-width: 450px;
   position: relative;
 }
 
 .search-icon {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
@@ -469,13 +472,13 @@ onMounted(() => {
   outline: none;
   width: 100%;
   font-size: 0.9375rem;
-  color: #374151;
+  color: var(--color-text);
 }
 
 .clear-btn {
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 0.25rem;
   display: flex;
@@ -487,16 +490,17 @@ onMounted(() => {
 
 .clear-btn:hover {
   color: #ef4444;
-  background: #fef2f2;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* Data Section */
 .data-card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   min-height: 400px;
+  transition: background-color 0.3s ease;
 }
 
 /* Loading State */
@@ -507,14 +511,14 @@ onMounted(() => {
   justify-content: center;
   padding: 4rem;
   gap: 1rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #1e3a8a;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -531,7 +535,7 @@ onMounted(() => {
   justify-content: center;
   padding: 4rem;
   gap: 1rem;
-  color: #dc2626;
+  color: #ef4444;
   text-align: center;
 }
 
@@ -542,7 +546,7 @@ onMounted(() => {
 }
 
 .error-state p {
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -575,42 +579,42 @@ onMounted(() => {
 }
 
 .data-table th {
-  background: #f9fafb;
+  background: var(--color-bg);
   padding: 1rem 0.75rem;
   text-align: left;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--color-border);
   white-space: nowrap;
 }
 
 .data-table td {
   padding: 1rem 0.75rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .data-table tr:hover td {
-  background: #f9fafb;
+  background: var(--color-bg);
 }
 
 .order-id {
-  background: #f3f4f6;
+  background: var(--color-bg);
   padding: 0.375rem 0.75rem;
   border-radius: 0.5rem;
   font-family: monospace;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1e40af;
+  color: var(--color-primary);
 }
 
 .date-cell {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .font-medium {
@@ -619,14 +623,14 @@ onMounted(() => {
 
 .qty {
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
 }
 
 .supplier-cell {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .actions-col {
@@ -672,7 +676,7 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -680,7 +684,7 @@ onMounted(() => {
 .empty-cell {
   text-align: center;
   padding: 4rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .empty-cell svg {
@@ -698,11 +702,11 @@ onMounted(() => {
 .info-banner {
   display: flex;
   gap: 0.75rem;
-  background: #eff6ff;
+  background: var(--color-sidebar-active);
   padding: 1rem;
   border-radius: 0.75rem;
-  border-left: 4px solid #1e40af;
-  color: #1e40af;
+  border-left: 4px solid var(--color-primary);
+  color: var(--color-sidebar-active-text);
   font-size: 0.875rem;
 }
 
@@ -733,7 +737,7 @@ onMounted(() => {
   gap: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #4b5563;
+  color: var(--color-text);
   margin-bottom: 0.375rem;
   text-transform: uppercase;
   letter-spacing: 0.025em;
@@ -741,19 +745,20 @@ onMounted(() => {
 
 .form-input {
   padding: 0.75rem 1rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 0.625rem;
   font-size: 0.9375rem;
-  background: #f9fafb;
+  background: var(--color-bg);
+  color: var(--color-text);
   transition: all 0.2s;
   width: 100%;
 }
 
 .form-input:focus {
   outline: none;
-  background: white;
-  border-color: #1e40af;
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .input-with-unit {
@@ -769,7 +774,7 @@ onMounted(() => {
   right: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -785,17 +790,17 @@ onMounted(() => {
 .btn-secondary {
   padding: 0.625rem 1.25rem;
   border-radius: 0.625rem;
-  background: #f3f4f6;
-  color: #4b5563;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-weight: 600;
-  border: none;
+  border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.9375rem;
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
+  background: var(--color-sidebar-hover);
 }
 
 .btn-primary {

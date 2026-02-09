@@ -175,15 +175,15 @@ const closeDropdown = () => {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text);
   font-size: 0.9375rem;
 }
 
 .select-trigger {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   padding: 0.875rem 1rem;
-  background: #f9fafb;
+  background: var(--color-bg);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -193,24 +193,24 @@ const closeDropdown = () => {
 }
 
 .select-trigger:hover:not(.is-disabled) {
-  border-color: #3b82f6;
-  background: white;
+  border-color: var(--color-primary);
+  background: var(--color-surface);
 }
 
 .select-trigger.is-open {
-  border-color: #3b82f6;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .select-trigger.is-disabled {
-  background-color: #f3f4f6;
+  background-color: var(--color-bg);
   cursor: not-allowed;
   opacity: 0.7;
 }
 
 .placeholder {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.9375rem;
   white-space: nowrap;
   overflow: hidden;
@@ -219,7 +219,7 @@ const closeDropdown = () => {
 }
 
 .selected-text {
-  color: #111827;
+  color: var(--color-text);
   font-weight: 500;
   font-size: 0.9375rem;
   white-space: nowrap;
@@ -231,7 +231,7 @@ const closeDropdown = () => {
 
 .arrow {
   font-size: 0.7rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   transition: transform 0.2s;
   flex-shrink: 0;
 }
@@ -247,32 +247,33 @@ const closeDropdown = () => {
   left: 0;
   right: 0;
   margin-top: 0.5rem;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-lg);
   z-index: 100;
   overflow: hidden;
 }
 
 .search-box {
   padding: 0.75rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .search-box input {
   width: 100%;
   padding: 0.625rem 0.875rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   outline: none;
   font-size: 0.9375rem;
-  background: #f9fafb;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .search-box input:focus {
-  border-color: #3b82f6;
-  background: white;
+  border-color: var(--color-primary);
+  background: var(--color-surface);
 }
 
 .options-list {
@@ -287,24 +288,24 @@ const closeDropdown = () => {
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: all 0.15s;
-  color: #374151;
+  color: var(--color-text);
   font-size: 0.9375rem;
 }
 
 .option-item:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-bg);
 }
 
 .option-item.is-selected {
-  background-color: #eff6ff;
-  color: #1e40af;
+  background-color: var(--color-sidebar-active);
+  color: var(--color-sidebar-active-text);
   font-weight: 600;
 }
 
 .no-results {
   padding: 1rem;
   text-align: center;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
@@ -326,7 +327,7 @@ const closeDropdown = () => {
 }
 
 .mobile-sheet {
-  background: white;
+  background: var(--color-surface);
   width: 100%;
   max-height: 70vh;
   border-radius: 1.25rem 1.25rem 0 0;
@@ -345,17 +346,17 @@ const closeDropdown = () => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .mobile-sheet-title {
   font-weight: 700;
   font-size: 1.125rem;
-  color: #111827;
+  color: var(--color-text);
 }
 
 .mobile-close-btn {
-  background: #f3f4f6;
+  background: var(--color-bg);
   border: none;
   width: 32px;
   height: 32px;
@@ -365,33 +366,34 @@ const closeDropdown = () => {
   justify-content: center;
   cursor: pointer;
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   transition: all 0.2s;
 }
 
 .mobile-close-btn:hover {
-  background: #e5e7eb;
-  color: #374151;
+  background: var(--color-sidebar-hover);
+  color: var(--color-text);
 }
 
 .mobile-search-box {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .mobile-search-box input {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   outline: none;
   font-size: 16px; /* Prevents zoom on iOS */
-  background: #f9fafb;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .mobile-search-box input:focus {
-  border-color: #3b82f6;
-  background: white;
+  border-color: var(--color-primary);
+  background: var(--color-surface);
 }
 
 .mobile-options-list {
@@ -406,9 +408,9 @@ const closeDropdown = () => {
   padding: 1rem 1.25rem;
   cursor: pointer;
   transition: all 0.15s;
-  color: #374151;
+  color: var(--color-text);
   font-size: 1rem;
-  border-bottom: 1px solid #f9fafb;
+  border-bottom: 1px solid var(--color-bg);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -420,11 +422,11 @@ const closeDropdown = () => {
 
 .mobile-option-item:hover,
 .mobile-option-item.is-selected {
-  background-color: #f9fafb;
+  background-color: var(--color-bg);
 }
 
 .mobile-option-item.is-selected {
-  color: #1e40af;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -434,7 +436,7 @@ const closeDropdown = () => {
 }
 
 .check-mark {
-  color: #1e40af;
+  color: var(--color-primary);
   font-weight: 700;
   font-size: 1.125rem;
 }
@@ -442,7 +444,7 @@ const closeDropdown = () => {
 .mobile-no-results {
   padding: 2rem;
   text-align: center;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
@@ -454,7 +456,7 @@ const closeDropdown = () => {
 
 .options-list::-webkit-scrollbar-thumb,
 .mobile-options-list::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--color-border);
   border-radius: 3px;
 }
 

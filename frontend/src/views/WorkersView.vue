@@ -411,19 +411,26 @@ const deleteWorker = async (id) => {
 
 <style scoped>
 .workers-page {
-  background-color: #f1f5f9;
+  background-color: var(--color-bg);
   height: calc(100vh - 24px);
   display: flex;
   flex-direction: column;
   padding: 0 12px 12px 0;
   overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+/* Dark mode compatibility for modal content */
+:deep(.modal-content) {
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 /* Header Card */
 .header-card {
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-lg);
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -431,21 +438,24 @@ const deleteWorker = async (id) => {
   justify-content: center;
   text-align: center;
   margin-bottom: 1.5rem;
+  transition: background-color 0.3s ease;
 }
 
 .header-title {
   font-size: 3rem;
   font-weight: 900;
-  color: #111827;
+  color: var(--color-text);
   margin: 0;
   letter-spacing: -0.025em;
+  transition: color 0.3s ease;
 }
 
 .header-subtitle {
   font-size: 1.25rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0.5rem 0 0;
   font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 /* Actions Row */
@@ -480,21 +490,22 @@ const deleteWorker = async (id) => {
 }
 
 .stats-box {
-  background: white;
+  background: var(--color-surface);
   padding: 1rem 1.5rem;
   border-radius: 1.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-  border: 1px solid #f3f4f6;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   gap: 1rem;
+  transition: background-color 0.3s ease;
 }
 
 .stats-icon {
   padding: 0.75rem;
-  background: #eff6ff;
+  background: var(--color-sidebar-active);
   border-radius: 1rem;
-  color: #1e40af;
+  color: var(--color-sidebar-active-text);
 }
 
 .stats-info {
@@ -504,7 +515,7 @@ const deleteWorker = async (id) => {
 
 .stats-label {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -513,7 +524,8 @@ const deleteWorker = async (id) => {
 .stats-value {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #111827;
+  color: var(--color-text);
+  transition: color 0.3s ease;
 }
 
 /* Main Content Area */
@@ -526,7 +538,7 @@ const deleteWorker = async (id) => {
   min-height: 0;
 }
 
-/* Worker List Section - White Card */
+/* Worker List Section */
 .worker-list-section {
   width: 320px;
   flex-shrink: 0;
@@ -534,11 +546,12 @@ const deleteWorker = async (id) => {
   flex-direction: column;
   overflow: hidden;
   height: 100%;
-  background: white;
+  background: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #f3f4f6;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
   padding: 1.5rem;
+  transition: background-color 0.3s ease;
 }
 
 .search-container {
@@ -551,23 +564,28 @@ const deleteWorker = async (id) => {
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .sidebar-search-input {
   width: 100%;
   padding: 0.875rem 1rem 0.875rem 2.75rem;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: 0.875rem;
   font-size: 0.9375rem;
   transition: all 0.2s ease;
+  color: var(--color-text);
 }
 
 .sidebar-search-input:focus {
   outline: none;
-  border-color: #1e3a8a;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.sidebar-search-input::placeholder {
+  color: var(--color-text-muted);
 }
 
 .worker-list {
@@ -590,14 +608,14 @@ const deleteWorker = async (id) => {
 }
 
 .worker-list-item:hover {
-  background: #f9fafb;
-  border-color: #e5e7eb;
+  background: var(--color-bg);
+  border-color: var(--color-border);
   transform: translateX(4px);
 }
 
 .worker-list-item.active {
-  background: #eff6ff;
-  border-color: #bfdbfe;
+  background: var(--color-sidebar-active);
+  border-color: var(--color-primary);
 }
 
 .avatar-mini {
@@ -626,21 +644,22 @@ const deleteWorker = async (id) => {
 
 .item-name {
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text);
   font-size: 0.9375rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.3s ease;
 }
 
 .item-id {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
 .arrow-icon {
-  color: #d1d5db;
+  color: var(--color-border);
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -648,7 +667,7 @@ const deleteWorker = async (id) => {
 .worker-list-item:hover .arrow-icon,
 .worker-list-item.active .arrow-icon {
   opacity: 1;
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .empty-list {
@@ -657,21 +676,21 @@ const deleteWorker = async (id) => {
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 /* Worker Detail Section */
-/* Worker Detail Section */
 .worker-detail-section {
   flex: 1;
-  background: white;
+  background: var(--color-surface);
   border-radius: 2rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #f3f4f6;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   height: 100%;
+  transition: background-color 0.3s ease;
 }
 
 .mobile-back-btn {
@@ -679,10 +698,10 @@ const deleteWorker = async (id) => {
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 1.5rem;
-  background: #f9fafb;
+  background: var(--color-bg);
   border: none;
-  border-bottom: 1px solid #e5e7eb;
-  color: #1e3a8a;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-primary);
   font-weight: 600;
   cursor: pointer;
   font-size: 0.875rem;
@@ -735,9 +754,10 @@ const deleteWorker = async (id) => {
 .worker-name {
   font-size: 2rem;
   font-weight: 900;
-  color: #111827;
+  color: var(--color-text);
   margin: 0 0 0.75rem;
   letter-spacing: -0.025em;
+  transition: color 0.3s ease;
 }
 
 .tags {
@@ -751,14 +771,14 @@ const deleteWorker = async (id) => {
   border-radius: 2rem;
   font-size: 0.8125rem;
   font-weight: 700;
-  background: #f3f4f6;
-  color: #4b5563;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
 }
 
-.tag-blue { background: #dbeafe; color: #1d4ed8; }
-.tag-purple { background: #f3e8ff; color: #7e22ce; }
-.tag-orange { background: #ffedd5; color: #c2410c; }
-.tag-green { background: #dcfce7; color: #15803d; }
+.tag-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.tag-purple { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+.tag-orange { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+.tag-green { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
 
 .header-actions {
   display: flex;
@@ -787,8 +807,8 @@ const deleteWorker = async (id) => {
 }
 
 .data-box {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 1rem;
   padding: 1.25rem;
   display: flex;
@@ -798,13 +818,13 @@ const deleteWorker = async (id) => {
 }
 
 .data-box:hover {
-  border-color: #1e3a8a;
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.08);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
   transform: translateX(4px);
 }
 
 .data-icon {
-  color: #1e3a8a;
+  color: var(--color-primary);
   opacity: 0.7;
   flex-shrink: 0;
 }
@@ -818,7 +838,7 @@ const deleteWorker = async (id) => {
 .data-label {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.25rem;
@@ -827,10 +847,11 @@ const deleteWorker = async (id) => {
 .data-value {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.3s ease;
 }
 
 .empty-detail {
@@ -839,14 +860,14 @@ const deleteWorker = async (id) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #d1d5db;
+  color: var(--color-border);
   gap: 1rem;
 }
 
 .empty-detail p {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 /* Form Styles */
@@ -868,7 +889,7 @@ const deleteWorker = async (id) => {
 .form-label {
   font-size: 0.8125rem;
   font-weight: 700;
-  color: #4b5563;
+  color: var(--color-text);
   margin-bottom: 0.375rem;
 }
 
@@ -876,22 +897,24 @@ const deleteWorker = async (id) => {
   width: 100%;
   padding: 0.625rem 0.875rem;
   border-radius: 0.625rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   font-family: inherit;
   font-size: 0.9375rem;
   transition: all 0.2s ease;
-  background: white;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .form-input:focus, .form-select:focus {
   outline: none;
-  border-color: #1e3a8a;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .form-input:disabled {
-  background: #f3f4f6;
+  background: var(--color-bg);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .modal-footer {
@@ -899,22 +922,22 @@ const deleteWorker = async (id) => {
   gap: 0.75rem;
   justify-content: flex-end;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border);
 }
 
 .btn-secondary {
   padding: 0.625rem 1.25rem;
   border-radius: 0.625rem;
-  background: #f3f4f6;
-  color: #4b5563;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-weight: 700;
-  border: none;
+  border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.9375rem;
 }
 
-.btn-secondary:hover { background: #e5e7eb; }
+.btn-secondary:hover { background: var(--color-sidebar-hover); }
 
 .btn-primary {
   padding: 0.625rem 1.5rem;
