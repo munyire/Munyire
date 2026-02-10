@@ -94,6 +94,17 @@ async function remove(req, res, next) {
   }
 }
 
+async function removeVariant(req, res, next) {
+  try {
+    const { cikkszam, minoseg } = req.params;
+    const result = await ruhaService.removeVariant(cikkszam, minoseg);
+    if (!result) return res.status(404).json({ error: "Item not found" });
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getOptions,
   list,
@@ -105,4 +116,5 @@ module.exports = {
   create,
   update,
   remove,
+  removeVariant
 };

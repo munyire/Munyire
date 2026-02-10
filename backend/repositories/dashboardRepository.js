@@ -4,13 +4,13 @@ const { Op } = require("sequelize");
 async function getStats() {
   const [dolgozoCount, ruhaCount, activeKibe, pendingOrders] = await Promise.all([
     models.Dolgozo.count(),
-    models.Ruha.count(),
+    models.Raktar.sum('Mennyiseg'),
     models.RuhaKiBe.count({ where: { VisszaDatum: null } }),
     models.Rendeles.count({ where: { Statusz: { [Op.ne]: "Teljesítve" } } }),
   ]);
   return {
     totalWorkers: dolgozoCount,
-    totalClothes: ruhaCount,
+    totalClothes: ruhaCount || 0,
     activeIssues: activeKibe,
     totalOrders: pendingOrders
   };

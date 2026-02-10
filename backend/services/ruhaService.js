@@ -112,17 +112,46 @@ async function update(cikkszam, data) {
 
   // Update Stock if provided
   if (data.Mennyiseg !== undefined) {
-    const minoseg = data.Minoseg || "Új";
-    let raktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, minoseg);
+    const newMinoseg = data.Minoseg || "Új";
+    const oldMinoseg = data.originalMinoseg;
 
-    if (raktar) {
-      await raktar.update({ Mennyiseg: data.Mennyiseg });
+    if (oldMinoseg && oldMinoseg !== newMinoseg) {
+      // Quality Changed: Handle Move/Merge
+      const sourceRaktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, oldMinoseg);
+      const targetRaktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, newMinoseg);
+
+      if (targetRaktar) {
+        // MERGE: Add quantity to target, delete source
+        await targetRaktar.update({ Mennyiseg: targetRaktar.Mennyiseg + parseInt(data.Mennyiseg) });
+        if (sourceRaktar) await sourceRaktar.destroy();
+      } else {
+        // MOVE: Just update source to new quality
+        if (sourceRaktar) {
+          await sourceRaktar.update({
+            Minoseg: newMinoseg,
+            Mennyiseg: data.Mennyiseg
+          });
+        } else {
+          await raktarRepo.create({
+            Cikkszam: cikkszam,
+            Minoseg: newMinoseg,
+            Mennyiseg: data.Mennyiseg
+          });
+        }
+      }
     } else {
-      await raktarRepo.create({
-        Cikkszam: cikkszam,
-        Minoseg: minoseg,
-        Mennyiseg: data.Mennyiseg
-      });
+      // Normal Update (No quality change or missing legacy data)
+      let raktar = await raktarRepo.findByCikkszamAndMinoseg(cikkszam, newMinoseg);
+
+      if (raktar) {
+        await raktar.update({ Mennyiseg: data.Mennyiseg });
+      } else {
+        await raktarRepo.create({
+          Cikkszam: cikkszam,
+          Minoseg: newMinoseg,
+          Mennyiseg: data.Mennyiseg
+        });
+      }
     }
   }
 
@@ -132,6 +161,10 @@ async function update(cikkszam, data) {
 
 async function remove(cikkszam) {
   return ruhaRepo.remove(cikkszam);
+}
+
+async function removeVariant(cikkszam, minoseg) {
+  return raktarRepo.remove(cikkszam, minoseg);
 }
 
 module.exports = {
@@ -145,4 +178,5 @@ module.exports = {
   create,
   update,
   remove,
+  removeVariant
 };

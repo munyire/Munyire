@@ -70,7 +70,7 @@ const L10n = {
 
 class ThemeManager {
   static getButtonStyles() {
-    return 'btn btn-primary flex items-center gap-2 bg-blue-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-800 transition-all';
+    return 'btn btn-primary new-order-btn flex items-center gap-2 bg-blue-900 text-white rounded-xl font-bold shadow-lg hover:bg-blue-800 transition-all';
   }
 
   static getBadgeStyles(status) {
@@ -95,6 +95,8 @@ const error = ref(null);
 const searchQuery = ref('');
 const clothesOptions = ref([]); 
 const showCreateModal = ref(false);
+const showConfirmModal = ref(false);
+const orderToComplete = ref(null);
 
 const createForm = reactive({
   Cikkszam: null,
@@ -186,20 +188,27 @@ const handleSubmitOrder = async () => {
   }
 };
 
-const handleCompleteOrder = async (orderId) => {
-  if (!confirm(L10n.get('MSG_CONFIRM_COMPLETE'))) return;
+const handleOpenConfirmModal = (orderId) => {
+  orderToComplete.value = orderId;
+  showConfirmModal.value = true;
+};
 
-  uiState.completingId = orderId;
+const handleConfirmComplete = async () => {
+  if (!orderToComplete.value) return;
+
+  uiState.completingId = orderToComplete.value;
+  showConfirmModal.value = false;
 
   try {
-    await api.patch(`/rendelesek/${orderId}/complete`);
-    const order = items.value.find(o => o.RendelesID === orderId);
+    await api.patch(`/rendelesek/${orderToComplete.value}/complete`);
+    const order = items.value.find(o => o.RendelesID === orderToComplete.value);
     if (order) order.Statusz = OrderStatus.TELJESITVE;
   } catch (error) {
     console.error('Complete failed:', error);
     alert('Hiba az átvételnél.');
   } finally {
     uiState.completingId = null;
+    orderToComplete.value = null;
   }
 };
 
@@ -301,7 +310,7 @@ onMounted(() => {
                 <td class="actions-col">
                   <button 
                     v-if="order.Statusz === 'Leadva'" 
-                    @click="handleCompleteOrder(order.RendelesID)" 
+                    @click="handleOpenConfirmModal(order.RendelesID)" 
                     class="btn-complete"
                     :disabled="uiState.completingId === order.RendelesID"
                   >
@@ -398,6 +407,38 @@ onMounted(() => {
         </div>
       </template>
     </Modal>
+
+    <!-- Confirm Modal -->
+    <Modal 
+      :show="showConfirmModal" 
+      title="Rendelés lezárása" 
+      @close="showConfirmModal = false"
+    >
+      <template #body>
+        <div class="confirm-content">
+          <div class="confirm-icon-wrapper">
+             <AlertCircle size="48" class="text-amber-500" />
+          </div>
+          <p class="confirm-title">{{ L10n.get('MSG_CONFIRM_COMPLETE') }}</p>
+          <p class="confirm-subtitle">A készlet automatikusan növekedni fog a megadott mennyiséggel.</p>
+        </div>
+      </template>
+      <template #footer>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showConfirmModal = false">
+            {{ L10n.get('BTN_CANCEL') }}
+          </button>
+          <button 
+            class="btn-primary btn-confirm" 
+            @click="handleConfirmComplete"
+            :disabled="uiState.completingId === orderToComplete"
+          >
+            <div v-if="uiState.completingId === orderToComplete" class="btn-spinner"></div>
+            <span v-else>{{ L10n.get('BTN_COMPLETE') }}</span>
+          </button>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -453,12 +494,14 @@ onMounted(() => {
   gap: 0.75rem;
   background: var(--color-surface);
   border-radius: 1rem;
-  padding: 0.875rem 1.25rem;
+  padding: 0.75rem 1.25rem;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border);
   flex: 1;
   max-width: 450px;
   position: relative;
+  height: 52px;
+  box-sizing: border-box;
 }
 
 .search-icon {
@@ -492,6 +535,14 @@ onMounted(() => {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.1);
 }
+
+.new-order-btn {
+  padding: 0.75rem 1.5rem;
+  height: 52px;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
 
 /* Data Section */
 .data-card {
@@ -823,6 +874,51 @@ onMounted(() => {
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+
+/* Confirm Modal */
+.confirm-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.confirm-icon-wrapper {
+  background: #fef3c7;
+  color: #d97706;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.confirm-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 0.5rem;
+}
+
+.confirm-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 300px;
+}
+
+.btn-confirm {
+  background-color: #16a34a !important;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background-color: #15803d !important;
 }
 
 /* Tablet */

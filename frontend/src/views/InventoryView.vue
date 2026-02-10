@@ -83,7 +83,7 @@ const openAddModal = () => {
 
 const openEditModal = (item) => {
   isEditing.value = true;
-  form.value = { ...item };
+  form.value = { ...item, originalMinoseg: item.Minoseg };
   showModal.value = true;
 };
 
@@ -91,14 +91,14 @@ const saveItem = async () => {
   try {
     if (isEditing.value) {
       await api.patch(`/ruhak/${form.value.Cikkszam}`, form.value);
-      const index = clothes.value.findIndex(c => c.Cikkszam === form.value.Cikkszam);
-      if (index !== -1) clothes.value[index] = { ...form.value };
+      // Refresh list to handle merges correctly
+      await fetchClothes();
     } else {
       const payload = { ...form.value };
       if (!payload.Cikkszam) delete payload.Cikkszam;
       
-      const res = await api.post('/ruhak', payload);
-      clothes.value.push(res.data || { ...form.value });
+      await api.post('/ruhak', payload);
+      await fetchClothes();
     }
     showModal.value = false;
   } catch (error) {
@@ -107,11 +107,12 @@ const saveItem = async () => {
   }
 };
 
-const deleteItem = async (cikkszam) => {
-  if (!confirm('Biztosan törölni szeretné ezt az elemet?')) return;
+const deleteItem = async (item) => {
+  if (!confirm(`Biztosan törölni szeretné a(z) ${item.Minoseg} minőségű tételt?`)) return;
   try {
-    await api.delete(`/ruhak/${cikkszam}`);
-    clothes.value = clothes.value.filter(c => c.Cikkszam !== cikkszam);
+    await api.delete(`/ruhak/${item.Cikkszam}/variants/${item.Minoseg}`);
+    // Only remove the specific variant locally
+    clothes.value = clothes.value.filter(c => !(c.Cikkszam === item.Cikkszam && c.Minoseg === item.Minoseg));
   } catch (error) {
     console.error('Error deleting item:', error);
     alert('Hiba történt a törlés során.');
@@ -165,7 +166,7 @@ onMounted(fetchClothes);
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in filteredClothes" :key="item.Cikkszam">
+            <tr v-for="item in filteredClothes" :key="item.Cikkszam + item.Minoseg">
               <td class="font-medium">{{ item.Cikkszam }}</td>
               <td>{{ item.Fajta }}</td>
               <td>{{ item.Meret }}</td>
@@ -183,7 +184,7 @@ onMounted(fetchClothes);
                   <button @click="openEditModal(item)" class="btn-edit" title="Szerkesztés">
                     <Edit size="18" />
                   </button>
-                  <button @click="deleteItem(item.Cikkszam)" class="btn-delete" title="Törlés">
+                  <button @click="deleteItem(item)" class="btn-delete" title="Törlés">
                     <Trash2 size="18" />
                   </button>
                 </div>

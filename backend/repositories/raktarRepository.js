@@ -31,4 +31,13 @@ async function getStockForCikkszam(cikkszam) {
     });
 }
 
-module.exports = { findByCikkszamAndMinoseg, create, updateStock, getStockForCikkszam };
+async function remove(cikkszam, minoseg) {
+    return models.Raktar.destroy({
+        where: {
+            Cikkszam: cikkszam,
+            Minoseg: minoseg
+        }
+    });
+}
+
+module.exports = { findByCikkszamAndMinoseg, create, updateStock, getStockForCikkszam, remove };

@@ -39,4 +39,7 @@ router.patch("/:ruhaId", requireRole(ROLES.Admin), updateRuha, validationHandler
 // Ruhacikk törlése
 router.delete("/:ruhaId", requireRole(ROLES.Admin), controller.remove);
 
+// Variáns törlése (speciális minőség)
+router.delete("/:cikkszam/variants/:minoseg", requireRole(ROLES.Admin), controller.removeVariant);
+
 module.exports = router;
