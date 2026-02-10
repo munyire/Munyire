@@ -72,7 +72,9 @@ const filteredWorkers = computed(() => {
     w.DNev.toLowerCase().includes(q) ||
     w.Email.toLowerCase().includes(q) ||
     w.DolgozoID.toString().includes(q) ||
-    (w.FelhasznaloNev && w.FelhasznaloNev.toLowerCase().includes(q))
+    (w.FelhasznaloNev && w.FelhasznaloNev.toLowerCase().includes(q)) ||
+    (w.Munkakor && w.Munkakor.toLowerCase().includes(q)) ||
+    (w.Szerepkor && w.Szerepkor.toLowerCase().includes(q))
   );
 });
 
@@ -84,13 +86,7 @@ watch(filteredWorkers, (newVal) => {
   }
 });
 
-const getAvatar = (worker) => {
-  if (!worker) return '/avatars/male_1.png';
-  const id = worker.DolgozoID;
-  const gender = worker.Nem === 'Nő' ? 'female' : 'male';
-  const num = (id % 2) + 1;
-  return `/avatars/${gender}_${num}.png`;
-};
+
 
 const selectWorker = (worker) => {
   selectedWorker.value = worker;
@@ -224,7 +220,7 @@ const deleteWorker = async (id) => {
           <input 
             v-model="searchQuery" 
             type="text" 
-            placeholder="Keress név vagy ID alapján..." 
+            placeholder="Név, munkakör vagy szerepkör..." 
             class="sidebar-search-input"
           />
         </div>
@@ -238,7 +234,7 @@ const deleteWorker = async (id) => {
             :class="{ 'active': selectedWorker?.DolgozoID === worker.DolgozoID }"
           >
             <div class="avatar-mini">
-              <img :src="getAvatar(worker)" :alt="worker.DNev">
+              <User size="24" class="text-gray-500" />
             </div>
             <div class="item-info">
               <span class="item-name">{{ worker.DNev }}</span>
@@ -267,7 +263,7 @@ const deleteWorker = async (id) => {
             <!-- Profile Header -->
             <div class="detail-header">
               <div class="avatar-large">
-                <img :src="getAvatar(selectedWorker)" :alt="selectedWorker.DNev">
+                <User size="64" class="text-gray-400" />
               </div>
               <div class="header-info">
                 <div class="header-top">
@@ -470,7 +466,8 @@ const deleteWorker = async (id) => {
 .btn-add {
   background-color: #1e3a8a;
   color: white;
-  padding: 0.875rem 1.5rem;
+  padding: 0 1.5rem;
+  height: 64px;
   border-radius: 1rem;
   font-weight: 700;
   display: flex;
@@ -491,7 +488,8 @@ const deleteWorker = async (id) => {
 
 .stats-box {
   background: var(--color-surface);
-  padding: 1rem 1.5rem;
+  padding: 0 1.5rem;
+  height: 64px;
   border-radius: 1.5rem;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
@@ -626,12 +624,10 @@ const deleteWorker = async (id) => {
   background: #f3f4f6;
   flex-shrink: 0;
   border: 2px solid white;
-}
-
-.avatar-mini img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
 }
 
 .item-info {
@@ -731,12 +727,11 @@ const deleteWorker = async (id) => {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   border: 4px solid white;
   flex-shrink: 0;
-}
-
-.avatar-large img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
 }
 
 .header-info {
