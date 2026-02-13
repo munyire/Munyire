@@ -5,7 +5,7 @@ const requireRole = require("../middlewares/requireRoleMiddleware");
 const { ROLES } = require("../utils/roles");
 const validationHandler = require("../middlewares/validationHandler");
 const { issueValidator, returnValidator } = require("../validators/ruhakibeValidators");
-const controller = require("../controllers/ruhaKiBeController");
+const controller = require("../controllers/ruhakibeController");
 
 router.use(auth);
 
