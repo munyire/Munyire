@@ -97,6 +97,9 @@ const clothesOptions = ref([]);
 const showCreateModal = ref(false);
 const showConfirmModal = ref(false);
 const orderToComplete = ref(null);
+const showMessageModal = ref(false);
+const messageModalType = ref('success'); // 'success' | 'error'
+const messageModalText = ref('');
 
 const createForm = reactive({
   Cikkszam: null,
@@ -177,12 +180,16 @@ const handleSubmitOrder = async () => {
     
     if (response.data) {
       items.value.push(response.data);
-      alert(L10n.get('MSG_SUCCESS_CREATE'));
+      messageModalText.value = L10n.get('MSG_SUCCESS_CREATE');
+      messageModalType.value = 'success';
+      showMessageModal.value = true;
       showCreateModal.value = false;
     }
   } catch (error) {
     console.error('Submit failed:', error);
-    alert('Hiba: ' + (error.response?.data?.message || 'Ismeretlen hiba'));
+    messageModalText.value = 'Hiba: ' + (error.response?.data?.message || 'Ismeretlen hiba');
+    messageModalType.value = 'error';
+    showMessageModal.value = true;
   } finally {
     uiState.isSubmitting = false;
   }
@@ -205,7 +212,9 @@ const handleConfirmComplete = async () => {
     if (order) order.Statusz = OrderStatus.TELJESITVE;
   } catch (error) {
     console.error('Complete failed:', error);
-    alert('Hiba az átvételnél.');
+    messageModalText.value = 'Hiba az átvételnél.';
+    messageModalType.value = 'error';
+    showMessageModal.value = true;
   } finally {
     uiState.completingId = null;
     orderToComplete.value = null;
@@ -437,6 +446,20 @@ onMounted(() => {
             <span v-else>{{ L10n.get('BTN_COMPLETE') }}</span>
           </button>
         </div>
+      </template>
+    </Modal>
+
+    <!-- Message Modal (Success/Error) -->
+    <Modal 
+      :show="showMessageModal" 
+      :title="messageModalType === 'success' ? 'Sikeresen' : 'Hiba'" 
+      @close="showMessageModal = false"
+    >
+      <template #body>
+        <p>{{ messageModalText }}</p>
+      </template>
+      <template #footer>
+        <button class="btn-primary" @click="showMessageModal = false">Rendben</button>
       </template>
     </Modal>
   </div>

@@ -15,6 +15,11 @@ const searchQuery = ref('');
 
 const showModal = ref(false);
 const isEditing = ref(false);
+const showMessageModal = ref(false);
+const messageModalType = ref('success'); // 'success' | 'error'
+const messageModalText = ref('');
+const showDeleteConfirmModal = ref(false);
+const itemToDelete = ref(null);
 const form = ref({
   RuhaID: null,
   Cikkszam: '',
@@ -103,19 +108,33 @@ const saveItem = async () => {
     showModal.value = false;
   } catch (error) {
     console.error('Error saving item:', error);
-    alert('Hiba történt a mentés során.');
+    messageModalText.value = 'Hiba történt a mentés során.';
+    messageModalType.value = 'error';
+    showMessageModal.value = true;
   }
 };
 
 const deleteItem = async (item) => {
-  if (!confirm(`Biztosan törölni szeretné a(z) ${item.Minoseg} minőségű tételt?`)) return;
+  itemToDelete.value = item;
+  showDeleteConfirmModal.value = true;
+};
+
+const confirmDelete = async () => {
+  if (!itemToDelete.value) return;
+  
   try {
-    await api.delete(`/ruhak/${item.Cikkszam}/variants/${item.Minoseg}`);
+    await api.delete(`/ruhak/${itemToDelete.value.Cikkszam}/variants/${itemToDelete.value.Minoseg}`);
     // Only remove the specific variant locally
-    clothes.value = clothes.value.filter(c => !(c.Cikkszam === item.Cikkszam && c.Minoseg === item.Minoseg));
+    clothes.value = clothes.value.filter(c => !(c.Cikkszam === itemToDelete.value.Cikkszam && c.Minoseg === itemToDelete.value.Minoseg));
+    showDeleteConfirmModal.value = false;
+    itemToDelete.value = null;
   } catch (error) {
     console.error('Error deleting item:', error);
-    alert('Hiba történt a törlés során.');
+    messageModalText.value = 'Hiba történt a törlés során.';
+    messageModalType.value = 'error';
+    showMessageModal.value = true;
+    showDeleteConfirmModal.value = false;
+    itemToDelete.value = null;
   }
 };
 
@@ -245,6 +264,38 @@ onMounted(fetchClothes);
       <template #footer>
         <button class="btn-secondary" @click="showModal = false">Mégse</button>
         <button type="submit" form="itemForm" class="btn-primary">Mentés</button>
+      </template>
+    </Modal>
+
+    <!-- Delete Confirmation Modal -->
+    <Modal 
+      :show="showDeleteConfirmModal" 
+      title="Tétel törlése" 
+      @close="showDeleteConfirmModal = false"
+    >
+      <template #body>
+        <p v-if="itemToDelete">Biztosan törölni szeretné a(z) <strong>{{ itemToDelete.Minoseg }}</strong> minőségű tételt?</p>
+        <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-top: 0.5rem;">Ez az akció nem vonható vissza.</p>
+      </template>
+      <template #footer>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showDeleteConfirmModal = false">Mégse</button>
+          <button class="btn-danger" @click="confirmDelete">Törlés</button>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Message Modal (Success/Error) -->
+    <Modal 
+      :show="showMessageModal" 
+      :title="messageModalType === 'success' ? 'Sikeresen' : 'Hiba'" 
+      @close="showMessageModal = false"
+    >
+      <template #body>
+        <p>{{ messageModalText }}</p>
+      </template>
+      <template #footer>
+        <button class="btn-primary" @click="showMessageModal = false">Rendben</button>
       </template>
     </Modal>
   </div>

@@ -27,6 +27,11 @@ const showMobileDetail = ref(false);
 
 const showModal = ref(false);
 const isEditing = ref(false);
+const showMessageModal = ref(false);
+const messageModalType = ref('success'); // 'success' | 'error'
+const messageModalText = ref('');
+const showDeleteConfirmModal = ref(false);
+const workerToDelete = ref(null);
 const form = ref({
   DolgozoID: null,
   DNev: '',
@@ -164,22 +169,36 @@ const saveWorker = async () => {
     showModal.value = false;
   } catch (error) {
     console.error('Error saving worker:', error);
-    alert('Hiba történt a mentés során.');
+    messageModalText.value = 'Hiba történt a mentés során.';
+    messageModalType.value = 'error';
+    showMessageModal.value = true;
   }
 };
 
 const deleteWorker = async (id) => {
-  if (!confirm('Biztosan törölni szeretné ezt a dolgozót?')) return;
+  workerToDelete.value = id;
+  showDeleteConfirmModal.value = true;
+};
+
+const confirmDelete = async () => {
+  if (!workerToDelete.value) return;
+  
   try {
-    await api.delete(`/dolgozok/${id}`);
-    const index = workers.value.findIndex(w => w.DolgozoID === id);
-    workers.value = workers.value.filter(w => w.DolgozoID !== id);
-    if (selectedWorker.value?.DolgozoID === id) {
+    await api.delete(`/dolgozok/${workerToDelete.value}`);
+    const index = workers.value.findIndex(w => w.DolgozoID === workerToDelete.value);
+    workers.value = workers.value.filter(w => w.DolgozoID !== workerToDelete.value);
+    if (selectedWorker.value?.DolgozoID === workerToDelete.value) {
       selectedWorker.value = workers.value[index] || workers.value[index - 1] || null;
     }
+    showDeleteConfirmModal.value = false;
+    workerToDelete.value = null;
   } catch (error) {
     console.error('Error deleting worker:', error);
-    alert('Hiba történt a törlés során.');
+    messageModalText.value = 'Hiba történt a törlés során.';
+    messageModalType.value = 'error';
+    showMessageModal.value = true;
+    showDeleteConfirmModal.value = false;
+    workerToDelete.value = null;
   }
 };
 </script>
@@ -400,6 +419,38 @@ const deleteWorker = async (id) => {
           <button class="btn-secondary" @click="showModal = false">Mégse</button>
           <button type="submit" form="workerForm" class="btn-primary">Mentés</button>
         </div>
+      </template>
+    </Modal>
+
+    <!-- Delete Confirmation Modal -->
+    <Modal 
+      :show="showDeleteConfirmModal" 
+      title="Dolgozó törlése" 
+      @close="showDeleteConfirmModal = false"
+    >
+      <template #body>
+        <p>Biztosan törölni szeretné ezt a dolgozót?</p>
+        <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-top: 0.5rem;">Ez az akció nem vonható vissza.</p>
+      </template>
+      <template #footer>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showDeleteConfirmModal = false">Mégse</button>
+          <button class="btn-danger" @click="confirmDelete">Törlés</button>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Message Modal (Success/Error) -->
+    <Modal 
+      :show="showMessageModal" 
+      :title="messageModalType === 'success' ? 'Sikeresen' : 'Hiba'" 
+      @close="showMessageModal = false"
+    >
+      <template #body>
+        <p>{{ messageModalText }}</p>
+      </template>
+      <template #footer>
+        <button class="btn-primary" @click="showMessageModal = false">Rendben</button>
       </template>
     </Modal>
   </div>
