@@ -450,7 +450,9 @@ const confirmDelete = async () => {
         <p>{{ messageModalText }}</p>
       </template>
       <template #footer>
-        <button class="btn-primary" @click="showMessageModal = false">Rendben</button>
+        <div class="modal-footer">
+          <button class="btn-primary" @click="showMessageModal = false">Rendben</button>
+        </div>
       </template>
     </Modal>
   </div>
@@ -998,6 +1000,29 @@ const confirmDelete = async () => {
 }
 
 .btn-primary:hover { background: #1e40af; transform: translateY(-1px); }
+
+.btn-danger {
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.625rem;
+  background: #dc2626;
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9375rem;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+/* Modal Footer */
+.modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
 
 /* Tablet Breakpoint */
 @media (max-width: 1024px) {
