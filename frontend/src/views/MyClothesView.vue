@@ -203,15 +203,17 @@ onMounted(fetchMyItems);
 .item-name {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
   margin: 0 0 0.375rem;
+  transition: color 0.3s ease;
 }
 
 .item-code {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   margin: 0 0 1.25rem;
   font-family: monospace;
+  transition: color 0.3s ease;
 }
 
 .item-details {
@@ -225,7 +227,8 @@ onMounted(fetchMyItems);
   justify-content: space-between;
   align-items: center;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
+  transition: border-color 0.3s ease;
 }
 
 .detail-row:last-child {
@@ -235,39 +238,45 @@ onMounted(fetchMyItems);
 
 .detail-label {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   display: flex;
   align-items: center;
   gap: 0.375rem;
+  transition: color 0.3s ease;
 }
 
 .detail-value {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text);
+  transition: color 0.3s ease;
 }
 
 /* Empty Card */
 .empty-card {
   grid-column: 1 / -1;
-  background: #f9fafb;
-  border: 2px dashed #e5e7eb;
+  background: var(--color-surface);
+  border: 2px dashed var(--color-border);
   border-radius: 1.5rem;
   padding: 4rem 2rem;
   text-align: center;
-  color: #9ca3af;
+  color: var(--color-text-muted);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .empty-card svg {
   margin-bottom: 1rem;
   opacity: 0.5;
+  color: var(--color-text-muted);
+  transition: color 0.3s ease;
 }
 
 .empty-card h3 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #374151;
+  color: var(--color-text);
   margin: 0 0 0.5rem;
+  transition: color 0.3s ease;
 }
 
 .empty-card p {
