@@ -22,7 +22,7 @@
 
 ## 🔄 Tranzakciók & Rendelések
 ### Visszavétel
-- [ ] **Kétirányú keresés:** Lehessen keresni dolgozó neve és ruha típusa alapján is a visszavételi listában.
+- [x] **Kétirányú keresés:** Lehessen keresni dolgozó neve és ruha típusa alapján is a visszavételi listában.
 
 ### Rendelés
 - [x] **UI szinkron:** A keresődoboz és az "Új rendelés felvétele" box legyen azonos méretű.
@@ -32,7 +32,7 @@
 ---
 
 ## 🌙 UI / Megjelenítés
-- [ ] **Dark Mode javítás:** A "Saját ruha" oldalon a "Nincs ruha nálad" üzenet sötét módban ne fehér háttérrel jelenjen meg.
+- [x] **Dark Mode javítás:** A "Saját ruha" oldalon a "Nincs ruha nálad" üzenet sötét módban ne fehér háttérrel jelenjen meg.
 
 ---
 

@@ -25,6 +25,21 @@ const showReturnModal = ref(false);
 const selectedReturnItem = ref(null);
 const returnQuality = ref('Jó');
 const qualityOptions = ['Új', 'Jó', 'Szakadt'];
+const returnSearch = ref('');
+
+const filteredActiveIssues = computed(() => {
+  if (!returnSearch.value.trim()) {
+    return activeIssues.value;
+  }
+  
+  const searchText = returnSearch.value.toLowerCase();
+  return activeIssues.value.filter(issue => {
+    const workerName = (issue.Dolgozo?.DNev || '').toLowerCase();
+    const clotheType = (issue.Ruha?.Fajta || '').toLowerCase();
+    
+    return workerName.includes(searchText) || clotheType.includes(searchText);
+  });
+});
 
 const fetchDropdownData = async () => {
   try {
@@ -99,6 +114,7 @@ const confirmReturn = async () => {
     });
     
     activeIssues.value = activeIssues.value.filter(i => i.RuhaKiBeID !== selectedReturnItem.value.RuhaKiBeID);
+    returnSearch.value = '';
     message.value = { type: 'success', text: 'Sikeres visszavétel!' };
     showReturnModal.value = false;
     selectedReturnItem.value = null;
@@ -205,7 +221,20 @@ onMounted(() => {
         {{ message.text }}
       </div>
 
-      <div v-else class="table-wrapper">
+      <div v-if="activeIssues.length > 0" class="search-container">
+        <input 
+          v-model="returnSearch"
+          type="text"
+          class="search-input"
+          placeholder="Keresés dolgozó név vagy ruha típusa alapján..."
+        />
+      </div>
+
+      <div v-if="filteredActiveIssues.length === 0 && activeIssues.length > 0" class="empty-state">
+        Nincs a keresésnek megfelelő ruha.
+      </div>
+
+      <div v-if="filteredActiveIssues.length > 0" class="table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
@@ -216,7 +245,7 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="issue in activeIssues" :key="issue.RuhaKiBeID">
+            <tr v-for="issue in filteredActiveIssues" :key="issue.RuhaKiBeID">
               <td>
                 <div class="worker-name">{{ issue.Dolgozo?.DNev || issue.DolgozoID }}</div>
               </td>
@@ -382,6 +411,33 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+/* Search Container */
+.search-container {
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: all 0.2s;
+}
+
+.search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.search-input:focus {
+  outline: none;
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .form-group {
