@@ -26,7 +26,7 @@ async function search(query) {
 
 async function findAllNames() {
   return models.Dolgozo.findAll({
-    attributes: ["DolgozoID", "DNev"],
+    attributes: ["DolgozoID", "DNev", "Email"],
     order: [["DNev", "ASC"]],
   });
 }

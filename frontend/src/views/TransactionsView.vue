@@ -48,7 +48,7 @@ const fetchDropdownData = async () => {
     ]);
 
     workers.value = workersRes.data.map(w => ({
-      label: w.FelhasznaloNev ? `${w.DNev} (${w.FelhasznaloNev})` : w.DNev,
+      label: w.Email ? `${w.DNev} (${w.Email})` : w.DNev,
       value: w.DolgozoID
     }));
 
@@ -247,7 +247,10 @@ onMounted(() => {
           <tbody>
             <tr v-for="issue in filteredActiveIssues" :key="issue.RuhaKiBeID">
               <td>
-                <div class="worker-name">{{ issue.Dolgozo?.DNev || issue.DolgozoID }}</div>
+                <div class="worker-info">
+                  <div class="worker-name">{{ issue.Dolgozo?.DNev || issue.DolgozoID }}</div>
+                  <div v-if="issue.Dolgozo?.Email" class="worker-email">{{ issue.Dolgozo.Email }}</div>
+                </div>
               </td>
               <td>
                 <div class="item-info">
@@ -560,9 +563,21 @@ onMounted(() => {
   background: var(--color-bg);
 }
 
+.worker-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .worker-name {
   font-weight: 600;
   color: var(--color-text);
+}
+
+.worker-email {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-family: monospace;
 }
 
 .item-info {
