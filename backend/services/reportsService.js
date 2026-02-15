@@ -52,10 +52,11 @@ async function monthlyExpenses(year, month) {
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0, 23, 59, 59, 999);
 
-  // 1. Tényleges kiadások (RuhaKiBe)
+  // 1. Tényleges kiadások (RuhaKiBe) - csak a vissza nem vett ruhák
   const expenses = await models.RuhaKiBe.findAll({
     where: {
       KiadasDatum: { [Op.between]: [start, end] },
+      VisszaDatum: null,  // Csak az aktív (vissza nem vett) kiadások
     },
     include: [
       {
@@ -141,10 +142,11 @@ async function yearlyExpenses(year) {
   const start = new Date(year, 0, 1);
   const end = new Date(year, 11, 31, 23, 59, 59, 999);
 
-  // 1. Tényleges kiadások (RuhaKiBe)
+  // 1. Tényleges kiadások (RuhaKiBe) - csak a vissza nem vett ruhák
   const expenses = await models.RuhaKiBe.findAll({
     where: {
       KiadasDatum: { [Op.between]: [start, end] },
+      VisszaDatum: null,  // Csak az aktív (vissza nem vett) kiadások
     },
     include: [
       {
@@ -237,10 +239,11 @@ async function halfYearExpenses(year, half) {
   const start = new Date(year, startMonth, 1);
   const end = new Date(year, endMonth + 1, 0, 23, 59, 59, 999);
 
-  // 1. Tényleges kiadások (RuhaKiBe)
+  // 1. Tényleges kiadások (RuhaKiBe) - csak a vissza nem vett ruhák
   const expenses = await models.RuhaKiBe.findAll({
     where: {
       KiadasDatum: { [Op.between]: [start, end] },
+      VisszaDatum: null,  // Csak az aktív (vissza nem vett) kiadások
     },
     include: [
       {
