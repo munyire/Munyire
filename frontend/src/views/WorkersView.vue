@@ -622,21 +622,21 @@ const confirmDelete = async () => {
 /* Header Card */
 .header-card {
   background-color: var(--color-surface);
-  border-radius: 2rem;
+  border-radius: 1.5rem;
   box-shadow: var(--shadow-lg);
-  padding: 2rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   transition: background-color 0.3s ease;
 }
 
 .header-title {
-  font-size: 3rem;
-  font-weight: 900;
+  font-size: 1.75rem;
+  font-weight: 800;
   color: var(--color-text);
   margin: 0;
   letter-spacing: -0.025em;
@@ -644,10 +644,10 @@ const confirmDelete = async () => {
 }
 
 .header-subtitle {
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: var(--color-text-muted);
-  margin: 0.5rem 0 0;
-  font-weight: 600;
+  margin: 0.25rem 0 0;
+  font-weight: 500;
   transition: color 0.3s ease;
 }
 

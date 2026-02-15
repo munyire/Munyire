@@ -623,9 +623,9 @@ onMounted(() => {
 /* Header Card */
 .header-card {
   background-color: var(--color-surface);
-  border-radius: 2rem;
+  border-radius: 1.5rem;
   box-shadow: var(--shadow-lg);
-  padding: 3rem 2rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -636,8 +636,8 @@ onMounted(() => {
 
 .header-title {
   margin: 0;
-  font-size: 4rem;
-  font-weight: 900;
+  font-size: 1.75rem;
+  font-weight: 800;
   color: var(--color-text);
   letter-spacing: -0.025em;
   line-height: 1;
@@ -646,16 +646,16 @@ onMounted(() => {
 
 .header-subtitle {
   color: var(--color-text-muted);
-  margin: 0.75rem 0 0;
-  font-size: 1.5rem;
-  font-weight: 600;
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  font-weight: 500;
   transition: color 0.3s ease;
 }
 
 .header-actions {
   display: flex;
   gap: 0.75rem;
-  margin-top: 1.25rem;
+  margin-top: 0.75rem;
 }
 
 .action-btn {

@@ -568,17 +568,17 @@ onMounted(() => {
 /* Header */
 .header-card {
   background: var(--color-surface);
-  border-radius: 2rem;
+  border-radius: 1.5rem;
   box-shadow: var(--shadow-lg);
-  padding: 2.5rem 2rem;
+  padding: 1.5rem;
   text-align: center;
   margin-bottom: 1.5rem;
   transition: background-color 0.3s ease;
 }
 
 .page-title {
-  font-size: 3rem;
-  font-weight: 900;
+  font-size: 1.75rem;
+  font-weight: 800;
   color: var(--color-text);
   margin: 0;
   letter-spacing: -0.025em;
@@ -587,8 +587,8 @@ onMounted(() => {
 
 .page-subtitle {
   color: var(--color-text-muted);
-  margin: 0.5rem 0 0;
-  font-size: 1.125rem;
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
   font-weight: 500;
   transition: color 0.3s ease;
 }
