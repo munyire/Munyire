@@ -5,6 +5,9 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+
 const { sequelize } = require("./db");
 const errorHandler = require("./middlewares/errorHandlerMiddleware");
 const { ensureAdminFromEnv } = require("./services/authService");
@@ -17,6 +20,19 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const reportsRoutes = require("./routes/reportsRoutes");
 
 const app = express();
+
+// Security Middleware
+app.use(helmet()); // Set secure HTTP headers
+
+// Rate Limiting: Max 100 requests per 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: "Too many requests from this IP, please try again after 15 minutes",
+});
+app.use(limiter);
 
 // Basic middleware
 app.use(cors());
