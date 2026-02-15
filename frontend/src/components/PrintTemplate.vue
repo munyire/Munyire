@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref, watch, nextTick } from 'vue';
-
+// Kurva undorito kod kovetkezik de mukodik
+// Biztos van elegansabb megoldas is de ez most jo lesz
+// TODO: Elegansabb megoldas keresese
 const props = defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
