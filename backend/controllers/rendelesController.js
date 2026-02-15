@@ -70,6 +70,15 @@ async function complete(req, res, next) {
   }
 }
 
+async function cancel(req, res, next) {
+  try {
+    const updated = await rendelesService.cancel(req.params.rendelesId);
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function remove(req, res, next) {
   try {
     await rendelesService.remove(req.params.rendelesId);
@@ -88,5 +97,6 @@ module.exports = {
   create,
   update,
   complete,
+  cancel,
   remove,
 };

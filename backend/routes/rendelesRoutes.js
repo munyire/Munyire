@@ -42,6 +42,9 @@ router.patch(
 // Rendelés teljesítése + készlet növelés
 router.patch("/:rendelesId/complete", requireRole(ROLES.Admin), controller.complete);
 
+// Rendelés lemondása
+router.patch("/:rendelesId/cancel", requireRole(ROLES.Admin), controller.cancel);
+
 // Rendelés törlése
 router.delete("/:rendelesId", requireRole(ROLES.Admin), controller.remove);
 

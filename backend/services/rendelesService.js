@@ -51,6 +51,11 @@ async function complete(id) {
     throw err;
   }
   if (order.Statusz === "Teljesítve") return order;
+  if (order.Statusz === "Lemondva") {
+    const err = new Error("A lemondott rendelés nem teljesíthető");
+    err.status = 400;
+    throw err;
+  }
 
   // order has Cikkszam (via index.js association and create mapping)
   // Check if DB schema migration happened. If explicit column usage, access order.Cikkszam or order.RuhaID?
@@ -85,6 +90,24 @@ async function complete(id) {
   return order;
 }
 
+async function cancel(id) {
+  const order = await rendelesRepo.findById(id);
+  if (!order) {
+    const err = new Error("Order not found");
+    err.status = 404;
+    throw err;
+  }
+  if (order.Statusz === "Teljesítve") {
+    const err = new Error("A teljesített rendelés nem mondható le");
+    err.status = 400;
+    throw err;
+  }
+  if (order.Statusz === "Lemondva") return order;
+
+  await order.update({ Statusz: "Lemondva" });
+  return order;
+}
+
 async function remove(id) {
   return rendelesRepo.remove(id);
 }
@@ -98,5 +121,6 @@ module.exports = {
   create,
   update,
   complete,
+  cancel,
   remove,
 };

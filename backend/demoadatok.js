@@ -17,6 +17,8 @@ async function main() {
     console.log('=== Demo Adatok Feltöltése Kezdődik ===\n');
 
     let token = '';
+    let teljesitveCount = 0;
+    let lemondvaCount = 0;
 
     // 1. Bejelentkezés Admin-ként
     try {
@@ -387,9 +389,9 @@ async function main() {
     console.log(`\n   ✅ ${rendelesCount} rendelés létrehozva.\n`);
 
     // ============================================
-    // 8. NÉHÁNY RENDELÉS TELJESÍTÉSE
+    // 8. NÉHÁNY RENDELÉS TELJESÍTÉSE ÉS LEMONDÁSA
     // ============================================
-    console.log('8. Néhány rendelés teljesítése...');
+    console.log('8. Néhány rendelés teljesítése és lemondása...');
     
     try {
         // Lekérjük a függő rendeléseket
@@ -399,13 +401,12 @@ async function main() {
 
         if (pendingRes.ok) {
             const pendingOrders = await pendingRes.json();
-            let teljesitveCount = 0;
 
             // Az első 5 rendelést teljesítjük
             for (let i = 0; i < Math.min(5, pendingOrders.length); i++) {
                 try {
                     const completeRes = await fetch(`${BASE_URL}/rendelesek/${pendingOrders[i].RendelesID}/complete`, {
-                        method: 'POST',
+                        method: 'PATCH',
                         headers: headers
                     });
 
@@ -418,10 +419,30 @@ async function main() {
                 }
                 await sleep(50);
             }
-            console.log(`\n   ✅ ${teljesitveCount} rendelés teljesítve (készlet feltöltve).\n`);
+
+            // Következő 3 rendelést lemondunk (ha van elég)
+            const remainingOrders = pendingOrders.slice(5);
+            for (let i = 0; i < Math.min(3, remainingOrders.length); i++) {
+                try {
+                    const cancelRes = await fetch(`${BASE_URL}/rendelesek/${remainingOrders[i].RendelesID}/cancel`, {
+                        method: 'PATCH',
+                        headers: headers
+                    });
+
+                    if (cancelRes.ok) {
+                        lemondvaCount++;
+                        process.stdout.write('L');
+                    }
+                } catch (err) {
+                    console.error(`\n   ❌ Hiba lemondásnál:`, err.message);
+                }
+                await sleep(50);
+            }
+
+            console.log(`\n   ✅ ${teljesitveCount} rendelés teljesítve, ${lemondvaCount} rendelés lemondva.\n`);
         }
     } catch (err) {
-        console.error('   ❌ Hiba a teljesítések során:', err.message);
+        console.error('   ❌ Hiba a teljesítések/lemondások során:', err.message);
     }
 
     // ============================================
@@ -468,7 +489,7 @@ async function main() {
     console.log(`   • Ruha típusok: ${createdClothes.length} db`);
     console.log(`   • Kiadott ruhák: ${assignmentCount} db`);
     console.log(`   • Visszavett ruhák: ${visszavetelCount} db`);
-    console.log(`   • Rendelések: ${rendelesCount} db`);
+    console.log(`   • Rendelések: ${rendelesCount} db (Leadva: ${rendelesCount - teljesitveCount - lemondvaCount}, Teljesítve: ${teljesitveCount}, Lemondva: ${lemondvaCount})`);
     console.log(`   • Extra kiadások: ${extraKiadCount} db`);
     console.log(`\n💰 Ruhák árai:`);
     const arOsszesen = createdClothes.reduce((sum, r) => sum + (r.Ar || 0), 0);

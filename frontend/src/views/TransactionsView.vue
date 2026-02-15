@@ -240,6 +240,7 @@ onMounted(() => {
             <tr>
               <th>Dolgozó</th>
               <th>Ruha Típusa</th>
+              <th>Indok</th>
               <th>Kiadás Dátuma</th>
               <th class="actions-col">Művelet</th>
             </tr>
@@ -257,6 +258,9 @@ onMounted(() => {
                   <span class="item-name">{{ issue.Ruha?.Fajta || 'Ismeretlen' }}</span>
                   <span class="item-code">{{ issue.Ruha?.Cikkszam }}</span>
                 </div>
+              </td>
+              <td>
+                <span class="indok">{{ issue.Indok || '-' }}</span>
               </td>
               <td>
                 <span class="date">{{ new Date(issue.KiadasDatum).toLocaleDateString('hu-HU') }}</span>
@@ -601,6 +605,12 @@ onMounted(() => {
 .date {
   color: var(--color-text-muted);
   font-weight: 500;
+}
+
+.indok {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-style: italic;
 }
 
 .actions-col {

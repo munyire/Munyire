@@ -12,6 +12,14 @@ module.exports = (sequelize) => {
         allowNull: false,
         defaultValue: "Leadva",
       },
+      Szallito: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      Megjegyzes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       tableName: "Rendelesek",

@@ -182,7 +182,7 @@ onMounted(fetchClothes);
               <th>Szín</th>
               <th>Minőség</th>
               <th>Mennyiség</th>
-              <th>Ár (Ft)</th>
+              <th>Darabár (Ft)</th>
               <th class="actions-col">Műveletek</th>
             </tr>
           </thead>
@@ -263,7 +263,7 @@ onMounted(fetchClothes);
             </select>
           </div>
           <div class="form-group full-width">
-            <label class="form-label">Ár (Ft)</label>
+            <label class="form-label">Darabár (Ft)</label>
             <input type="number" v-model="form.Ar" min="0" step="1" class="form-input" placeholder="0" />
           </div>
         </form>

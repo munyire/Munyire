@@ -226,6 +226,11 @@ onMounted(() => {
           <div class="summary-item total">
             <span class="summary-label">Összes kiadás</span>
             <span class="summary-value">{{ formatCurrency(monthlyData.totalExpense) }} Ft</span>
+            <div class="expense-breakdown" v-if="monthlyData.issuedExpense || monthlyData.inventoryValue || monthlyData.pendingOrdersValue">
+              <span class="breakdown-item">Kiadott: {{ formatCurrency(monthlyData.issuedExpense || 0) }} Ft</span>
+              <span class="breakdown-item">Raktár: {{ formatCurrency(monthlyData.inventoryValue || 0) }} Ft</span>
+              <span class="breakdown-item pending">Szállításban: {{ formatCurrency(monthlyData.pendingOrdersValue || 0) }} Ft</span>
+            </div>
           </div>
           <div class="summary-item">
             <span class="summary-label">Tételszám</span>
@@ -281,6 +286,11 @@ onMounted(() => {
           <div class="summary-item total">
             <span class="summary-label">Éves összes kiadás</span>
             <span class="summary-value">{{ formatCurrency(yearlyData.totalExpense) }} Ft</span>
+            <div class="expense-breakdown" v-if="yearlyData.issuedExpense || yearlyData.inventoryValue || yearlyData.pendingOrdersValue">
+              <span class="breakdown-item">Kiadott: {{ formatCurrency(yearlyData.issuedExpense || 0) }} Ft</span>
+              <span class="breakdown-item">Raktár: {{ formatCurrency(yearlyData.inventoryValue || 0) }} Ft</span>
+              <span class="breakdown-item pending">Szállításban: {{ formatCurrency(yearlyData.pendingOrdersValue || 0) }} Ft</span>
+            </div>
           </div>
         </div>
 
@@ -339,6 +349,11 @@ onMounted(() => {
           <div class="summary-item total">
             <span class="summary-label">Féléves összes kiadás</span>
             <span class="summary-value">{{ formatCurrency(halfYearData.totalExpense) }} Ft</span>
+            <div class="expense-breakdown" v-if="halfYearData.issuedExpense || halfYearData.inventoryValue || halfYearData.pendingOrdersValue">
+              <span class="breakdown-item">Kiadott: {{ formatCurrency(halfYearData.issuedExpense || 0) }} Ft</span>
+              <span class="breakdown-item">Raktár: {{ formatCurrency(halfYearData.inventoryValue || 0) }} Ft</span>
+              <span class="breakdown-item pending">Szállításban: {{ formatCurrency(halfYearData.pendingOrdersValue || 0) }} Ft</span>
+            </div>
           </div>
         </div>
 
@@ -573,6 +588,26 @@ onMounted(() => {
 
 .summary-item.total {
   flex: 1;
+}
+
+.expense-breakdown {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.breakdown-item {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+}
+
+.breakdown-item.pending {
+  background: rgba(255, 193, 7, 0.2);
+  color: rgba(255, 235, 59, 0.95);
 }
 
 .summary-label {

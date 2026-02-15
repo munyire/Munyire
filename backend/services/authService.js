@@ -47,16 +47,39 @@ async function ensureAdminFromEnv() {
   const adminPass = process.env.ADMIN_PASS;
   const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
   if (!adminUser || !adminPass) return null;
-  const existing = await dolgozoRepo.findByUsername(adminUser);
-  if (existing) return existing;
-  const hash = await bcrypt.hash(adminPass, Number(process.env.BCRYPT_ROUNDS) || 10);
-  return dolgozoRepo.create({
-    DNev: "Admin",
-    Email: adminEmail,
-    FelhasznaloNev: adminUser,
-    JelszoHash: hash,
-    Szerepkor: ROLES.Admin,
-  });
+  
+  // Admin létrehozása
+  let adminResult = null;
+  const existingAdmin = await dolgozoRepo.findByUsername(adminUser);
+  if (!existingAdmin) {
+    const hash = await bcrypt.hash(adminPass, Number(process.env.BCRYPT_ROUNDS) || 10);
+    adminResult = await dolgozoRepo.create({
+      DNev: "Admin",
+      Email: adminEmail,
+      FelhasznaloNev: adminUser,
+      JelszoHash: hash,
+      Szerepkor: ROLES.Admin,
+    });
+  } else {
+    adminResult = existingAdmin;
+  }
+  
+  // Manager létrehozása ugyanazzal a jelszóval
+  const managerUser = process.env.MANAGER_USER || "manager";
+  const managerEmail = process.env.MANAGER_EMAIL || "manager@example.com";
+  const existingManager = await dolgozoRepo.findByUsername(managerUser);
+  if (!existingManager) {
+    const hash = await bcrypt.hash(adminPass, Number(process.env.BCRYPT_ROUNDS) || 10);
+    await dolgozoRepo.create({
+      DNev: "Manager",
+      Email: managerEmail,
+      FelhasznaloNev: managerUser,
+      JelszoHash: hash,
+      Szerepkor: ROLES.Manager,
+    });
+  }
+  
+  return adminResult;
 }
 
 module.exports = { register, login, ensureAdminFromEnv };

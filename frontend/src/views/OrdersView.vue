@@ -54,6 +54,9 @@ const L10n = {
       'MSG_LOADING': 'Rendelések betöltése...',
       'MSG_EMPTY': 'Nincs megjeleníthető rendelés.',
       'MSG_CONFIRM_COMPLETE': 'Biztosan teljesítettnek jelöli ezt a rendelést?',
+      'MSG_CONFIRM_CANCEL': 'Biztosan lemondja ezt a rendelést?',
+      'BTN_CANCEL_ORDER': 'Lemondás',
+      'MSG_SUCCESS_CANCEL': 'Rendelés sikeresen lemondva!',
       'MSG_SUCCESS_CREATE': 'Rendelés sikeresen leadva!',
       'ERR_FETCH_FAILED': 'Nem sikerült betölteni az adatokat.',
     };
@@ -97,6 +100,8 @@ const clothesOptions = ref([]);
 const showCreateModal = ref(false);
 const showConfirmModal = ref(false);
 const orderToComplete = ref(null);
+const showCancelModal = ref(false);
+const orderToCancel = ref(null);
 const showMessageModal = ref(false);
 const messageModalType = ref('success'); // 'success' | 'error'
 const messageModalText = ref('');
@@ -111,6 +116,7 @@ const createForm = reactive({
 const uiState = reactive({
   isSubmitting: false,
   completingId: null,
+  cancellingId: null,
 });
 
 const formErrors = ref({});
@@ -221,6 +227,35 @@ const handleConfirmComplete = async () => {
   }
 };
 
+const handleOpenCancelModal = (orderId) => {
+  orderToCancel.value = orderId;
+  showCancelModal.value = true;
+};
+
+const handleConfirmCancel = async () => {
+  if (!orderToCancel.value) return;
+
+  uiState.cancellingId = orderToCancel.value;
+  showCancelModal.value = false;
+
+  try {
+    await api.patch(`/rendelesek/${orderToCancel.value}/cancel`);
+    const order = items.value.find(o => o.RendelesID === orderToCancel.value);
+    if (order) order.Statusz = OrderStatus.LEMONDVA;
+    messageModalText.value = L10n.get('MSG_SUCCESS_CANCEL');
+    messageModalType.value = 'success';
+    showMessageModal.value = true;
+  } catch (error) {
+    console.error('Cancel failed:', error);
+    messageModalText.value = 'Hiba a lemondás során.';
+    messageModalType.value = 'error';
+    showMessageModal.value = true;
+  } finally {
+    uiState.cancellingId = null;
+    orderToCancel.value = null;
+  }
+};
+
 onMounted(() => {
   initializeView();
 });
@@ -286,6 +321,7 @@ onMounted(() => {
                 <th>{{ L10n.get('COL_ITEM') }}</th>
                 <th>{{ L10n.get('COL_QTY') }}</th>
                 <th>{{ L10n.get('COL_SUPPLIER') }}</th>
+                <th>Megjegyzés</th>
                 <th>{{ L10n.get('COL_STATUS') }}</th>
                 <th class="actions-col">{{ L10n.get('COL_ACTIONS') }}</th>
               </tr>
@@ -301,7 +337,14 @@ onMounted(() => {
                     <span>{{ L10n.formatDate(order.RDatum) }}</span>
                   </div>
                 </td>
-                <td class="font-medium">{{ order.Cikkszam }}</td>
+                <td class="font-medium">
+                  <template v-if="order.Ruha">
+                    {{ order.Ruha.Fajta }} - {{ order.Ruha.Szin }} ({{ order.Ruha.Meret }})
+                  </template>
+                  <template v-else>
+                    {{ order.Cikkszam }}
+                  </template>
+                </td>
                 <td>
                   <span class="qty">{{ L10n.formatNumber(order.Mennyiseg) }} db</span>
                 </td>
@@ -312,30 +355,49 @@ onMounted(() => {
                   </div>
                 </td>
                 <td>
+                  <span class="megjegyzes">{{ order.Megjegyzes || '-' }}</span>
+                </td>
+                <td>
                   <span :class="ThemeManager.getBadgeStyles(order.Statusz)">
                     {{ order.Statusz }}
                   </span>
                 </td>
                 <td class="actions-col">
-                  <button 
-                    v-if="order.Statusz === 'Leadva'" 
-                    @click="handleOpenConfirmModal(order.RendelesID)" 
-                    class="btn-complete"
-                    :disabled="uiState.completingId === order.RendelesID"
-                  >
-                    <div v-if="uiState.completingId === order.RendelesID" class="btn-spinner"></div>
-                    <CheckCircle v-else size="16" />
-                    <span>{{ L10n.get('BTN_COMPLETE') }}</span>
-                  </button>
-                  <span v-else class="status-done">
-                    <CheckCircle size="14" />
-                    {{ L10n.get('BTN_COMPLETE_SUCCESS') }}
-                  </span>
+                  <div class="action-buttons">
+                    <button 
+                      v-if="order.Statusz === 'Leadva'" 
+                      @click="handleOpenConfirmModal(order.RendelesID)" 
+                      class="btn-complete"
+                      :disabled="uiState.completingId === order.RendelesID"
+                    >
+                      <div v-if="uiState.completingId === order.RendelesID" class="btn-spinner"></div>
+                      <CheckCircle v-else size="16" />
+                      <span>{{ L10n.get('BTN_COMPLETE') }}</span>
+                    </button>
+                    <button 
+                      v-if="order.Statusz === 'Leadva'" 
+                      @click="handleOpenCancelModal(order.RendelesID)" 
+                      class="btn-cancel-order"
+                      :disabled="uiState.cancellingId === order.RendelesID"
+                    >
+                      <div v-if="uiState.cancellingId === order.RendelesID" class="btn-spinner"></div>
+                      <XCircle v-else size="16" />
+                      <span>{{ L10n.get('BTN_CANCEL_ORDER') }}</span>
+                    </button>
+                    <span v-if="order.Statusz === 'Teljesítve'" class="status-done">
+                      <CheckCircle size="14" />
+                      {{ L10n.get('BTN_COMPLETE_SUCCESS') }}
+                    </span>
+                    <span v-if="order.Statusz === 'Lemondva'" class="status-cancelled">
+                      <XCircle size="14" />
+                      Lemondva
+                    </span>
+                  </div>
                 </td>
               </tr>
 
               <tr v-if="isListEmpty && !isLoading">
-                <td colspan="7" class="empty-cell">
+                <td colspan="8" class="empty-cell">
                   <FileText size="48" />
                   <p>{{ L10n.get('MSG_EMPTY') }}</p>
                 </td>
@@ -444,6 +506,38 @@ onMounted(() => {
           >
             <div v-if="uiState.completingId === orderToComplete" class="btn-spinner"></div>
             <span v-else>{{ L10n.get('BTN_COMPLETE') }}</span>
+          </button>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Cancel Modal -->
+    <Modal 
+      :show="showCancelModal" 
+      title="Rendelés lemondása" 
+      @close="showCancelModal = false"
+    >
+      <template #body>
+        <div class="confirm-content">
+          <div class="confirm-icon-wrapper" style="background: #fee2e2; color: #dc2626;">
+             <XCircle size="48" />
+          </div>
+          <p class="confirm-title">{{ L10n.get('MSG_CONFIRM_CANCEL') }}</p>
+          <p class="confirm-subtitle">A lemondott rendelés nem állítható vissza és nem teljesíthető.</p>
+        </div>
+      </template>
+      <template #footer>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showCancelModal = false">
+            {{ L10n.get('BTN_CANCEL') }}
+          </button>
+          <button 
+            class="btn-danger" 
+            @click="handleConfirmCancel"
+            :disabled="uiState.cancellingId === orderToCancel"
+          >
+            <div v-if="uiState.cancellingId === orderToCancel" class="btn-spinner"></div>
+            <span v-else>{{ L10n.get('BTN_CANCEL_ORDER') }}</span>
           </button>
         </div>
       </template>
@@ -716,6 +810,12 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
 .btn-complete {
   display: inline-flex;
   align-items: center;
@@ -757,6 +857,72 @@ onMounted(() => {
   color: var(--color-text-muted);
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+.status-cancelled {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.btn-cancel-order {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 0.5rem 1rem;
+  border-radius: 0.625rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 1px solid #fecaca;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel-order:hover:not(:disabled) {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-cancel-order:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.625rem;
+  background: #dc2626;
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9375rem;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.megjegyzes {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-style: italic;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
 }
 
 .empty-cell {

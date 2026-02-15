@@ -52,6 +52,7 @@ async function monthlyExpenses(year, month) {
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0, 23, 59, 59, 999);
 
+  // 1. Tényleges kiadások (RuhaKiBe)
   const expenses = await models.RuhaKiBe.findAll({
     where: {
       KiadasDatum: { [Op.between]: [start, end] },
@@ -68,7 +69,7 @@ async function monthlyExpenses(year, month) {
     ],
   });
 
-  // Calculate total expense
+  // Calculate total expense from issued clothes
   let totalExpense = 0;
   const detailedExpenses = expenses.map(item => {
     const ar = item.Ruha ? parseFloat(item.Ruha.Ar || 0) : 0;
@@ -85,7 +86,54 @@ async function monthlyExpenses(year, month) {
     };
   });
 
-  return { expenses: detailedExpenses, totalExpense };
+  // 2. Raktárkészlet értéke
+  const inventory = await models.Raktar.findAll({
+    include: [
+      {
+        model: models.Ruha,
+        attributes: ["Fajta", "Ar"],
+      },
+    ],
+  });
+
+  let inventoryValue = 0;
+  inventory.forEach(item => {
+    const ar = item.Ruha ? parseFloat(item.Ruha.Ar || 0) : 0;
+    const mennyiseg = item.Mennyiseg || 0;
+    inventoryValue += ar * mennyiseg;
+  });
+
+  // 3. Szállításban lévő rendelések értéke (Leadva státusz)
+  const pendingOrders = await models.Rendeles.findAll({
+    where: {
+      Statusz: 'Leadva',
+      RDatum: { [Op.lte]: end },
+    },
+    include: [
+      {
+        model: models.Ruha,
+        attributes: ["Ar"],
+      },
+    ],
+  });
+
+  let pendingOrdersValue = 0;
+  pendingOrders.forEach(order => {
+    const ar = order.Ruha ? parseFloat(order.Ruha.Ar || 0) : 0;
+    const mennyiseg = order.Mennyiseg || 0;
+    pendingOrdersValue += ar * mennyiseg;
+  });
+
+  // Teljes kiadás = kiadott ruhák + raktárkészlet
+  const totalWithInventory = totalExpense + inventoryValue;
+
+  return { 
+    expenses: detailedExpenses, 
+    totalExpense: totalWithInventory,
+    issuedExpense: totalExpense,
+    inventoryValue: inventoryValue,
+    pendingOrdersValue: pendingOrdersValue
+  };
 }
 
 // Éves kiadások riport
@@ -93,6 +141,7 @@ async function yearlyExpenses(year) {
   const start = new Date(year, 0, 1);
   const end = new Date(year, 11, 31, 23, 59, 59, 999);
 
+  // 1. Tényleges kiadások (RuhaKiBe)
   const expenses = await models.RuhaKiBe.findAll({
     where: {
       KiadasDatum: { [Op.between]: [start, end] },
@@ -105,7 +154,7 @@ async function yearlyExpenses(year) {
     ],
   });
 
-  // Calculate total expense
+  // Calculate total expense from issued clothes
   let totalExpense = 0;
   const monthlyBreakdown = {};
 
@@ -124,7 +173,54 @@ async function yearlyExpenses(year) {
     monthlyBreakdown[month] += total;
   });
 
-  return { totalExpense, monthlyBreakdown };
+  // 2. Raktárkészlet értéke
+  const inventory = await models.Raktar.findAll({
+    include: [
+      {
+        model: models.Ruha,
+        attributes: ["Ar"],
+      },
+    ],
+  });
+
+  let inventoryValue = 0;
+  inventory.forEach(item => {
+    const ar = item.Ruha ? parseFloat(item.Ruha.Ar || 0) : 0;
+    const mennyiseg = item.Mennyiseg || 0;
+    inventoryValue += ar * mennyiseg;
+  });
+
+  // 3. Szállításban lévő rendelések értéke (Leadva státusz)
+  const pendingOrders = await models.Rendeles.findAll({
+    where: {
+      Statusz: 'Leadva',
+      RDatum: { [Op.lte]: end },
+    },
+    include: [
+      {
+        model: models.Ruha,
+        attributes: ["Ar"],
+      },
+    ],
+  });
+
+  let pendingOrdersValue = 0;
+  pendingOrders.forEach(order => {
+    const ar = order.Ruha ? parseFloat(order.Ruha.Ar || 0) : 0;
+    const mennyiseg = order.Mennyiseg || 0;
+    pendingOrdersValue += ar * mennyiseg;
+  });
+
+  // Teljes kiadás = kiadott ruhák + raktárkészlet
+  const totalWithInventory = totalExpense + inventoryValue;
+
+  return { 
+    totalExpense: totalWithInventory,
+    issuedExpense: totalExpense,
+    inventoryValue: inventoryValue,
+    pendingOrdersValue: pendingOrdersValue,
+    monthlyBreakdown 
+  };
 }
 
 // Féléves kiadások riport
@@ -141,6 +237,7 @@ async function halfYearExpenses(year, half) {
   const start = new Date(year, startMonth, 1);
   const end = new Date(year, endMonth + 1, 0, 23, 59, 59, 999);
 
+  // 1. Tényleges kiadások (RuhaKiBe)
   const expenses = await models.RuhaKiBe.findAll({
     where: {
       KiadasDatum: { [Op.between]: [start, end] },
@@ -153,7 +250,7 @@ async function halfYearExpenses(year, half) {
     ],
   });
 
-  // Calculate total expense
+  // Calculate total expense from issued clothes
   let totalExpense = 0;
   const monthlyBreakdown = {};
 
@@ -172,7 +269,55 @@ async function halfYearExpenses(year, half) {
     monthlyBreakdown[month] += total;
   });
 
-  return { totalExpense, monthlyBreakdown, half };
+  // 2. Raktárkészlet értéke
+  const inventory = await models.Raktar.findAll({
+    include: [
+      {
+        model: models.Ruha,
+        attributes: ["Ar"],
+      },
+    ],
+  });
+
+  let inventoryValue = 0;
+  inventory.forEach(item => {
+    const ar = item.Ruha ? parseFloat(item.Ruha.Ar || 0) : 0;
+    const mennyiseg = item.Mennyiseg || 0;
+    inventoryValue += ar * mennyiseg;
+  });
+
+  // 3. Szállításban lévő rendelések értéke (Leadva státusz)
+  const pendingOrders = await models.Rendeles.findAll({
+    where: {
+      Statusz: 'Leadva',
+      RDatum: { [Op.lte]: end },
+    },
+    include: [
+      {
+        model: models.Ruha,
+        attributes: ["Ar"],
+      },
+    ],
+  });
+
+  let pendingOrdersValue = 0;
+  pendingOrders.forEach(order => {
+    const ar = order.Ruha ? parseFloat(order.Ruha.Ar || 0) : 0;
+    const mennyiseg = order.Mennyiseg || 0;
+    pendingOrdersValue += ar * mennyiseg;
+  });
+
+  // Teljes kiadás = kiadott ruhák + raktárkészlet
+  const totalWithInventory = totalExpense + inventoryValue;
+
+  return { 
+    totalExpense: totalWithInventory,
+    issuedExpense: totalExpense,
+    inventoryValue: inventoryValue,
+    pendingOrdersValue: pendingOrdersValue,
+    monthlyBreakdown, 
+    half 
+  };
 }
 
 // Aktuális készlet értéke

@@ -51,5 +51,11 @@
 - [ ] **Debug:** Hibák keresése és javítása
 - [ ] **Clean Code:** Felesleges, nem használt fájlok és kódmaradványok törlése.
 - [ ] **Záró dokumentáció:** Miután a fenti fejlesztések készek, a teljes technikai dokumentáció frissítése és összesítése.
+
+---
+
+## 📝 Továbbfejlesztési ötletek
+- [ ] **Jobb hibakiírás:** A felhasználó számára érthető, barátságos hibaüzenetek megjelenítése műveletek során.
+- [ ] **Manager jogosultságok:** A Manager szerepkör részletesebb beállítása – pontos meghatározása, hogy mit csinálhat és hogyan (pl. milyen adatokat módosíthat, milyen jelentéseket láthat).
 ---
 
