@@ -103,45 +103,45 @@ async function main() {
     // ============================================
     console.log('3. Ruhák létrehozása (30 különböző típus)...');
 
-    // Előre definiált ruhák (cikkszámok 1000000-tól kezdődnek)
+    // Előre definiált ruhák (cikkszámok 1000000-tól kezdődnek) - Árakkal
     const ruhaDefinitions = [
-        { fajta: 'Póló', szin: 'Fehér', meret: 'S' },
-        { fajta: 'Póló', szin: 'Fehér', meret: 'M' },
-        { fajta: 'Póló', szin: 'Fehér', meret: 'L' },
-        { fajta: 'Póló', szin: 'Fehér', meret: 'XL' },
-        { fajta: 'Póló', szin: 'Kék', meret: 'M' },
-        { fajta: 'Póló', szin: 'Kék', meret: 'L' },
-        { fajta: 'Póló', szin: 'Kék', meret: 'XL' },
-        { fajta: 'Póló', szin: 'Fekete', meret: 'L' },
-        { fajta: 'Póló', szin: 'Fekete', meret: 'XL' },
+        { fajta: 'Póló', szin: 'Fehér', meret: 'S', ar: 3500 },
+        { fajta: 'Póló', szin: 'Fehér', meret: 'M', ar: 3500 },
+        { fajta: 'Póló', szin: 'Fehér', meret: 'L', ar: 3500 },
+        { fajta: 'Póló', szin: 'Fehér', meret: 'XL', ar: 3900 },
+        { fajta: 'Póló', szin: 'Kék', meret: 'M', ar: 3500 },
+        { fajta: 'Póló', szin: 'Kék', meret: 'L', ar: 3500 },
+        { fajta: 'Póló', szin: 'Kék', meret: 'XL', ar: 3900 },
+        { fajta: 'Póló', szin: 'Fekete', meret: 'L', ar: 3700 },
+        { fajta: 'Póló', szin: 'Fekete', meret: 'XL', ar: 3900 },
         
-        { fajta: 'Nadrág', szin: 'Kék', meret: '30' },
-        { fajta: 'Nadrág', szin: 'Kék', meret: '32' },
-        { fajta: 'Nadrág', szin: 'Kék', meret: '34' },
-        { fajta: 'Nadrág', szin: 'Fekete', meret: '32' },
-        { fajta: 'Nadrág', szin: 'Fekete', meret: '34' },
-        { fajta: 'Nadrág', szin: 'Szürke', meret: '32' },
+        { fajta: 'Nadrág', szin: 'Kék', meret: '30', ar: 8900 },
+        { fajta: 'Nadrág', szin: 'Kék', meret: '32', ar: 8900 },
+        { fajta: 'Nadrág', szin: 'Kék', meret: '34', ar: 9200 },
+        { fajta: 'Nadrág', szin: 'Fekete', meret: '32', ar: 9500 },
+        { fajta: 'Nadrág', szin: 'Fekete', meret: '34', ar: 9800 },
+        { fajta: 'Nadrág', szin: 'Szürke', meret: '32', ar: 9200 },
         
-        { fajta: 'Cipő', szin: 'Fekete', meret: '40' },
-        { fajta: 'Cipő', szin: 'Fekete', meret: '42' },
-        { fajta: 'Cipő', szin: 'Fekete', meret: '43' },
-        { fajta: 'Cipő', szin: 'Fekete', meret: '44' },
-        { fajta: 'Cipő', szin: 'Barna', meret: '42' },
-        { fajta: 'Cipő', szin: 'Barna', meret: '43' },
+        { fajta: 'Cipő', szin: 'Fekete', meret: '40', ar: 18500 },
+        { fajta: 'Cipő', szin: 'Fekete', meret: '42', ar: 18500 },
+        { fajta: 'Cipő', szin: 'Fekete', meret: '43', ar: 18900 },
+        { fajta: 'Cipő', szin: 'Fekete', meret: '44', ar: 18900 },
+        { fajta: 'Cipő', szin: 'Barna', meret: '42', ar: 17500 },
+        { fajta: 'Cipő', szin: 'Barna', meret: '43', ar: 17500 },
         
-        { fajta: 'Kabát', szin: 'Sárga', meret: 'M' },
-        { fajta: 'Kabát', szin: 'Sárga', meret: 'L' },
-        { fajta: 'Kabát', szin: 'Narancs', meret: 'L' },
-        { fajta: 'Kabát', szin: 'Narancs', meret: 'XL' },
+        { fajta: 'Kabát', szin: 'Sárga', meret: 'M', ar: 24500 },
+        { fajta: 'Kabát', szin: 'Sárga', meret: 'L', ar: 24900 },
+        { fajta: 'Kabát', szin: 'Narancs', meret: 'L', ar: 22900 },
+        { fajta: 'Kabát', szin: 'Narancs', meret: 'XL', ar: 23500 },
         
-        { fajta: 'Mellény', szin: 'Narancs', meret: 'M' },
-        { fajta: 'Mellény', szin: 'Narancs', meret: 'L' },
+        { fajta: 'Mellény', szin: 'Narancs', meret: 'M', ar: 12500 },
+        { fajta: 'Mellény', szin: 'Narancs', meret: 'L', ar: 12900 },
         
-        { fajta: 'Kesztyű', szin: 'Kombinált', meret: 'S' },
-        { fajta: 'Kesztyű', szin: 'Kombinált', meret: 'M' },
-        { fajta: 'Kesztyű', szin: 'Kombinált', meret: 'L' },
+        { fajta: 'Kesztyű', szin: 'Kombinált', meret: 'S', ar: 2900 },
+        { fajta: 'Kesztyű', szin: 'Kombinált', meret: 'M', ar: 2900 },
+        { fajta: 'Kesztyű', szin: 'Kombinált', meret: 'L', ar: 3200 },
         
-        { fajta: 'Sapka', szin: 'Kék', meret: 'Egy méret' },
+        { fajta: 'Sapka', szin: 'Kék', meret: 'Egy méret', ar: 2400 },
     ];
 
     const createdClothes = [];
@@ -154,7 +154,8 @@ async function main() {
                 Szin: def.szin,
                 Meret: def.meret,
                 Mennyiseg: mennyiseg,
-                Minoseg: 'Új'
+                Minoseg: 'Új',
+                Ar: def.ar
             };
 
             const res = await fetch(`${BASE_URL}/ruhak`, {
@@ -170,7 +171,8 @@ async function main() {
                     Fajta: def.fajta,
                     Szin: def.szin,
                     Meret: def.meret,
-                    Mennyiseg: mennyiseg
+                    Mennyiseg: mennyiseg,
+                    Ar: def.ar
                 });
                 process.stdout.write('+');
             } else {
@@ -468,6 +470,10 @@ async function main() {
     console.log(`   • Visszavett ruhák: ${visszavetelCount} db`);
     console.log(`   • Rendelések: ${rendelesCount} db`);
     console.log(`   • Extra kiadások: ${extraKiadCount} db`);
+    console.log(`\n💰 Ruhák árai:`);
+    const arOsszesen = createdClothes.reduce((sum, r) => sum + (r.Ar || 0), 0);
+    console.log(`   • Átlagár: ${Math.round(arOsszesen / createdClothes.length)} Ft`);
+    console.log(`   • Árkategóriák: Kesztyű/Sapka: ~2-3000 Ft, Póló: ~3500 Ft, Nadrág: ~9000 Ft, Mellény: ~12000 Ft, Kabát: ~23000 Ft, Cipő: ~18000 Ft`);
     console.log(`\n👥 Szerepkörök:`);
     const adminCount = createdUsers.filter(u => u.Szerepkor === 'Admin').length;
     const managerCount = createdUsers.filter(u => u.Szerepkor === 'Manager').length;

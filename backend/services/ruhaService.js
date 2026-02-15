@@ -55,7 +55,7 @@ async function getOptions() {
 }
 
 async function create(data) {
-  // Data: Fajta, Szin, Meret, Mennyiseg (optional), Minoseg (optional, default Új)
+  // Data: Fajta, Szin, Meret, Mennyiseg (optional), Minoseg (optional, default Új), Ar (optional)
 
   // Check for duplicates
   const existing = await ruhaRepo.findByAttributes(data);
@@ -86,6 +86,11 @@ async function create(data) {
   }
 
   data.Cikkszam = cikkszam;
+  
+  // Set default Ar if not provided
+  if (data.Ar === undefined || data.Ar === null || data.Ar === '') {
+    data.Ar = 0;
+  }
 
   // Create Ruha
   const ruha = await ruhaRepo.create(data);
@@ -106,6 +111,11 @@ async function create(data) {
 }
 
 async function update(cikkszam, data) {
+  // Handle Ar field - convert empty string to 0
+  if (data.Ar === undefined || data.Ar === null || data.Ar === '') {
+    data.Ar = 0;
+  }
+  
   // Update Ruha details
   const updatedRuha = await ruhaRepo.update(cikkszam, data);
   if (!updatedRuha) return null;

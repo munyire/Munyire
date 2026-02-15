@@ -27,7 +27,8 @@ const form = ref({
   Meret: '',
   Szin: '',
   Mennyiseg: 0,
-  Minoseg: 'Új'
+  Minoseg: 'Új',
+  Ar: 0
 });
 
 const fetchClothes = async () => {
@@ -67,7 +68,6 @@ const filteredClothes = computed(() => {
   if (!searchQuery.value) return clothes.value;
   const q = searchQuery.value.toLowerCase();
   return clothes.value.filter(item => 
-    item.Cikkszam.toLowerCase().includes(q) ||
     item.Fajta.toLowerCase().includes(q)
   );
 });
@@ -81,7 +81,8 @@ const openAddModal = () => {
     Meret: '',
     Szin: '',
     Mennyiseg: 0,
-    Minoseg: 'Új'
+    Minoseg: 'Új',
+    Ar: 0
   };
   showModal.value = true;
 };
@@ -157,7 +158,7 @@ onMounted(fetchClothes);
         <input 
           v-model="searchQuery" 
           type="text" 
-          placeholder="Keresés cikkszám vagy név alapján..." 
+          placeholder="Keresés fajta alapján..." 
           class="search-input"
         />
       </div>
@@ -181,6 +182,7 @@ onMounted(fetchClothes);
               <th>Szín</th>
               <th>Minőség</th>
               <th>Mennyiség</th>
+              <th>Ár (Ft)</th>
               <th class="actions-col">Műveletek</th>
             </tr>
           </thead>
@@ -198,6 +200,7 @@ onMounted(fetchClothes);
                 }">{{ item.Minoseg }}</span>
               </td>
               <td class="font-semibold">{{ item.Mennyiseg }} db</td>
+              <td class="font-semibold">{{ item.Ar ? Number(item.Ar).toLocaleString('hu-HU') : 0 }} Ft</td>
               <td class="actions-col">
                 <div class="action-buttons">
                   <button @click="openEditModal(item)" class="btn-edit" title="Szerkesztés">
@@ -210,7 +213,7 @@ onMounted(fetchClothes);
               </td>
             </tr>
             <tr v-if="filteredClothes.length === 0 && !loading">
-              <td colspan="7" class="empty-cell">Nincs megjeleníthető elem.</td>
+              <td colspan="8" class="empty-cell">Nincs megjeleníthető elem.</td>
             </tr>
           </tbody>
         </table>
@@ -258,6 +261,10 @@ onMounted(fetchClothes);
               <option value="Jó">Jó</option>
               <option value="Szakadt">Szakadt</option>
             </select>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label">Ár (Ft)</label>
+            <input type="number" v-model="form.Ar" min="0" step="1" class="form-input" placeholder="0" />
           </div>
         </form>
       </template>
@@ -370,6 +377,8 @@ onMounted(fetchClothes);
   flex: 1;
   max-width: 400px;
   transition: all 0.2s;
+  height: 48px;
+  box-sizing: border-box;
 }
 
 .search-box:focus-within {
@@ -400,7 +409,7 @@ onMounted(fetchClothes);
   gap: 0.5rem;
   background: #1e3a8a;
   color: white;
-  padding: 0.875rem 1.5rem;
+  padding: 0 1.5rem;
   border-radius: 1rem;
   font-weight: 700;
   font-size: 0.9375rem;
@@ -408,6 +417,8 @@ onMounted(fetchClothes);
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+  height: 48px;
+  box-sizing: border-box;
 }
 
 .btn-add:hover {

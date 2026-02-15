@@ -6,7 +6,7 @@
 ---
 
 ## 📦 Készletkezelés
-- [ ] **Egységes UI:** A keresődoboz és az "Új termék felvétele" box legyen azonos méretű.
+- [x] **Egységes UI:** A keresődoboz és az "Új termék felvétele" box legyen azonos méretű.
 - [x] **UX javítás:** A törlés megerősítése ne böngészős `alertbox`-ban, hanem egyedi modálban jelenjen meg.
 - [x] **Szelektív törlés:** Törlésnél ne a teljes termék törlődjön, hanem **csak az adott minőségű** tétel.
 - [x] **Logikai összefűzés:** Módosításkor, ha megváltozik a minőség, a rendszer adja hozzá a darabszámot a már meglévő, azonos minőségű rekordhoz.
@@ -27,7 +27,7 @@
 ### Rendelés
 - [x] **UI szinkron:** A keresődoboz és az "Új rendelés felvétele" box legyen azonos méretű.
 - [x] **Visszajelzés:** Az átvétel gomb ne `alertbox`-ot használjon a megerősítéshez.
-- [ ] **Visszajelzés:** Az uj rendelés leadása gomb ne `alertbox`-ot használjon.
+- [x] **Visszajelzés:** Az uj rendelés leadása gomb ne `alertbox`-ot használjon.
 
 ---
 
@@ -40,12 +40,12 @@
 # V2 Pénz update
 
 ## A ruhák árainek hozzáadása:. Fontos hogy a ruha táblában legyen tárolva az ára.
-- [ ] Adatbázis frissítése: ruha táblában ár oszloppal
-- [ ] Backend és frontend frisítése hogy ruha felvételeko hozzá lehessen adni a ruha árát.
+- [x] Adatbázis frissítése: ruha táblában ár oszloppal
+- [x] Backend és frontend frisítése hogy ruha felvételeko hozzá lehessen adni a ruha árát.
 ---
 ## Jelentés ablak hozzáadása
-- [ ] Jelentés fül: Statisztikák és kimutatások generálása
-- [ ] Havi, éves, féléves kiadások
+- [x] Jelentés fül: Statisztikák és kimutatások generálása
+- [x] Havi, éves, féléves kiadások
 
 ## 🧹 Karbantartás & Dokumentáció
 - [ ] **Debug:** Hibák keresése és javítása

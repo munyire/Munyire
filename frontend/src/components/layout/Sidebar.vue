@@ -11,6 +11,7 @@ import {
   LogOut,
   MoveHorizontal,
   ShoppingCart,
+  FileText,
   X,
   Sun,
   Moon
@@ -109,6 +110,11 @@ const navigate = (path) => {
         <button @click="navigate('/orders')" class="nav-item" :class="{ active: isActive('/orders') }">
           <ShoppingCart :size="isMobile ? 24 : 22" />
           <span>Rendelések</span>
+        </button>
+
+        <button @click="navigate('/reports')" class="nav-item" :class="{ active: isActive('/reports') }">
+          <FileText :size="isMobile ? 24 : 22" />
+          <span>Jelentések</span>
         </button>
       </template>
 
