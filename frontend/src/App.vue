@@ -228,4 +228,11 @@ onUnmounted(() => {
     height: 4px;
   }
 }
+
+/* ===== Print Styles =====
+ * Printing is now handled via iframe in PrintTemplate.vue.
+ * The print document is rendered in a separate, isolated iframe
+ * which guarantees only the document content is printed.
+ * No @media print rules needed here.
+ */
 </style>

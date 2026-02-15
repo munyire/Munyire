@@ -14,9 +14,12 @@ import {
   User,
   ChevronRight,
   ChevronLeft,
-  X
+  X,
+  Shirt,
+  Printer
 } from 'lucide-vue-next';
 import Modal from '../components/ui/Modal.vue';
+import PrintTemplate from '../components/PrintTemplate.vue';
 
 const workers = ref([]);
 const loading = ref(true);
@@ -98,7 +101,57 @@ const selectWorker = (worker) => {
   if (isMobile.value) {
     showMobileDetail.value = true;
   }
+  fetchClothingHistory(worker.DolgozoID);
 };
+
+// ===== CLOTHING HISTORY =====
+const clothingHistory = ref([]);
+const historyLoading = ref(false);
+const showWorkerReceipt = ref(false);
+
+const fetchClothingHistory = async (dolgozoId) => {
+  historyLoading.value = true;
+  try {
+    const res = await api.get(`/dolgozok/${dolgozoId}/ruhak`);
+    clothingHistory.value = res.data;
+  } catch (err) {
+    console.error('Error fetching clothing history:', err);
+    clothingHistory.value = [];
+  } finally {
+    historyLoading.value = false;
+  }
+};
+
+const activeClothes = computed(() => 
+  clothingHistory.value.filter(item => !item.VisszaDatum)
+);
+
+const returnedClothes = computed(() => 
+  clothingHistory.value.filter(item => item.VisszaDatum)
+);
+
+const workerReceiptColumns = [
+  { key: 'Fajta', label: 'Ruha t\u00edpusa' },
+  { key: 'Cikkszam', label: 'Cikksz\u00e1m' },
+  { key: 'Mennyiseg', label: 'Mennyis\u00e9g' },
+  { key: 'KiadasDatum', label: 'Kiad\u00e1s d\u00e1tuma' },
+  { key: 'Indok', label: 'Indok' },
+];
+
+const workerReceiptData = computed(() => {
+  return activeClothes.value.map(item => ({
+    Fajta: item.Ruha?.Fajta || 'Ismeretlen',
+    Cikkszam: item.Ruha?.Cikkszam || item.Cikkszam || '-',
+    Mennyiseg: `${item.Mennyiseg || 1} db`,
+    KiadasDatum: new Date(item.KiadasDatum).toLocaleDateString('hu-HU'),
+    Indok: item.Indok || '-',
+  }));
+});
+
+const workerReceiptSummary = computed(() => {
+  const total = activeClothes.value.reduce((sum, item) => sum + (item.Mennyiseg || 1), 0);
+  return `${total} db`;
+});
 
 const closeMobileDetail = () => {
   showMobileDetail.value = false;
@@ -359,6 +412,84 @@ const confirmDelete = async () => {
                 </div>
               </div>
             </div>
+
+            <!-- Clothing History Section -->
+            <div class="history-section">
+              <div class="history-header">
+                <h3 class="history-title">
+                  <Shirt size="20" />
+                  Ruhakiadási előzmények
+                </h3>
+                <button v-if="activeClothes.length > 0" class="btn-receipt" @click="showWorkerReceipt = true">
+                  <Printer size="16" />
+                  <span>Átvételi lap</span>
+                </button>
+              </div>
+
+              <div v-if="historyLoading" class="history-loading">Betöltés...</div>
+
+              <!-- Active items -->
+              <div v-if="activeClothes.length > 0" class="history-group">
+                <h4 class="group-label">Jelenleg kint lévő ruhák ({{ activeClothes.length }})</h4>
+                <div class="history-table-wrap">
+                  <table class="history-table">
+                    <thead>
+                      <tr>
+                        <th>Ruha</th>
+                        <th>Cikkszám</th>
+                        <th>Db</th>
+                        <th>Kiadás</th>
+                        <th>Indok</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="item in activeClothes" :key="item.RuhaKiBeID">
+                        <td class="fw-600">{{ item.Ruha?.Fajta || 'Ismeretlen' }}</td>
+                        <td class="mono">{{ item.Ruha?.Cikkszam || item.Cikkszam }}</td>
+                        <td>{{ item.Mennyiseg || 1 }}</td>
+                        <td>{{ new Date(item.KiadasDatum).toLocaleDateString('hu-HU') }}</td>
+                        <td class="muted">{{ item.Indok || '-' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Returned items -->
+              <div v-if="returnedClothes.length > 0" class="history-group">
+                <h4 class="group-label">Visszavett ruhák ({{ returnedClothes.length }})</h4>
+                <div class="history-table-wrap">
+                  <table class="history-table">
+                    <thead>
+                      <tr>
+                        <th>Ruha</th>
+                        <th>Cikkszám</th>
+                        <th>Db</th>
+                        <th>Kiadás</th>
+                        <th>Visszavétel</th>
+                        <th>Minőség</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="item in returnedClothes" :key="item.RuhaKiBeID">
+                        <td class="fw-600">{{ item.Ruha?.Fajta || 'Ismeretlen' }}</td>
+                        <td class="mono">{{ item.Ruha?.Cikkszam || item.Cikkszam }}</td>
+                        <td>{{ item.Mennyiseg || 1 }}</td>
+                        <td>{{ new Date(item.KiadasDatum).toLocaleDateString('hu-HU') }}</td>
+                        <td>{{ new Date(item.VisszaDatum).toLocaleDateString('hu-HU') }}</td>
+                        <td>
+                          <span class="quality-badge" :class="'q-' + (item.RuhaMinoseg || 'unknown').toLowerCase()">{{ item.RuhaMinoseg || '-' }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div v-if="!historyLoading && clothingHistory.length === 0" class="history-empty">
+                Nincs ruhakiadási előzmény.
+              </div>
+            </div>
           </div>
         </div>
 
@@ -455,6 +586,19 @@ const confirmDelete = async () => {
         </div>
       </template>
     </Modal>
+
+    <!-- Worker Receipt Print -->
+    <PrintTemplate
+      :visible="showWorkerReceipt"
+      :title="'Átvételi elismervény – ' + (selectedWorker?.DNev || '')"
+      subtitle="Munkaruha kiadás igazolása"
+      :period="new Date().toLocaleDateString('hu-HU')"
+      :columns="workerReceiptColumns"
+      :data="workerReceiptData"
+      summary-label="Összes kiadott tétel"
+      :summary-value="workerReceiptSummary"
+      @close="showWorkerReceipt = false"
+    />
   </div>
 </template>
 
@@ -915,6 +1059,133 @@ const confirmDelete = async () => {
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--color-text-muted);
+}
+
+/* Clothing History Section */
+.history-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.history-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.btn-receipt {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-receipt:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
+}
+
+.history-loading {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.history-group {
+  margin-bottom: 1.25rem;
+}
+
+.group-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem;
+}
+
+.history-table-wrap {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.history-table th {
+  padding: 0.5rem 0.625rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.history-table td {
+  padding: 0.5rem 0.625rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.history-table tr:last-child td {
+  border-bottom: none;
+}
+
+.history-table .fw-600 { font-weight: 600; }
+.history-table .mono { font-family: monospace; color: var(--color-primary); font-weight: 600; }
+.history-table .muted { color: var(--color-text-muted); font-style: italic; }
+
+.quality-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.q-új { background: #dcfce7; color: #166534; }
+.q-jó { background: #dbeafe; color: #1e40af; }
+.q-használt { background: #fef3c7; color: #92400e; }
+.q-kopott { background: #fed7aa; color: #9a3412; }
+.q-szakadt { background: #fecaca; color: #991b1b; }
+.q-selejt { background: #f3e8ff; color: #6b21a8; }
+.q-unknown { background: var(--color-bg); color: var(--color-text-muted); }
+
+.history-empty {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 0.875rem;
 }
 
 /* Form Styles */

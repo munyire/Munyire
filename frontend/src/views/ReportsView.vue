@@ -7,8 +7,10 @@ import {
   Package, 
   Calendar,
   ChevronDown,
-  Download
+  Download,
+  Printer
 } from 'lucide-vue-next';
+import PrintTemplate from '../components/PrintTemplate.vue';
 
 const loading = ref(true);
 const activeTab = ref('monthly'); // monthly, yearly, halfyear, inventory
@@ -149,6 +151,169 @@ const inventoryTypeList = computed(() => {
     .sort((a, b) => b[1].value - a[1].value);
 });
 
+// ===== PRINT FUNCTIONALITY =====
+const showPrintPreview = ref(false);
+
+const printTitle = computed(() => {
+  switch (activeTab.value) {
+    case 'monthly': return 'Havi kiadási kimutatás';
+    case 'yearly': return 'Éves költségösszesítő';
+    case 'halfyear': return 'Féléves kimutatás';
+    case 'inventory': return 'Készletleltár';
+    default: return 'Jelentés';
+  }
+});
+
+const printPeriod = computed(() => {
+  switch (activeTab.value) {
+    case 'monthly': return `${selectedYear.value}. ${monthNames[selectedMonth.value - 1]}`;
+    case 'yearly': return `${selectedYear.value}. év`;
+    case 'halfyear': return `${selectedYear.value}. ${selectedHalf.value === 1 ? 'I.' : 'II.'} félév`;
+    case 'inventory': return 'Aktuális állapot';
+    default: return '';
+  }
+});
+
+const printColumns = computed(() => {
+  switch (activeTab.value) {
+    case 'monthly':
+      return [
+        { key: 'KiadasDatum', label: 'Dátum' },
+        { key: 'DolgozoNev', label: 'Dolgozó' },
+        { key: 'Fajta', label: 'Ruha fajta' },
+        { key: 'Mennyiseg', label: 'Mennyiség' },
+        { key: 'Ar', label: 'Egységár', align: 'text-right' },
+        { key: 'Total', label: 'Összesen', align: 'text-right' },
+      ];
+    case 'yearly':
+    case 'halfyear':
+      return [
+        { key: 'month', label: 'Hónap' },
+        { key: 'value', label: 'Kiadás', align: 'text-right' },
+      ];
+    case 'inventory':
+      return [
+        { key: 'type', label: 'Fajta' },
+        { key: 'quantity', label: 'Mennyiség' },
+        { key: 'value', label: 'Érték', align: 'text-right' },
+      ];
+    default: return [];
+  }
+});
+
+const printData = computed(() => {
+  switch (activeTab.value) {
+    case 'monthly':
+      return monthlyData.value.expenses.map(item => ({
+        KiadasDatum: formatDate(item.KiadasDatum),
+        DolgozoNev: item.DolgozoNev,
+        Fajta: item.Fajta,
+        Mennyiseg: `${item.Mennyiseg} db`,
+        Ar: `${formatCurrency(item.Ar)} Ft`,
+        Total: `${formatCurrency(item.Total)} Ft`,
+      }));
+    case 'yearly':
+      return monthNames.map((name, i) => ({
+        month: name,
+        value: `${formatCurrency(yearlyData.value.monthlyBreakdown[i + 1] || 0)} Ft`,
+      }));
+    case 'halfyear': {
+      const startM = selectedHalf.value === 1 ? 0 : 6;
+      const endM = selectedHalf.value === 1 ? 6 : 12;
+      return monthNames.slice(startM, endM).map((name, i) => ({
+        month: name,
+        value: `${formatCurrency(halfYearData.value.monthlyBreakdown[startM + i + 1] || 0)} Ft`,
+      }));
+    }
+    case 'inventory':
+      return inventoryTypeList.value.map(([type, data]) => ({
+        type,
+        quantity: `${data.quantity} db`,
+        value: `${formatCurrency(data.value)} Ft`,
+      }));
+    default: return [];
+  }
+});
+
+const printSummaryValue = computed(() => {
+  switch (activeTab.value) {
+    case 'monthly': return `${formatCurrency(monthlyData.value.totalExpense)} Ft`;
+    case 'yearly': return `${formatCurrency(yearlyData.value.totalExpense)} Ft`;
+    case 'halfyear': return `${formatCurrency(halfYearData.value.totalExpense)} Ft`;
+    case 'inventory': return `${formatCurrency(inventoryData.value.totalValue)} Ft`;
+    default: return '';
+  }
+});
+
+const printExtraSummaries = computed(() => {
+  const currentData = activeTab.value === 'monthly' ? monthlyData.value 
+    : activeTab.value === 'yearly' ? yearlyData.value 
+    : activeTab.value === 'halfyear' ? halfYearData.value 
+    : null;
+  
+  if (!currentData) {
+    if (activeTab.value === 'inventory') {
+      return [{ label: 'Különböző tételek', value: `${inventoryData.value.itemCount} db` }];
+    }
+    return [];
+  }
+  
+  const extras = [];
+  if (currentData.issuedExpense !== undefined) {
+    extras.push({ label: 'Kiadott ruhák értéke', value: `${formatCurrency(currentData.issuedExpense)} Ft` });
+  }
+  if (currentData.inventoryValue !== undefined) {
+    extras.push({ label: 'Raktárkészlet értéke', value: `${formatCurrency(currentData.inventoryValue)} Ft` });
+  }
+  if (currentData.pendingOrdersValue) {
+    extras.push({ label: 'Szállításban', value: `${formatCurrency(currentData.pendingOrdersValue)} Ft` });
+  }
+  return extras;
+});
+
+const openPrintPreview = () => {
+  showPrintPreview.value = true;
+};
+
+const closePrintPreview = () => {
+  showPrintPreview.value = false;
+};
+
+// ===== CSV EXPORT =====
+const exportCSV = () => {
+  const cols = printColumns.value;
+  const rows = printData.value;
+  
+  if (cols.length === 0 || rows.length === 0) return;
+  
+  // BOM for UTF-8 Excel compatibility
+  let csv = '\uFEFF';
+  
+  // Header row
+  csv += cols.map(c => `"${c.label}"`).join(';') + '\n';
+  
+  // Data rows
+  rows.forEach(row => {
+    csv += cols.map(c => `"${(row[c.key] || '').toString().replace(/"/g, '""')}"`).join(';') + '\n';
+  });
+  
+  // Download
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  
+  const tabNames = {
+    monthly: 'havi_kiadas',
+    yearly: 'eves_kiadas',
+    halfyear: 'feleves_kiadas',
+    inventory: 'keszlet_ertek'
+  };
+  link.download = `munyire_${tabNames[activeTab.value]}_${selectedYear.value}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
 onMounted(() => {
   loading.value = true;
   Promise.all([
@@ -168,6 +333,16 @@ onMounted(() => {
     <div class="header-card">
       <h1 class="header-title">Jelentések</h1>
       <p class="header-subtitle">Statisztikák és kimutatások</p>
+      <div class="header-actions">
+        <button class="action-btn print-action" @click="openPrintPreview">
+          <Printer size="18" />
+          <span>Nyomtatás</span>
+        </button>
+        <button class="action-btn export-action" @click="exportCSV">
+          <Download size="18" />
+          <span>CSV Export</span>
+        </button>
+      </div>
     </div>
 
     <!-- Report Type Tabs -->
@@ -421,6 +596,18 @@ onMounted(() => {
         </div>
       </div>
     </div>
+
+    <!-- Print Preview Modal -->
+    <PrintTemplate
+      :visible="showPrintPreview"
+      :title="printTitle"
+      :period="printPeriod"
+      :columns="printColumns"
+      :data="printData"
+      :summary-value="printSummaryValue"
+      :extra-summaries="printExtraSummaries"
+      @close="closePrintPreview"
+    />
   </div>
 </template>
 
@@ -463,6 +650,46 @@ onMounted(() => {
   font-size: 1.5rem;
   font-weight: 600;
   transition: color 0.3s ease;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.print-action {
+  background: #1e3a8a;
+  color: white;
+}
+
+.print-action:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
+}
+
+.export-action {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.export-action:hover {
+  background: var(--color-surface);
+  transform: translateY(-1px);
 }
 
 /* Tabs */

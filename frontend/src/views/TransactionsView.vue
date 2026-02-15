@@ -4,7 +4,8 @@ import api from '../api/axios';
 import SearchableSelect from '../components/common/SearchableSelect.vue';
 import BaseButton from '../components/common/BaseButton.vue';
 import Modal from '../components/ui/Modal.vue';
-import { ArrowRightLeft, History, Check } from 'lucide-vue-next';
+import PrintTemplate from '../components/PrintTemplate.vue';
+import { ArrowRightLeft, History, Check, Printer } from 'lucide-vue-next';
 
 const activeTab = ref('issue');
 const loading = ref(false);
@@ -133,6 +134,45 @@ onMounted(() => {
   fetchDropdownData();
   fetchActiveIssues();
 });
+
+// ===== RECEIPT PRINTING =====
+const showReceiptPrint = ref(false);
+
+const receiptColumns = [
+  { key: 'DolgozoNev', label: 'Dolgozó' },
+  { key: 'Fajta', label: 'Ruha típusa' },
+  { key: 'Cikkszam', label: 'Cikkszám' },
+  { key: 'Mennyiseg', label: 'Mennyiség' },
+  { key: 'KiadasDatum', label: 'Kiadás dátuma' },
+  { key: 'Indok', label: 'Indok' },
+];
+
+const receiptData = computed(() => {
+  const source = filteredActiveIssues.value.length > 0 ? filteredActiveIssues.value : activeIssues.value;
+  return source.map(issue => ({
+    DolgozoNev: issue.Dolgozo?.DNev || String(issue.DolgozoID),
+    Fajta: issue.Ruha?.Fajta || 'Ismeretlen',
+    Cikkszam: issue.Ruha?.Cikkszam || '-',
+    Mennyiseg: `${issue.Mennyiseg || 1} db`,
+    KiadasDatum: new Date(issue.KiadasDatum).toLocaleDateString('hu-HU'),
+    Indok: issue.Indok || '-',
+  }));
+});
+
+const receiptSummary = computed(() => {
+  const total = receiptData.value.reduce((sum, r) => {
+    return sum + parseInt(r.Mennyiseg);
+  }, 0);
+  return `${total} db`;
+});
+
+const openReceiptPrint = () => {
+  showReceiptPrint.value = true;
+};
+
+const closeReceiptPrint = () => {
+  showReceiptPrint.value = false;
+};
 </script>
 
 <template>
@@ -212,6 +252,13 @@ onMounted(() => {
     <!-- Return View -->
     <div v-if="activeTab === 'return'" class="transaction-card">
       <h2 class="card-title">Aktív kiadások (Visszavételre vár)</h2>
+      
+      <div v-if="activeIssues.length > 0" class="return-header-actions">
+        <button class="action-btn receipt-action" @click="openReceiptPrint">
+          <Printer size="18" />
+          <span>Átvételi lap nyomtatása</span>
+        </button>
+      </div>
       
       <div v-if="activeIssues.length === 0" class="empty-state">
         Nincs jelenleg kint lévő ruha.
@@ -316,6 +363,19 @@ onMounted(() => {
         <button class="btn-primary" @click="confirmReturn">Visszavétel Rögzítése</button>
       </template>
     </Modal>
+
+    <!-- Receipt Print Template -->
+    <PrintTemplate
+      :visible="showReceiptPrint"
+      title="Átvételi elismervény"
+      subtitle="Munkaruha kiadás igazolása"
+      :period="'Aktuális kiadások – ' + new Date().toLocaleDateString('hu-HU')"
+      :columns="receiptColumns"
+      :data="receiptData"
+      summary-label="Összes kiadott tétel"
+      :summary-value="receiptSummary"
+      @close="closeReceiptPrint"
+    />
   </div>
 </template>
 
@@ -356,6 +416,35 @@ onMounted(() => {
   font-size: 1.5rem;
   font-weight: 600;
   transition: color 0.3s ease;
+}
+
+.return-header-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.receipt-action {
+  background: #1e3a8a;
+  color: white;
+}
+
+.receipt-action:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
 }
 
 /* Tabs */
