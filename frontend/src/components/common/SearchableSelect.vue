@@ -200,7 +200,6 @@ const closeDropdown = () => {
 .select-trigger.is-open {
   border-color: var(--color-primary);
   background: var(--color-surface);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .select-trigger.is-disabled {
@@ -274,6 +273,7 @@ const closeDropdown = () => {
 .search-box input:focus {
   border-color: var(--color-primary);
   background: var(--color-surface);
+  outline: none;
 }
 
 .options-list {
@@ -394,6 +394,7 @@ const closeDropdown = () => {
 .mobile-search-box input:focus {
   border-color: var(--color-primary);
   background: var(--color-surface);
+  outline: none;
 }
 
 .mobile-options-list {

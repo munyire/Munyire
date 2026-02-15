@@ -129,7 +129,6 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
   border-color: var(--color-primary);
   outline: 0;
-  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 /* Buttons */

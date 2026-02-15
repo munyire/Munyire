@@ -437,7 +437,6 @@ onMounted(() => {
   outline: none;
   background: var(--color-surface);
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .form-group {
@@ -472,7 +471,6 @@ onMounted(() => {
   outline: none;
   background: var(--color-surface);
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .message {

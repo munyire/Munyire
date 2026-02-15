@@ -240,7 +240,6 @@ input {
 input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
   background-color: var(--color-surface);
 }
 

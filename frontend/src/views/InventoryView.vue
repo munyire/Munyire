@@ -374,7 +374,6 @@ onMounted(fetchClothes);
 
 .search-box:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .search-icon {
@@ -586,7 +585,6 @@ onMounted(fetchClothes);
 .form-input:focus, .form-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .form-input.disabled {

@@ -527,6 +527,10 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
+.search-box:focus-within {
+  border-color: var(--color-primary);
+}
+
 .search-icon {
   color: var(--color-text-muted);
   flex-shrink: 0;
@@ -832,7 +836,6 @@ onMounted(() => {
   outline: none;
   background: var(--color-surface);
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .input-with-unit {

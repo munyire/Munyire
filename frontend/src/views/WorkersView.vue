@@ -632,7 +632,6 @@ const confirmDelete = async () => {
 .sidebar-search-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .sidebar-search-input::placeholder {
@@ -956,7 +955,6 @@ const confirmDelete = async () => {
 .form-input:focus, .form-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .form-input:disabled {
