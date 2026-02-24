@@ -1,61 +1,65 @@
-# 🚀 Fejlesztési Feladatlista (Backlog)
+# 🗂️ Fejlesztési Feladatlista (Backlog)
 
-## 📊 Dashboard
-- [x] **Raktárkészlet összesítés:** A mutató az összes ruha **darabszámát** összegezze a különböző fajták száma helyett.
-
----
-
-## 📦 Készletkezelés
-- [x] **Egységes UI:** A keresődoboz és az "Új termék felvétele" box legyen azonos méretű.
-- [x] **UX javítás:** A törlés megerősítése ne böngészős `alertbox`-ban, hanem egyedi modálban jelenjen meg.
-- [x] **Szelektív törlés:** Törlésnél ne a teljes termék törlődjön, hanem **csak az adott minőségű** tétel.
-- [x] **Logikai összefűzés:** Módosításkor, ha megváltozik a minőség, a rendszer adja hozzá a darabszámot a már meglévő, azonos minőségű rekordhoz.
+> Utolsó frissítés: 2026. február
 
 ---
 
-## 👥 Dolgozók kezelése
-- [x] **Box méretezés:** Az "Új dolgozók" és a "Dolgozók száma" dobozok legyenek egyforma méretűek.
-- [x] **Profilkép kezelés:** Dolgozói képek funkció törlése(Ne legyenek a  dolgozóknak képeik).
-- [x] **Bővített keresés:** Keresési lehetőség hozzáadása **munkakör** és **szerepkör** alapján is.
+## ✅ Kész funkciók (V1 alapkibocsátás)
+
+### 📊 Dashboard
+- [x] **Raktárkészlet összesítés:** a mutató az összes ruha darabszámát összegzi
+
+### 📦 Készletkezelés
+- [x] **Egységes UI:** keresődoboz és „Új termék felvétele" box azonos méretű
+- [x] **UX javítás:** törlés megerősítése egyedi modálban (nem böngészős `alert`)
+- [x] **Szelektív törlés:** csak az adott minőségű tétel törlődik
+- [x] **Logikai összefűzés:** módosításkor minőség-változás esetén mennyiség összevonása
+
+### 👥 Dolgozók kezelése
+- [x] **Box méretezés:** dobozok azonos méretűek
+- [x] **Profilkép kezelés:** profilkép funkció eltávolítva
+- [x] **Bővített keresés:** keresés munkakör és szerepkör alapján is
+
+### 🔄 Tranzakciók & Rendelések
+- [x] **Kétirányú keresés:** visszavételi listában dolgozó neve és ruha típusa szerint
+- [x] **UI szinkron:** keresődoboz és „Új rendelés" box azonos méretű
+- [x] **Visszajelzés:** megerősítő modál (nem alert) az átvétel gombnál
+- [x] **Visszajelzés:** megerősítő modál az új rendelés leadásakor
+
+### 🌙 UI / Megjelenítés
+- [x] **Dark Mode javítás:** „Nincs ruha nálad" üzenet sötét módban megfelelő háttérrel
 
 ---
 
-## 🔄 Tranzakciók & Rendelések
-### Visszavétel
-- [x] **Kétirányú keresés:** Lehessen keresni dolgozó neve és ruha típusa alapján is a visszavételi listában.
+## ✅ Kész funkciók (V2 – Pénzügyi frissítés)
 
-### Rendelés
-- [x] **UI szinkron:** A keresődoboz és az "Új rendelés felvétele" box legyen azonos méretű.
-- [x] **Visszajelzés:** Az átvétel gomb ne `alertbox`-ot használjon a megerősítéshez.
-- [x] **Visszajelzés:** Az uj rendelés leadása gomb ne `alertbox`-ot használjon.
+### 💰 Árak és pénzügyi modul
+- [x] **Adatbázis frissítés:** `Ruha` tábla `Ar` (ár) oszloppal bővítve
+- [x] **Készletkezelés – ár:** ruha felvételekor / szerkesztésekor ár megadható
+- [x] **Jelentés oldal:** `ReportsView.vue` – pénzügyi kimutatások
+  - [x] Havi kiadások (tétel lista: dátum, dolgozó, ruha, egységár, összeg)
+  - [x] Éves kiadások (havi bontás, sávdiagram)
+  - [x] Féléves kiadások (sávdiagram)
+  - [x] Készlet érték (típusonkénti értéklista)
+- [x] **Nyomtatás:** `PrintTemplate.vue` – nyomtatási előnézet modál
+- [x] **CSV export:** BOM-os UTF-8 (Excel-kompatibilis)
 
----
-
-## 🌙 UI / Megjelenítés
-- [x] **Dark Mode javítás:** A "Saját ruha" oldalon a "Nincs ruha nálad" üzenet sötét módban ne fehér háttérrel jelenjen meg.
-
----
-
-
-# V2 Pénz update
-
-## A ruhák árainek hozzáadása:. Fontos hogy a ruha táblában legyen tárolva az ára.
-- [x] Adatbázis frissítése: ruha táblában ár oszloppal
-- [x] Backend és frontend frisítése hogy ruha felvételeko hozzá lehessen adni a ruha árát.
----
-## Jelentés ablak hozzáadása
-- [x] Jelentés fül: Statisztikák és kimutatások generálása
-- [x] Havi, éves, féléves kiadások
-
-## 🧹 Karbantartás & Dokumentáció
-- [ ] **Debug:** Hibák keresése és javítása
-- [ ] **Clean Code:** Felesleges, nem használt fájlok és kódmaradványok törlése.
-- [ ] **Záró dokumentáció:** Miután a fenti fejlesztések készek, a teljes technikai dokumentáció frissítése és összesítése.
+### 🔒 Biztonság
+- [x] **Helmet middleware:** HTTP biztonsági fejlécek
+- [x] **Rate limiting:** max. 100 kérés / 15 perc / IP
+- [x] **sqlite3 / tar:** biztonsági frissítések (`tar` override ^7.5.7)
 
 ---
 
-## 📝 Továbbfejlesztési ötletek
-- [ ] **Jobb hibakiírás:** A felhasználó számára érthető, barátságos hibaüzenetek megjelenítése műveletek során.
-- [ ] **Manager jogosultságok:** A Manager szerepkör részletesebb beállítása – pontos meghatározása, hogy mit csinálhat és hogyan (pl. milyen adatokat módosíthat, milyen jelentéseket láthat).
----
+## 🔲 Nyitott feladatok
 
+### 🐛 Debug & karbantartás
+- [ ] **Debug:** fennmaradó hibák keresése és javítása
+- [ ] **Clean Code:** felesleges, nem használt fájlok és kódmaradványok törlése
+
+### 🚀 Továbbfejlesztési ötletek
+- [ ] **Jobb hibakiírás:** felhasználóbarát hibaüzenetek megjelenítése műveletekkor
+- [ ] **Manager jogosultságok:** részletesebb szabályozás – mit módosíthat, milyen jelentéseket láthat
+- [ ] **E2E tesztek:** Playwright alapú böngészős tesztelés (bejelentkezés, navigáció, jogosultságok)
+- [ ] **Jelszó-visszaállítás:** elfelejtett jelszó kezelése admin nélkül
+- [ ] **Lokalizáció (i18n):** `vue-i18n` integráció esetén, ha nemzetközi használat szükséges

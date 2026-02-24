@@ -1,150 +1,185 @@
-# Munyire – Munkaruhakezelő Rendszer
+# Munyire – Backend dokumentáció
 
 ## 1. Bevezetés
 
-A **Munyire** egy munkaruhakezelő rendszer, amely a dolgozóknak kiadott munkaruhák nyilvántartását, készletkezelését, a kiadási/visszavételi folyamatot és a rendelések kezelését biztosítja.
+A **Munyire** backend egy REST API szerver, amely a munkaruhakezelő rendszer üzleti logikáját, adatbázis-kezelését és hitelesítési folyamatát valósítja meg.
 
-A projekt célja egy **stabil**, **biztonságos** és **kényelmesen használható** webes felület létrehozása egy szakközépiskolai kimeneti vizsga keretében.
-
-Az első verzió egy **SPA jellegű weboldal**, amely a háttérben REST API-t használ.
+**Alap URL:** `http://localhost:3000`  
+**Node.js minimum verzió:** 18
 
 ---
 
 ## 2. Technológiai stack
 
-### Backend
-- **Node.js**
-- **Express.js**
-- **Sequelize ORM**
-- **SQLite**
-- **JWT** (token alapú bejelentkezés)
-- **bcrypt** (jelszó hash-elés)
-- **cors**
-- (fejlesztéshez) **nodemon**
-
-### Frontend
-- Webes felület (SPA jelleg)
-- REST API kommunikáció JSON formátumban
-- Reszponzív felület, modern dizájn (terv)
-
----
-
-## 3. Fő funkciók
-
-- Készlet nyilvántartás (ruhatípusok, mennyiségek)
-- Munkaruhák kiadása dolgozóknak
-- Munkaruhák visszavétele (visszavételkori minőség rögzítése)
-- Dolgozók kezelése (admin feladat)
-- Rendelések kezelése (készletutánpótlás)
-- Egyszerű jelentések / kimutatások
-- Bejelentkezés és szerepkör-alapú jogosultságkezelés
+| Csomag | Verzió | Szerepe |
+|--------|--------|---------|
+| `express` | ^4.19 | Web framework |
+| `sequelize` | ^6.37 | ORM |
+| `sqlite3` | ^5.1.7 | Adatbázis driver |
+| `bcrypt` | ^5.1 | Jelszó hash-elés |
+| `jsonwebtoken` | ^9.0 | JWT token kezelés |
+| `helmet` | ^8.1 | HTTP biztonsági fejlécek |
+| `express-rate-limit` | ^8.2 | Rate limiting |
+| `express-validator` | ^7.2 | Input validáció |
+| `cors` | ^2.8 | Cross-Origin Resource Sharing |
+| `morgan` | ^1.10 | HTTP request logolás |
+| `dotenv` | ^16.4 | Környezeti változók |
+| `nodemon` | ^3.0 | Dev server (újraindítás figyelő) |
 
 ---
 
-## 4. Szerepkörök és jogosultságok
+## 3. Projekt struktúra
 
-A rendszer három szerepkört használ:
-
-### Dolgozo
-- Bejelentkezés
-- **Saját ruháim** megtekintése (csak olvasás)
-- Saját alapadatok megtekintése
-
-### Manager
-Minden, amit a Dolgozo, plusz:
-- Dashboard / alap statisztikák megtekintése
-- Készlet megtekintése
-- Ruhák kiadása és visszavétele rögzítése
-- Dolgozók ruháinak megtekintése
-- Rendelések létrehozása és státusz módosítása
-- Egyszerű jelentések
-
-### Admin
-Minden, amit a Manager, plusz:
-- Dolgozók teljes körű kezelése
-- Készlet teljes körű kezelése
-- Rendelések teljes körű kezelése
-- (Tervezett) rendszerlogok / haladó jelentések
-
-**Fontos:** a jogosultságot a `Szerepkor` mező határozza meg (`Dolgozo`, `Manager`, `Admin`).  
-A `Munkakor` csak információ a dolgozóról, nem jogosultság.
-
----
-
-## 5. Adatbázis terv
-
-Az adatbázis SQLite alapú, Sequelize ORM kezeli.
-
-### 5.1. Dolgozok
-- `DolgozoID` (PK)
-- `DNev`
-- `Email`
-- `Telefonszam`
-- `Nem`
-- `Munkakor` (információ)
-- `Szerepkor` (`Dolgozo` | `Manager` | `Admin`)
-- `FelhasznaloNev` (egyedi)
-- `JelszoHash` (bcrypt)
-
-### 5.2. Ruhak
-- `Cikkszam` (PK, 7-jegyű egész szám, pl. 1000001)
-- `Fajta`
-- `Szin`
-- `Meret`
-- (Készlet és minőség kiszervezve a Raktar táblába)
-
-Megjegyzés: 1 sor egy "ruhacikk típus" (pl. fekete M-es nadrág).
-
-### 5.3. Raktar (Készlet)
-- `RaktarID` (PK)
-- `Cikkszam` (FK → Ruhak)
-- `Minoseg` (pl. `Új`, `Jó`, `Használt`)
-- `Mennyiseg` (Darbaszám az adott minőségből)
-
-### 5.4. RuhaKiBe
-- `RuhaKiBeID` (PK)
-- `DolgozoID` (FK → Dolgozok)
-- `Cikkszam` (FK → Ruhak)
-- `KiadasDatum`
-- `VisszaDatum` (NULL, amíg nincs visszavéve)
-- `Indok` (kiadás indoka / megjegyzés)
-- `Mennyiseg`
-- `RuhaMinoseg` (visszavételkor rögzített minőség)
-
-### 5.5. Rendelesek
-- `RendelesID` (PK)
-- `Cikkszam` (FK → Ruhak)
-- `RDatum`
-- `Mennyiseg`
-- `Statusz` (`Leadva`, `Teljesítve`, `Lemondva`)
+```
+backend/
+├── app.js                  # Express app bootstrap, middleware-ek, route regisztráció
+├── db.js                   # Sequelize példány inicializáció
+├── demoadatok.js           # Demo adatok feltöltő script
+├── integration_test.js     # Integrációs tesztek
+├── .env                    # Környezeti változók (nem verziókezelt)
+├── env.example             # .env minta fájl
+├── models/
+│   ├── index.js            # Modellek összekapcsolása, asszociációk
+│   ├── Dolgozo.js
+│   ├── Ruha.js
+│   ├── Raktar.js
+│   ├── RuhaKiBe.js
+│   └── Rendeles.js
+├── controllers/            # Üzleti logika (kérés → válasz)
+├── services/               # Adatbázis-szintű logika (reusable)
+├── repositories/           # Adatbázis lekérdezések absztrakciója
+├── routes/                 # Express routerek
+├── middlewares/            # Auth, jogosultság, hibakezelő middleware-ek
+├── validators/             # express-validator szabályok
+└── utils/
+    └── roles.js            # ROLES konstans: { Dolgozo, Manager, Admin }
+```
 
 ---
 
-## 6. Oldalak / modulok (terv)
+## 4. Adatbázis struktúra
 
-- Bejelentkezés
-- Dashboard (Manager, Admin)
-- Készlet (Manager: megtekintés, Admin: teljes kezelés)
-- Kiadás / Visszavétel (Manager, Admin)
-- Dolgozók (Manager: megtekintés, Admin: teljes kezelés)
-- Saját ruháim (Dolgozo, Manager, Admin – mindig a saját)
-- Rendelések (Manager, Admin)
-- Jelentések (egyszerű / haladó)
+Az adatbázis SQLite (`database.sqlite`), Sequelize ORM kezeli.
+
+### Dolgozok
+
+| Mező | Típus | Megjegyzés |
+|------|-------|-----------|
+| `DolgozoID` | INTEGER PK AI | |
+| `DNev` | STRING | |
+| `Email` | STRING UNIQUE | Email validáció |
+| `Telefonszam` | STRING | |
+| `Nem` | STRING | |
+| `Munkakor` | STRING | Csak információ, nem jogosultság |
+| `Szerepkor` | ENUM | `Dolgozo` \| `Manager` \| `Admin` |
+| `FelhasznaloNev` | STRING UNIQUE | |
+| `JelszoHash` | STRING | bcrypt hash |
+
+### Ruhak
+
+| Mező | Típus | Megjegyzés |
+|------|-------|-----------|
+| `Cikkszam` | INTEGER PK | 7-jegyű, auto-generált (1000001-tól) |
+| `Fajta` | STRING | pl. Nadrág, Ing, Védőmellény |
+| `Szin` | STRING | |
+| `Meret` | STRING | XS, S, M, L, XL, XXL, XXXL |
+| `Ar` | DECIMAL(10,2) | Egységár Ft-ban (alapértelmezett: 0) |
+
+### Raktar
+
+| Mező | Típus | Megjegyzés |
+|------|-------|-----------|
+| `RaktarID` | INTEGER PK AI | |
+| `Cikkszam` | FK → Ruhak | |
+| `Minoseg` | STRING | `Új` \| `Jó` \| `Használt` \| `Kopott` \| `Szakadt/Sérült` \| `Selejt` |
+| `Mennyiseg` | INTEGER | Darabszám az adott minőségből |
+
+### RuhaKiBe
+
+| Mező | Típus | Megjegyzés |
+|------|-------|-----------|
+| `RuhaKiBeID` | INTEGER PK AI | |
+| `DolgozoID` | FK → Dolgozok | |
+| `Cikkszam` | FK → Ruhak | |
+| `KiadasDatum` | DATE | |
+| `VisszaDatum` | DATE | NULL, amíg nincs visszavéve |
+| `Indok` | STRING | Kiadás indoka / megjegyzés |
+| `Mennyiseg` | INTEGER | |
+| `RuhaMinoseg` | STRING | Visszavételkor rögzített minőség |
+
+### Rendelesek
+
+| Mező | Típus | Megjegyzés |
+|------|-------|-----------|
+| `RendelesID` | INTEGER PK AI | |
+| `Cikkszam` | FK → Ruhak | |
+| `RDatum` | DATE | |
+| `Mennyiseg` | INTEGER | |
+| `Statusz` | ENUM | `Leadva` \| `Teljesítve` \| `Lemondva` |
 
 ---
 
-## 7. Biztonság (terv)
+## 5. Middleware-ek és biztonság
 
-- Jelszavak hash-elve tárolva (bcrypt).
-- JWT tokenes bejelentkezés, a védett végpontok token nélkül nem elérhetők.
-- Szerepkör-alapú hozzáférés (Dolgozo/Manager/Admin).
-- Dolgozó csak a **saját** adatait és saját ruháit érheti el.
+### Globális middleware-ek (sorrendben, `app.js`)
+1. **helmet** – biztonságos HTTP fejlécek (`X-Frame-Options`, `Content-Security-Policy`, stb.)
+2. **express-rate-limit** – max. 100 kérés IP-nként 15 perces ablakban
+3. **cors** – Cross-Origin engedélyezés
+4. **express.json()** – JSON body parser
+5. **morgan** (`dev`) – HTTP request logolás fejlesztői módban
+
+### Route middleware-ek
+- **`authMiddleware`** – JWT token ellenőrzés (Bearer token a `Authorization` fejlécben)
+- **`requireRoleMiddleware(role)`** – Szerepkör-alapú hozzáférés-ellenőrzés
+- **`errorHandlerMiddleware`** – Globális hibakezelő (500-as válaszok egységesítése)
 
 ---
 
-## 8. Backend futtatás (terv)
+## 6. Hitelesítés
+
+- Bejelentkezéskor a szerver JWT tokent ad vissza.
+- Lejárati idő: a `.env` `JWT_SECRET` alapján.
+- Minden védett végpont `Authorization: Bearer <token>` fejlécet vár.
+- Az admin felhasználó automatikusan létrejön indításkor a `.env` alapján (`ADMIN_USERNAME`, `ADMIN_PASSWORD`).
+
+---
+
+## 7. Futtatás
 
 ```bash
 cd backend
+cp env.example .env   # .env beállítása
 npm install
-npm start
+npm run dev           # Fejlesztői szerver (nodemon, portja: 3000)
+npm start             # Production szerver
+npm test              # Integrációs tesztek futtatása
+```
+
+### Szükséges `.env` változók (lásd `env.example`)
+```
+PORT=3000
+JWT_SECRET=titok_kulcs
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin_jelszo
+```
+
+---
+
+## 8. Demo adatok
+
+```bash
+cd backend
+node demoadatok.js
+```
+
+Feltölti az adatbázist tesztadatokkal (dolgozók, ruhák, raktár, tranzakciók, rendelések).
+
+---
+
+## 9. Tesztelés
+
+```bash
+npm test
+```
+
+Az `integration_test.js` lefuttatja az összes fő API végpont integrációs tesztjét (auth, CRUD műveletek, jogosultság ellenőrzés).

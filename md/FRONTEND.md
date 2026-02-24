@@ -2,141 +2,193 @@
 
 ## 1. Bevezetés
 
-A **frontend** a Munyire felhasználói felülete — egy SPA (Single Page Application) amely a háttérben a REST API-val kommunikál. Célja: egyszerű, gyors és szerepalapú kezelőfelület biztosítása a dolgozók, menedzserek és adminisztrátorok számára.
+A **frontend** a Munyire felhasználói felülete — egy SPA (Single Page Application), amely a háttérben a REST API-val kommunikál. Célja: egyszerű, gyors és szerepalapú kezelőfelület biztosítása a dolgozók, menedzserek és adminisztrátorok számára.
 
 ---
 
 ## 2. Technológiai stack
 
-- **Vue 3** (Composition API)
-- **Pinia** – állapotkezelés
-- **vue-router** – kliensoldali routing és guard-ok
-- **Vite** – build & dev szerver
-- **Axios** – HTTP kliens, request/response interceptors
-- Egyszerű CSS / utility osztályok a komponensekhez
+| Csomag | Verzió | Szerepe |
+|--------|--------|---------|
+| `vue` | ^3 | UI framework (Composition API, `<script setup>`) |
+| `pinia` | ^2 | Állapotkezelés |
+| `vue-router` | ^4 | Kliensoldali routing |
+| `vite` | ^5 | Build & dev szerver |
+| `axios` | ^1 | HTTP kliens, interceptors |
+| `lucide-vue-next` | latest | SVG ikonkönyvtár |
+| `@vueuse/core` | – | (ha szükséges) Vue composable-ok |
+
+CSS: saját CSS változókkal (`src/style/`) + `style.css`, dark mode támogatással.
 
 ---
 
-## 3. Projekt felépítése (fontos fájlok)
+## 3. Projekt struktúra
 
-- `index.html` – alkalmazás entry
-- `src/main.js` – app bootstrap (Pinia, Router)
-- `src/App.vue` – gyökér komponens
-- `src/api/axios.js` – Axios példány, interceptorok (auth header, 401 kezelés)
-- `src/router/index.js` – útvonalak és `beforeEach` guard-ok (meta.roles)
-- `src/stores/auth.js` – beléptetés, token & user kezelés (Pinia)
-- `src/views/` – oldalak:
-    - `LoginView.vue`: Bejelentkezés.
-    - `DashboardView.vue`: Statisztikák (Admin/Manager).
-    - `InventoryView.vue`: Készletkezelés (terméklista, új termék felvétele, törlés).
-    - `WorkersView.vue`: Dolgozók kezelése (új dolgozó regisztrációja, szerkesztés).
-    - `TransactionsView.vue`: Kiadás és Visszavétel kezelése.
-    - `OrdersView.vue`: Rendelések listázása és új rendelés leadása.
-    - `MyClothesView.vue`: Saját (dolgozónál lévő) ruhák listája.
-- `src/components/layout/Sidebar.vue` – navigációs sáv (szerepkör-alapú linkek)
-- `src/components/common/` – közös komponensek:
-    - `SearchableSelect.vue`: Kereshető legördülő lista (dolgozók/ruhák kiválasztásához).
-    - `BaseButton.vue`: Egységes stílusú gomb.
-    - `BaseInput.vue`: Egységes stílusú beviteli mező.
-- `src/components/ui/Modal.vue` – Általános modális ablak.
+```
+frontend/src/
+├── main.js                   # App bootstrap (Vue, Pinia, Router)
+├── App.vue                   # Gyökér komponens (layout, sidebar, theme toggle)
+├── style.css                 # Globális CSS alapok
+├── style/                    # CSS változók, dark/light mode
+├── api/
+│   └── axios.js              # Axios példány, base URL, interceptors
+├── router/
+│   └── index.js              # Útvonalak, meta.roles, beforeEach guard
+├── stores/
+│   ├── auth.js               # Bejelentkezés, token & user kezelés (Pinia)
+│   └── theme.js              # Dark/light mode állapot (Pinia)
+├── views/
+│   ├── LoginView.vue         # Bejelentkezési oldal
+│   ├── DashboardView.vue     # KPI statisztikák, low-stock figyelmeztetések
+│   ├── InventoryView.vue     # Készletkezelés (lista, szűrés, CRUD)
+│   ├── WorkersView.vue       # Dolgozók kezelése (lista, regisztráció, szerkesztés)
+│   ├── TransactionsView.vue  # Ruhakiadás és visszavétel
+│   ├── OrdersView.vue        # Rendelések listázása és leadása
+│   ├── ReportsView.vue       # Pénzügyi jelentések (havi, éves, féléves, készlet érték)
+│   └── MyClothesView.vue     # Saját (dolgozónál lévő) ruhák
+├── components/
+│   ├── layout/
+│   │   └── Sidebar.vue       # Navigációs sáv (szerepkör-alapú linkek)
+│   ├── common/
+│   │   ├── SearchableSelect.vue  # Kereshető legördülő lista
+│   │   ├── BaseButton.vue        # Egységes stílusú gomb
+│   │   └── BaseInput.vue         # Egységes stílusú beviteli mező
+│   ├── ui/
+│   │   └── Modal.vue             # Általános modális ablak
+│   └── PrintTemplate.vue         # Nyomtatási előnézet komponens
+└── utils/
+    └── (segédfüggvények)
+```
 
 ---
 
 ## 4. Hitelesítés és szerepkörök
 
-- Bejelentkezés a `POST /api/auth/login` végpontra történik. A frontend a következő payload-ot küldi: `{ username, password }`.
-- A szerver visszaad: `{ token, user }`.
-- A token eltárolása: `localStorage.token` (string).
-- A felhasználói objektum eltárolása: `localStorage.user` (JSON).
-- Axios kérés-interceptor automatikusan hozzáfűzi az `Authorization: Bearer <token>` fejlécet.
-- 401 válasz esetén az interceptor törli a token/user értékeket és a router a bejelentkezésre irányít.
-- **Dolgozó regisztráció**: A `WorkersView` a `POST /api/auth/register` végpontot használja új felhasználó létrehozására, majd patch kéréssel frissíti a további adatokat.
+- Bejelentkezés: `POST /api/auth/login` → `{ username, password }`
+- Szerver visszaad: `{ token, user }`
+- Token tárolása: `localStorage.token`
+- Felhasználói objektum: `localStorage.user` (JSON)
+- Axios request-interceptor: automatikusan hozzáfűzi az `Authorization: Bearer <token>` fejlécet.
+- 401 válasz esetén: token/user törlése → átirányítás `/login`-ra.
+- **Új dolgozó regisztráció**: `WorkersView` → `POST /api/auth/register` + `PATCH /api/dolgozok/:id` a további adatok mentéséhez.
 
 ---
 
 ## 5. Routing és jogosultságok
 
-- A `router` meta-mezőket használ (például `meta: { requiresAuth: true, roles: ['Manager','Admin'] }`).
-- A `beforeEach` guard ellenőrzi:
-  - ha az útvonal `requiresAuth` és nincs token → `/login`
-  - ha az útvonal `meta.roles` és a felhasználó **nem** szerepel a listában → átirányít `/my-clothes` (vagy `/login` ha nem autentikált)
-- A menü (`Sidebar.vue`) dinamikusan jeleníti meg a linkeket:
-    - **Admin/Manager**: Dashboard, Készlet, Dolgozók, Kiadás/Visszavétel (`/transactions`), Rendelések (`/orders`).
-    - **Mindenki**: Saját Ruháim (`/my-clothes`) és Kijelentkezés.
+| Útvonal | Nézet | Szükséges szerepkör |
+|---------|-------|---------------------|
+| `/login` | LoginView | – |
+| `/dashboard` | DashboardView | Manager, Admin |
+| `/inventory` | InventoryView | Manager, Admin |
+| `/workers` | WorkersView | Manager, Admin |
+| `/transactions` | TransactionsView | Manager, Admin |
+| `/orders` | OrdersView | Manager, Admin |
+| `/reports` | ReportsView | Manager, Admin |
+| `/my-clothes` | MyClothesView | Mindenki (auth) |
+
+**`beforeEach` guard logika:**
+1. Ha `requiresAuth` és nincs token → `/login`
+2. Ha `meta.roles` és a felhasználó nincs benne → `/my-clothes` (vagy `/login`)
+
+**Sidebar linkek:**
+- **Admin/Manager:** Dashboard, Készlet, Dolgozók, Kiadás/Visszavétel, Rendelések, Jelentések
+- **Mindenki:** Saját Ruháim, Kijelentkezés
 
 ---
 
-## 6. API interakciók és Adatkezelés
+## 6. Nézetek és API interakciók
 
-- **Készlet (Inventory)**:
-    - A termékek (`Ruha`) listázása (`GET /ruhak`) magában foglalja a raktárkészlet (`Raktar`) adatait is.
-    - A frontend "kisimítja" (flatten) ezt a struktúrát, hogy a táblázatban megjelenítse a különböző minőségű (Új, Jó, stb.) készleteket.
-    - **Cikkszám generálás**: Új termék létrehozásakor (`POST /ruhak`) a cikkszám mező üresen marad, a backend automatikusan generálja.
-    - **Törlés**: A törlés (`DELETE /ruhak/:cikkszam`) a Cikkszám alapján történik.
+### DashboardView
+- `GET /api/dashboard/stats` – KPI kártyák (dolgozók száma, összes ruha, kiadott ruhák, aktív rendelések)
+- `GET /api/dashboard/low-stock` – Alacsony készlet figyelmeztetés
+- `GET /api/dashboard/recent-activity` – Legutóbbi tevékenységek
+- Beágyazott **Top 5 ruhatípus** grafikon
 
-- **Tranzakciók (Transactions)**:
-    - **Kiadás**: `POST /api/ruhakibe` – A frontend a kiválasztott `DolgozoID`-t és `RuhaID`-t (ami a Cikkszam) küldi. Fontos: az értékeket számként (`Number()`) kell küldeni.
-    - **Visszavétel**: `PATCH /api/ruhakibe/:id` – A frontend bekéri a visszavételkori minőséget (pl. "Jó", "Szakadt").
-    - **Aktív lista**: `GET /api/ruhakibe/active` – A lista tartalmazza a beágyazott Dolgozó és Ruha objektumokat a nevek megjelenítéséhez.
+### InventoryView
+- `GET /api/ruhak` – Készlet listázása (beágyazott `Raktars` tömbben minőségenként)
+- Frontend „flatten": táblázatban soronként megjelenik minden minőségi kategória
+- `POST /api/ruhak` – Új ruha (Cikkszam **nem küldendő**, auto-generált; **Ar is megadható**)
+- `PATCH /api/ruhak/:cikkszam` – Módosítás (ha minőség változik, rendszer összevonja a rekordokat)
+- `DELETE /api/ruhak/:cikkszam/:minoseg` – Szelektív törlés (csak az adott minőségű tétel)
+- Törlés előtt egyedi modális megerősítés (nem böngészős alert)
 
-- **Rendelések (Orders)**:
-    - `GET /api/rendelesek` és `POST /api/rendelesek` a rendelések kezeléséhez.
-    - A "Teljesítés" (`POST /api/rendelesek/:id/complete`) gombbal véglegesíthető egy rendelés (beérkeztetés).
+### WorkersView
+- `GET /api/dolgozok` – Dolgozó lista (név, email, telefon, nem, munkakör, szerepkör)
+- Keresés: **név, email, telefonszám, munkakör és szerepkör** alapján
+- `POST /api/auth/register` + `PATCH /api/dolgozok/:id` – Új dolgozó regisztrációja
+- `PATCH /api/dolgozok/:id` – Szerkesztés (beleértve jelszócsere)
+- `DELETE /api/dolgozok/:id` – Törlés (megerősítő modállal)
+
+### TransactionsView
+- `GET /api/ruhakibe/active` – Aktív kiadások (beágyazott Dolgozo + Ruha)
+- Szűrés: dolgozó neve és ruha típusa szerint (kétirányú keresés)
+- **Kiadás:** `POST /api/ruhakibe` – `{ DolgozoID: Number, Cikkszam: Number, Mennyiseg, Indok }`
+- **Visszavétel:** `PATCH /api/ruhakibe/:id` – visszavételkori minőség megadásával
+
+### OrdersView
+- `GET /api/rendelesek` – Rendelések listázása (beágyazott Ruha adatokkal)
+- `POST /api/rendelesek` – Új rendelés (automatikusan `Leadva` státusszal)
+- `PATCH /api/rendelesek/:id/complete` – Teljesítés: státusz → `Teljesítve` + raktárkészlet `+Mennyiseg` db `Új` minőségben
+- Visszajelzések: egyedi modális (nem böngészős alert)
+
+### ReportsView (V2 – Pénzügyi modul)
+Négy fül:
+1. **Havi kiadások** – `GET /api/reports/expenses/monthly?year=&month=` → részletes tétel lista (dátum, dolgozó, ruha, egységár, összeg)
+2. **Éves kiadások** – `GET /api/reports/expenses/yearly?year=` → havi bontás + sávdiagram
+3. **Féléves kiadások** – `GET /api/reports/expenses/half-year?year=&half=` → sávdiagram
+4. **Készlet érték** – `GET /api/reports/inventory-value` → típusonkénti érték, darabszám
+
+**Exportálás:**
+- 🖨️ Nyomtatás: `PrintTemplate.vue` modális előnézet → böngésző `window.print()`
+- 📥 CSV export: BOM-os UTF-8 (Excel kompatibilitáshoz), pontosvessző elválasztóval
+
+### MyClothesView
+- `GET /api/ruhakibe/mine` – Bejelentkezett felhasználó kint lévő ruhái
+- Csak olvasható nézet; visszavételt csak Manager/Admin végezhet
 
 ---
 
 ## 7. Futtatás & build
 
-Fejlesztés:
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev       # Fejlesztői szerver (Vite, általában localhost:5173)
+npm run build     # Production build a dist/ mappába
+npm run preview   # Build előnézete
 ```
 
-Build és előnézet:
-```bash
-npm run build
-npm run preview
-```
-
-A `baseURL` Axios-ban relatív (`/api`) — a production környezetben az alkalmazás hosztolását úgy kell beállítani, hogy a backend `/api` végpontjai elérhetők legyenek (reverse proxy vagy külön domain esetén a `baseURL`-t át kell állítani).
+Az Axios `baseURL` értéke: `/api` (relatív). Production környezetben reverse proxyn keresztül kell a backend `/api` végpontjait elérhetővé tenni.
 
 ---
 
-## 8. Tesztelés & E2E
+## 8. Tesztelés
 
-- Egyszerű backend-alapú E2E script van (`backend/tests/e2e_login_test.js`) ami ellenőrzi a bejelentkezést és egy védett végpontot (például `/api/dashboard/stats`).
-- Ha szükséges, javasolt egy böngésző-alapú E2E suite (Playwright vagy Cypress) bevezetése a UI viselkedés automatikus ellenőrzésére (bejelentkezés, navigáció, jogosultságok).
-
----
-
-## 9. Hibakeresési tippek (Gyakori problémák)
-
-- **400 Bad Request**:
-    - Ellenőrizd a payload típusait (pl. szám vs string). A backend szigorú validációt használ (pl. `issueValidator`).
-    - Készlet létrehozásnál a `Cikkszam` mezőnek hiányoznia kell a payload-ból (hogy auto-generált legyen), ne küldj üres stringet.
-- **Lista üres vagy hiányos adatok**:
-    - Ellenőrizd a backend válasz struktúráját (Network tab). Ha nested objektumok vannak (pl. `ruha.Raktars` vagy `issue.Dolgozo`), a frontendnek megfelelően kell hivatkoznia rájuk (`?.` operátor javasolt).
-- **401 Unauthorized**:
-    - Token lejárt vagy hiányzik. Logout és újbóli Login általában megoldja.
-- **UI elcsúszás**:
-    - A táblázatoknál (`overflow-x-auto`) és a konténereknél (`max-w-*`) ellenőrizd a CSS osztályokat. A Sidebar fix szélességű, a main content `flex-1` vagy `w-full` kell legyen megfelelő paddinggal.
+- Backend integrációs tesztek: `backend/integration_test.js` (`npm test`)
+- Javasolt UI E2E tesztelés: **Playwright** (nincs még implementálva) – bejelentkezés, navigáció, jogosultságok automatikus ellenőrzésére
 
 ---
 
-## 10. Kiterjesztések & javaslatok
+## 9. Hibakeresési tippek
 
-- Bevezetni UI teszteket (Playwright): automatikusan ellenőrizhetjük a bejelentkezést és a jogosultságokhoz kötött navigációt.
-- Lokalizáció (i18n): a felületen jelenleg magyar feliratok vannak; ha nemzetközi használat a cél, érdemes `vue-i18n`-t integrálni.
-- UI komponens könyvtár (pl. Vuetify / Tailwind UI) a gyorsabb fejlesztéshez és konzisztens dizájn érdekében.
+| Hiba | Lehetséges ok | Megoldás |
+|------|--------------|---------|
+| 400 Bad Request | Hibás payload típus (pl. string vs number) | Küldj `Number()`-rel konvertált értékeket |
+| 400 – új termék | `Cikkszam` üresen küldve stringként | Hagyj ki minden `Cikkszam` mezőt a body-ból |
+| Üres lista | Nested objektum hivatkozás hiba | `?.` optional chaining operator használata |
+| 401 Unauthorized | Token lejárt | Logout + újbóli bejelentkezés |
+| UI elcsúszás | Sidebar fix szélességű | `main content` legyen `flex-1` megfelelő paddinggal |
 
 ---
 
-## 11. Gyors hivatkozások a kódban
+## 10. Gyors hivatkozások
 
-- Axios: `frontend/src/api/axios.js`
-- Auth store: `frontend/src/stores/auth.js`
-- Router: `frontend/src/router/index.js`
-- Views: `frontend/src/views/`
-- Sidebar: `frontend/src/components/layout/Sidebar.vue`
+| Fájl | Funkció |
+|------|---------|
+| `src/api/axios.js` | Axios példány, interceptorok |
+| `src/stores/auth.js` | Bejelentkezési állapot |
+| `src/router/index.js` | Útvonalak és guard-ok |
+| `src/views/ReportsView.vue` | Pénzügyi jelentés modul |
+| `src/components/layout/Sidebar.vue` | Navigáció |
+| `src/components/PrintTemplate.vue` | Nyomtatási sablon |
