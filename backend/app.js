@@ -54,11 +54,6 @@ app.use("/api/rendelesek", rendelesRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportsRoutes);
 
-// 404 handler
-app.use((req, res, next) => {
-  res.status(404).json({ error: "Not found" });
-});
-
 // Serve static files in production (when dist folder exists)
 const distPath = path.join(__dirname, "dist");
 if (fs.existsSync(distPath)) {
@@ -73,6 +68,11 @@ if (fs.existsSync(distPath)) {
     }
   });
 }
+
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Not found" });
+});
 
 // Global error handler
 app.use(errorHandler);
