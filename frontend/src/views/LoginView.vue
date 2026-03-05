@@ -73,7 +73,6 @@ const handleLogin = async () => {
                 required
               />
             </div>
-            <a href="#" class="forgot-password">Elfelejtettem a jelszót</a>
           </div>
 
           <div v-if="error" class="error-message">
@@ -241,20 +240,6 @@ input:focus {
   outline: none;
   border-color: var(--color-primary);
   background-color: var(--color-surface);
-}
-
-.forgot-password {
-  align-self: flex-end;
-  font-size: 0.85rem;
-  color: #1e40af;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.forgot-password:hover {
-  color: #1e3a8a;
-  text-decoration: underline;
 }
 
 
