@@ -8,6 +8,8 @@ A projekt célja egy **stabil**, **biztonságos** és **kényelmesen használhat
 
 Az alkalmazás egy **SPA jellegű weboldal**, amely a háttérben REST API-t használ.
 
+🖥️ **Szerveren is futtatható** - Részletes telepítési útmutató: [md/UBUNTU_TELEPITES.md](./md/UBUNTU_TELEPITES.md)
+
 ---
 
 ## 2. Technológiai Stack
@@ -180,7 +182,37 @@ Az adatbázis **SQLite** alapú, **Sequelize ORM** kezeli.
 
 ## 8. Telepítés és Futtatás
 
-### 8.1. Klónozás és függőségek telepítése
+### 🌐 Üzemeltetési módok
+
+A projekt két módon futtatható:
+
+| Mód | Leírás | Használat |
+|-----|--------|-----------|
+| **Fejlesztői** | Backend és frontend külön-külön, Vite proxy-val | `npm run dev` |
+| **Produkciós (szerver)** | Buildelt frontend, backend szolgáltatja az API-t és a statikus fájlokat | `npm run build` + `npm start` |
+
+### ☁️ Szerver telepítés (Ubuntu)
+
+A projekt készen áll Ubuntu szerveren való futtatásra. Részletes útmutató:
+
+📖 **[Ubuntu Szerver Telepítési Útmutató](./md/UBUNTU_TELEPITES.md)**
+
+**Gyors telepítés szerverre:**
+```bash
+# 1. Telepítés és beállítás (lásd a részletes útmutatót)
+# 2. Build
+npm run build
+
+# 3. Indítás
+cd backend && npm start
+```
+
+**Automatikus frissítés szerveren:**
+```bash
+bash update.sh
+```
+
+### 8.1. Klónozás és függőségek telepítése (fejlesztői környezet)
 
 ```bash
 # Repository klónozása
