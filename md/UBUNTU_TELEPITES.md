@@ -11,7 +11,7 @@ Ez az útmutató részletesen bemutatja, hogyan telepítheted a Munyire munkaruh
 | Komponens | Minimum verzió | Ajánlott verzió |
 |-----------|---------------|-----------------|
 | Ubuntu | 20.04 LTS | 22.04 LTS vagy újabb |
-| Node.js | 18.x | 20.x LTS |
+| Node.js | 18.x | 22.x LTS |
 | npm | 8.x | 10.x |
 | RAM | 512 MB | 1 GB |
 | Tárhely | 1 GB | 2 GB |
@@ -23,11 +23,11 @@ Ez az útmutató részletesen bemutatja, hogyan telepítheted a Munyire munkaruh
 sudo apt update && sudo apt upgrade -y
 
 # Node.js telepítése (NodeSource repository-ból)
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
 
 # Verziók ellenőrzése
-node --version  # v20.x.x vagy újabb
+node --version  # v22.x.x vagy újabb
 npm --version   # 10.x.x vagy újabb
 
 # Git telepítése (ha még nincs)
@@ -42,7 +42,7 @@ sudo apt install -y git
 
 ```bash
 # Navigálj a célkönyvtárba (pl. /opt vagy /var/www)
-cd /opt
+cd /var/www
 
 # Repository klónozása
 sudo git clone https://github.com/munyire/Munyire.git
@@ -180,10 +180,10 @@ WantedBy=multi-user.target
 
 ```bash
 # www-data felhasználó hozzáférése a projekthez
-sudo chown -R www-data:www-data /opt/Munyire
+sudo chown -R www-data:www-data /var/www/Munyire
 
 # Írási jog az adatbázis könyvtárnak
-sudo chmod 755 /opt/Munyire/backend
+sudo chmod 755 /var/www/Munyire/backend
 ```
 
 **Szolgáltatás indítása:**
