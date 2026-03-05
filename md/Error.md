@@ -39,3 +39,7 @@ npm run dev
 [1]
 [1]   ➜  Local:   http://localhost:5173/
 [1]   ➜  Network: use --host to expose
+
+
+
+A hiba elméletileg a alegujabb nodejs-el volt. A megoldás a nodejs 22.xx LTS verzió

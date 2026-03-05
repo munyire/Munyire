@@ -7,7 +7,7 @@ async function register({ name, email, username, password, role = ROLES.Dolgozo 
   const existing = await dolgozoRepo.findByUsername(username);
   if (existing) {
     const err = new Error("Username already exists");
-    err.status = 400;
+    err.status = 409;
     throw err;
   }
   const hash = await bcrypt.hash(password, Number(process.env.BCRYPT_ROUNDS) || 10);

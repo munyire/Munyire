@@ -194,44 +194,38 @@ async function main() {
     console.log('4. Raktár feltöltése különböző minőségű ruhákkal...');
     
     // A ruha létrehozásnál már létrejött "Új" minőségű készlet
-    // Most hozzáadunk "Jó", "Használt", "Szakadt" minőségű ruhákat is
-    const minosegek = ['Jó', 'Használt'];
+    // Most hozzáadunk "Jó", "Szakadt" minőségű ruhákat is az update API-val
+    const minosegek = ['Jó', 'Szakadt'];
     let raktarFeltoltes = 0;
 
     for (const ruha of createdClothes) {
         for (const minoseg of minosegek) {
             try {
-                // Raktár feltöltés közvetlenül az API-n keresztül
-                // A ruha frissítésével tudunk raktárat hozzáadni
                 const extraMennyiseg = randomNumber(10, 30);
                 
-                // Először lekérjük a ruha adatait
-                const getRes = await fetch(`${BASE_URL}/ruhak/cikkszam/${ruha.Cikkszam}`, {
-                    headers: headers
+                // A ruha update API-val adjuk hozzá az extra készletet
+                // originalMinoseg nélkül új raktár bejegyzés jön létre
+                const updateRes = await fetch(`${BASE_URL}/ruhak/${ruha.Cikkszam}`, {
+                    method: 'PATCH',
+                    headers: headers,
+                    body: JSON.stringify({
+                        Mennyiseg: extraMennyiseg,
+                        Minoseg: minoseg,
+                        Ar: ruha.Ar
+                    })
                 });
                 
-                if (getRes.ok) {
-                    // Raktár létrehozás közvetlenül az adatbázison keresztül
-                    // Mivel nincs külön raktár API, a ruha update-tel próbálkozunk
-                    const updateRes = await fetch(`${BASE_URL}/ruhak/${ruha.Cikkszam}`, {
-                        method: 'PUT',
-                        headers: headers,
-                        body: JSON.stringify({
-                            Mennyiseg: extraMennyiseg,
-                            Minoseg: minoseg
-                        })
-                    });
-                    
-                    if (updateRes.ok) {
-                        raktarFeltoltes++;
-                    }
+                if (updateRes.ok) {
+                    raktarFeltoltes++;
+                    process.stdout.write('r');
                 }
             } catch (err) {
                 // Csendes hiba, nem minden ruhánál van szükség extra készletre
             }
+            await sleep(30);
         }
     }
-    console.log(`   ✅ Raktár feltöltve különböző minőségű ruhákkal.\n`);
+    console.log(`\n   ✅ ${raktarFeltoltes} extra raktár bejegyzés létrehozva.\n`);
 
     // ============================================
     // 5. RUHÁK KIADÁSA DOLGOZÓKNAK
@@ -321,7 +315,7 @@ async function main() {
     // ============================================
     console.log('6. Ruhák visszavétele...');
     
-    const minosegiKategoriak = ['Jó', 'Használt', 'Szakadt'];
+    const minosegiKategoriak = ['Jó', 'Szakadt'];
     let visszavetelCount = 0;
 
     for (const item of visszavetelAdatok) {
@@ -330,7 +324,7 @@ async function main() {
             const minoseg = randomItem(minosegiKategoriak);
 
             const res = await fetch(`${BASE_URL}/ruhakibe/${item.RuhaKiBeID}`, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: headers,
                 body: JSON.stringify({
                     VisszaDatum: visszaDatum.toISOString().split('T')[0],
@@ -347,7 +341,7 @@ async function main() {
         }
         await sleep(30);
     }
-    console.log(`\n   ✅ ${visszavetelCount} ruha visszavéve (minőségek: Jó, Használt, Szakadt).\n`);
+    console.log(`\n   ✅ ${visszavetelCount} ruha visszavéve (minőségek: Jó, Szakadt).\n`);
 
     // ============================================
     // 7. RENDELÉSEK LÉTREHOZÁSA
@@ -507,7 +501,7 @@ async function main() {
     console.log(`   • Telefonszám: Magyar formátum (+3620/+3630/+3670)`);
     console.log(`   • Munkakör: ${MUNKAKOROK.join(', ')}`);
     console.log(`\n👕 Ruhák minőségi kategóriái a raktárban:`);
-    console.log(`   • Új, Jó, Használt, Szakadt`);
+    console.log(`   • Új, Jó, Szakadt`);
     console.log(`\n🔑 Bejelentkezési adatok:'`);
     console.log(`   • Admin: username: admin, password: alma`);
     console.log(`   • Dolgozók: username: user1-user50, password: password123`);

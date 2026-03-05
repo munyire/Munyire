@@ -1,7 +1,9 @@
 const { models } = require("../db");
 
 async function findById(id) {
-  return models.Dolgozo.findByPk(id);
+  return models.Dolgozo.findByPk(id, {
+    attributes: { exclude: ["JelszoHash"] }
+  });
 }
 
 async function findByUsername(username) {
@@ -9,7 +11,9 @@ async function findByUsername(username) {
 }
 
 async function findAll() {
-  return models.Dolgozo.findAll();
+  return models.Dolgozo.findAll({
+    attributes: { exclude: ["JelszoHash"] }
+  });
 }
 
 async function search(query) {

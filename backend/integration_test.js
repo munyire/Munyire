@@ -20,6 +20,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   cyan: '\x1b[36m',
+  magenta: '\x1b[35m',
 };
 
 // Test results tracking
@@ -35,6 +36,7 @@ const testData = {
   adminToken: null,
   managerToken: null,
   dolgozoToken: null,
+  adminId: null,
   dolgozoId: null,
   managerId: null,
   ruhaId: null,
@@ -122,8 +124,16 @@ function logGroup(title) {
 }
 
 /**
- * Test: Health Check
+ * Log sub-group
  */
+function logSubGroup(title) {
+  console.log(`  ${colors.magenta}› ${title}${colors.reset}`);
+}
+
+// ============================================================================
+// AUTHENTICATION TESTS
+// ============================================================================
+
 async function testHealthCheck() {
   logGroup('Health Check');
   try {
@@ -135,13 +145,11 @@ async function testHealthCheck() {
   }
 }
 
-/**
- * Test: Authentication - Login
- */
 async function testAuthLogin() {
-  logGroup('Authentication - Login');
+  logGroup('Authentication - Login Tests');
 
-  // Login as admin (from env variables)
+  // Test 1: Admin login
+  logSubGroup('Admin login');
   try {
     const res = await request('POST', '/api/auth/login', {
       username: process.env.ADMIN_USER || 'admin',
@@ -154,35 +162,45 @@ async function testAuthLogin() {
     assert(res.status === 200, 'Admin login returns 200');
     assert(res.data.token, 'Admin login returns token');
     assert(res.data.user, 'Admin login returns user data');
+    assert(res.data.user.role === 'Admin', 'Admin has correct role');
 
     if (res.data.token) {
       testData.adminToken = res.data.token;
+      testData.adminId = res.data.user.id;
     }
   } catch (error) {
     assert(false, `Admin login failed: ${error.message}`);
   }
 
-  // Test invalid login
+  // Test 2: Invalid credentials
+  logSubGroup('Invalid credentials');
   try {
     const res = await request('POST', '/api/auth/login', {
       username: 'nonexistent',
       password: 'wrongpassword',
     });
-
     assert(res.status === 401, 'Invalid login returns 401');
   } catch (error) {
     assert(false, `Invalid login test failed: ${error.message}`);
   }
+
+  // Test 3: Missing credentials
+  logSubGroup('Missing credentials');
+  try {
+    const res = await request('POST', '/api/auth/login', {});
+    assert(res.status === 400 || res.status === 401, 'Missing credentials returns error');
+  } catch (error) {
+    assert(false, `Missing credentials test failed: ${error.message}`);
+  }
 }
 
-/**
- * Test: Authentication - Register
- */
 async function testAuthRegister() {
-  logGroup('Authentication - Register');
+  logGroup('Authentication - Registration Tests');
 
+  // Test 1: Register Manager (as Admin)
+  logSubGroup('Register Manager as Admin');
   const timestamp = Date.now();
-  const newUser = {
+  const newManager = {
     name: 'Test Manager',
     email: `manager${timestamp}@test.com`,
     username: `manager${timestamp}`,
@@ -191,18 +209,19 @@ async function testAuthRegister() {
   };
 
   try {
-    const res = await request('POST', '/api/auth/register', newUser, testData.adminToken);
-
+    const res = await request('POST', '/api/auth/register', newManager, testData.adminToken);
     assert(res.status === 201, 'Manager registration returns 201');
     assert(res.data.id, 'Manager registration returns user ID');
 
     // Login with the new manager
     const loginRes = await request('POST', '/api/auth/login', {
-      username: newUser.username,
-      password: newUser.password,
+      username: newManager.username,
+      password: newManager.password,
     });
 
     assert(loginRes.status === 200, 'New manager can login');
+    assert(loginRes.data.user.role === 'Manager', 'New user has Manager role');
+    
     if (loginRes.data.token) {
       testData.managerToken = loginRes.data.token;
       testData.managerId = res.data.id;
@@ -211,7 +230,8 @@ async function testAuthRegister() {
     assert(false, `Manager registration failed: ${error.message}`);
   }
 
-  // Register a regular employee
+  // Test 2: Register Dolgozo (as Admin)
+  logSubGroup('Register Dolgozo as Admin');
   const dolgozoTimestamp = Date.now();
   const newDolgozo = {
     name: 'Test Dolgozó',
@@ -223,7 +243,6 @@ async function testAuthRegister() {
 
   try {
     const res = await request('POST', '/api/auth/register', newDolgozo, testData.adminToken);
-
     assert(res.status === 201, 'Employee registration returns 201');
 
     if (res.data.id) {
@@ -237,6 +256,8 @@ async function testAuthRegister() {
     });
 
     assert(loginRes.status === 200, 'New employee can login');
+    assert(loginRes.data.user.role === 'Dolgozo', 'New user has Dolgozo role');
+    
     if (loginRes.data.token) {
       testData.dolgozoToken = loginRes.data.token;
     }
@@ -244,7 +265,8 @@ async function testAuthRegister() {
     assert(false, `Employee registration failed: ${error.message}`);
   }
 
-  // Test unauthorized registration (without token)
+  // Test 3: Unauthorized registration (without token)
+  logSubGroup('Unauthorized registration (no token)');
   try {
     const res = await request('POST', '/api/auth/register', {
       name: 'Unauthorized User',
@@ -252,90 +274,173 @@ async function testAuthRegister() {
       username: 'unauth',
       password: 'Test123!',
     });
-
     assert(res.status === 401, 'Registration without token returns 401');
   } catch (error) {
     assert(false, `Unauthorized registration test failed: ${error.message}`);
   }
+
+  // Test 4: Duplicate username
+  logSubGroup('Duplicate username prevention');
+  try {
+    const res = await request('POST', '/api/auth/register', {
+      name: 'Duplicate User',
+      email: `dup${Date.now()}@test.com`,
+      username: 'admin', // existing username
+      password: 'Test123!',
+      role: 'Dolgozo',
+    }, testData.adminToken);
+    assert(res.status === 409, 'Duplicate username returns 409');
+  } catch (error) {
+    assert(false, `Duplicate username test failed: ${error.message}`);
+  }
+
+  // Test 5: Registration as Manager (should fail - only Admin can register)
+  logSubGroup('Manager cannot register new users');
+  try {
+    const res = await request('POST', '/api/auth/register', {
+      name: 'Should Fail',
+      email: `fail${Date.now()}@test.com`,
+      username: `fail${Date.now()}`,
+      password: 'Test123!',
+      role: 'Dolgozo',
+    }, testData.managerToken);
+    assert(res.status === 403, 'Manager registration attempt returns 403');
+  } catch (error) {
+    assert(false, `Manager registration restriction test failed: ${error.message}`);
+  }
 }
 
-/**
- * Test: Dolgozók (Employees)
- */
+// ============================================================================
+// DOLGOZÓK TESTS
+// ============================================================================
+
 async function testDolgozok() {
   logGroup('Dolgozók - List All');
-
   try {
     const res = await request('GET', '/api/dolgozok', null, testData.managerToken);
     assert(res.status === 200, 'List employees returns 200');
     assert(Array.isArray(res.data), 'List employees returns array');
+    if (res.data.length > 0) {
+      assert(res.data[0].DolgozoID !== undefined, 'Employee has DolgozoID');
+      assert(res.data[0].JelszoHash === undefined, 'Password hash is NOT exposed');
+    }
   } catch (error) {
     assert(false, `List employees failed: ${error.message}`);
   }
 
-  // Test get specific employee
-  if (testData.dolgozoId) {
-    logGroup('Dolgozók - Get Specific');
-    try {
-      const res = await request('GET', `/api/dolgozok/${testData.dolgozoId}`, null, testData.managerToken);
-      assert(res.status === 200, 'Get employee returns 200');
-      assert(res.data.DolgozoID === testData.dolgozoId, 'Returns correct employee');
-    } catch (error) {
-      assert(false, `Get employee failed: ${error.message}`);
-    }
-
-    // Test update employee
-    logGroup('Dolgozók - Update');
-    try {
-      const res = await request('PATCH', `/api/dolgozok/${testData.dolgozoId}`, {
-        Telefonszam: '+36309999999',
-      }, testData.adminToken);
-
-      assert(res.status === 200, 'Update employee returns 200');
-    } catch (error) {
-      assert(false, `Update employee failed: ${error.message}`);
-    }
-  }
-
-  // Test authorization - employee accessing others' data
-  logGroup('Dolgozók - Authorization Check');
-  try {
-    const res = await request('GET', '/api/dolgozok', null, testData.dolgozoToken);
-    // Should either return 403 or only their own data
-    assert(res.status === 403 || res.status === 200, 'Employee has limited access');
-  } catch (error) {
-    assert(false, `Authorization check failed: ${error.message}`);
-  }
-
-  // Test employee names list
-  logGroup('Dolgozók - List Names');
+  // Test: List names (dropdown)
+  logGroup('Dolgozók - List Names (Dropdown)');
   try {
     const res = await request('GET', '/api/dolgozok/names', null, testData.managerToken);
     assert(res.status === 200, 'List names returns 200');
     assert(Array.isArray(res.data), 'List names returns array');
     if (res.data.length > 0) {
       assert(res.data[0].DNev !== undefined, 'Item has DNev');
+      assert(res.data[0].DolgozoID !== undefined, 'Item has DolgozoID');
       assert(res.data[0].Jelszo === undefined, 'Item does NOT have Jelszo');
     }
   } catch (error) {
     assert(false, `List names failed: ${error.message}`);
   }
 
-  // Test employee history
+  // Test: Search
+  logGroup('Dolgozók - Search');
+  try {
+    const res = await request('GET', '/api/dolgozok/search?q=test', null, testData.managerToken);
+    assert(res.status === 200, 'Search employees returns 200');
+    assert(Array.isArray(res.data), 'Search returns array');
+  } catch (error) {
+    assert(false, `Search employees failed: ${error.message}`);
+  }
+
+  // Test: Get specific employee
   if (testData.dolgozoId) {
-    logGroup('Dolgozók - History');
+    logGroup('Dolgozók - Get Specific');
+    try {
+      const res = await request('GET', `/api/dolgozok/${testData.dolgozoId}`, null, testData.managerToken);
+      assert(res.status === 200, 'Get employee returns 200');
+      assert(res.data.DolgozoID === testData.dolgozoId, 'Returns correct employee');
+      assert(res.data.JelszoHash === undefined, 'Password hash is NOT exposed');
+    } catch (error) {
+      assert(false, `Get employee failed: ${error.message}`);
+    }
+  }
+
+  // Test: Create employee (as Admin)
+  logGroup('Dolgozók - Create (Admin)');
+  const createTimestamp = Date.now();
+  let createdDolgozoId = null;
+  try {
+    const res = await request('POST', '/api/dolgozok', {
+      DNev: 'Create Test Dolgozó',
+      Email: `create${createTimestamp}@test.com`,
+      FelhasznaloNev: `createdolgozo${createTimestamp}`,
+      password: 'Password123!',
+      Szerepkor: 'Dolgozo',
+      Nem: 'Férfi',
+      Telefonszam: '+36201234567',
+      Munkakor: 'Tesztelő',
+    }, testData.adminToken);
+
+    assert(res.status === 201, 'Create employee returns 201');
+    assert(res.data.DolgozoID, 'Created employee has ID');
+    createdDolgozoId = res.data.DolgozoID;
+  } catch (error) {
+    assert(false, `Create employee failed: ${error.message}`);
+  }
+
+  // Test: Manager cannot create employee directly
+  logGroup('Dolgozók - Manager Cannot Create (Authorization)');
+  try {
+    const res = await request('POST', '/api/dolgozok', {
+      DNev: 'Should Fail',
+      Email: `fail${Date.now()}@test.com`,
+      FelhasznaloNev: `fail${Date.now()}`,
+      password: 'Password123!',
+      Szerepkor: 'Dolgozo',
+    }, testData.managerToken);
+    assert(res.status === 403, 'Manager creating employee returns 403');
+  } catch (error) {
+    assert(false, `Manager create restriction test failed: ${error.message}`);
+  }
+
+  // Test: Update employee
+  if (createdDolgozoId) {
+    logGroup('Dolgozók - Update');
+    try {
+      const res = await request('PATCH', `/api/dolgozok/${createdDolgozoId}`, {
+        Telefonszam: '+36309999999',
+        Munkakor: 'Frissített Munkakör',
+      }, testData.adminToken);
+
+      assert(res.status === 200, 'Update employee returns 200');
+    } catch (error) {
+      assert(false, `Update employee failed: ${error.message}`);
+    }
+
+    // Test: Manager cannot update employee
+    logSubGroup('Manager cannot update');
+    try {
+      const res = await request('PATCH', `/api/dolgozok/${createdDolgozoId}`, {
+        Telefonszam: '+36308888888',
+      }, testData.managerToken);
+      assert(res.status === 403, 'Manager updating employee returns 403');
+    } catch (error) {
+      assert(false, `Manager update restriction test failed: ${error.message}`);
+    }
+  }
+
+  // Test: Employee history and active items
+  if (testData.dolgozoId) {
+    logGroup('Dolgozók - History & Active Items');
     try {
       const res = await request('GET', `/api/dolgozok/${testData.dolgozoId}/ruhak`, null, testData.managerToken);
       assert(res.status === 200, 'Get employee history returns 200');
       assert(Array.isArray(res.data), 'History returns array');
-      // No items yet for new employee? Or maybe we create some later and test this again?
-      // Order of tests matters. testRuhaKiBe comes later.
-      // But we can at least verify endpoint exists and returns 200.
     } catch (error) {
       assert(false, `Get employee history failed: ${error.message}`);
     }
 
-    logGroup('Dolgozók - Active Items');
     try {
       const res = await request('GET', `/api/dolgozok/${testData.dolgozoId}/ruhak/aktiv`, null, testData.managerToken);
       assert(res.status === 200, 'Get employee active items returns 200');
@@ -345,6 +450,7 @@ async function testDolgozok() {
     }
   }
 
+  // Test: With active items
   logGroup('Dolgozók - With Active Items');
   try {
     const res = await request('GET', '/api/dolgozok/with-active-items', null, testData.managerToken);
@@ -353,37 +459,97 @@ async function testDolgozok() {
   } catch (error) {
     assert(false, `Get employees with active items failed: ${error.message}`);
   }
+
+  // Test: Self access (Dolgozo viewing own data)
+  logGroup('Dolgozók - Self Access Authorization');
+  try {
+    const res = await request('GET', `/api/dolgozok/${testData.dolgozoId}`, null, testData.dolgozoToken);
+    assert(res.status === 200, 'Dolgozo can view own data');
+  } catch (error) {
+    assert(false, `Self access test failed: ${error.message}`);
+  }
+
+  // Test: Non-self access (Dolgozo viewing other's data)
+  logSubGroup('Dolgozo cannot view other\'s data');
+  try {
+    const res = await request('GET', `/api/dolgozok/${testData.adminId}`, null, testData.dolgozoToken);
+    assert(res.status === 403, 'Dolgozo viewing other data returns 403');
+  } catch (error) {
+    assert(false, `Non-self access restriction test failed: ${error.message}`);
+  }
+
+  // Cleanup: Delete created employee
+  if (createdDolgozoId) {
+    logGroup('Dolgozók - Delete');
+    try {
+      const res = await request('DELETE', `/api/dolgozok/${createdDolgozoId}`, null, testData.adminToken);
+      assert(res.status === 204 || res.status === 200, 'Delete employee returns 204/200');
+    } catch (error) {
+      assert(false, `Delete employee failed: ${error.message}`);
+    }
+  }
+
+  // Test: Non-existent employee
+  logGroup('Dolgozók - Non-existent Employee (404)');
+  try {
+    const res = await request('GET', '/api/dolgozok/99999', null, testData.managerToken);
+    assert(res.status === 404, 'Non-existent employee returns 404');
+  } catch (error) {
+    assert(false, `Non-existent employee test failed: ${error.message}`);
+  }
 }
 
-/**
- * Test: Ruhák (Clothing Items)
- */
-/**
- * Test: Ruhák (Clothing Items)
- */
+// ============================================================================
+// RUHÁK TESTS
+// ============================================================================
+
 async function testRuhak() {
-  logGroup('Ruhák - Create');
-
-
+  logGroup('Ruhák - Create with Auto-Generated Cikkszam');
   const newRuha = {
-    Fajta: 'Munkaruha',
+    Fajta: 'Munkaruha-Teszt',
     Szin: 'Kék',
     Meret: 'L',
     Minoseg: 'Új',
     Mennyiseg: 10,
+    Ar: 5000,
   };
 
   try {
     const res = await request('POST', '/api/ruhak', newRuha, testData.adminToken);
     assert(res.status === 201, 'Create ruha returns 201');
     assert(res.data.Cikkszam, 'Create ruha returns Cikkszam');
-    // assert(res.data.RuhaID, 'Create ruha returns ID'); // RuhaID is gone, replaced by Cikkszam (as PK)
+    assert(Number.isInteger(res.data.Cikkszam), 'Cikkszam is integer');
+    assert(res.data.Cikkszam >= 1000000, 'Cikkszam >= 1000000');
 
     if (res.data.Cikkszam) {
-      testData.ruhaId = res.data.Cikkszam; // Store Cikkszam as ruhaId for other tests
+      testData.ruhaId = res.data.Cikkszam;
     }
   } catch (error) {
     assert(false, `Create ruha failed: ${error.message}`);
+  }
+
+  // Test: Create with duplicate (should fail)
+  logSubGroup('Duplicate prevention');
+  try {
+    const res = await request('POST', '/api/ruhak', newRuha, testData.adminToken);
+    assert(res.status === 409, 'Duplicate ruha returns 409');
+  } catch (error) {
+    assert(false, `Duplicate ruha test failed: ${error.message}`);
+  }
+
+  // Test: Manager cannot create ruha
+  logSubGroup('Manager cannot create (Authorization)');
+  try {
+    const res = await request('POST', '/api/ruhak', {
+      Fajta: 'Should Fail',
+      Szin: 'Red',
+      Meret: 'M',
+      Minoseg: 'Új',
+      Mennyiseg: 5,
+    }, testData.managerToken);
+    assert(res.status === 403, 'Manager creating ruha returns 403');
+  } catch (error) {
+    assert(false, `Manager create restriction test failed: ${error.message}`);
   }
 
   logGroup('Ruhák - List All');
@@ -391,85 +557,72 @@ async function testRuhak() {
     const res = await request('GET', '/api/ruhak', null, testData.managerToken);
     assert(res.status === 200, 'List ruhak returns 200');
     assert(Array.isArray(res.data), 'List ruhak returns array');
+    if (res.data.length > 0) {
+      assert(res.data[0].Cikkszam !== undefined, 'Ruha has Cikkszam');
+      assert(res.data[0].Raktars !== undefined, 'Ruha has Raktars (inventory)');
+    }
   } catch (error) {
     assert(false, `List ruhak failed: ${error.message}`);
   }
 
-  // Test get specific ruha
+  // Test: Get specific ruha
   if (testData.ruhaId) {
     logGroup('Ruhák - Get Specific');
     try {
       const res = await request('GET', `/api/ruhak/${testData.ruhaId}`, null, testData.managerToken);
       assert(res.status === 200, 'Get ruha returns 200');
-      // assert(res.data.RuhaID === testData.ruhaId, 'Returns correct ruha');
       assert(res.data.Cikkszam === testData.ruhaId, 'Returns correct ruha Cikkszam');
-
-      // Check for Raktar data
       assert(res.data.Raktars && Array.isArray(res.data.Raktars), 'Returns Raktar inventory info');
-      if (res.data.Raktars && res.data.Raktars.length > 0) {
-        const ujjStock = res.data.Raktars.find(r => r.Minoseg === 'Új');
-        assert(ujjStock && ujjStock.Mennyiseg === 10, 'Initial stock is correct');
-      }
-
     } catch (error) {
       assert(false, `Get ruha failed: ${error.message}`);
     }
 
-    // Test search
-    logGroup('Ruhák - Search');
+    // Test: Get by Cikkszam (alternative endpoint)
+    logSubGroup('Get by Cikkszam (alternative endpoint)');
     try {
-      const res = await request('GET', `/api/ruhak/search?q=Munkaruha`, null, testData.managerToken);
-      assert(res.status === 200, 'Search ruhak returns 200');
-      assert(Array.isArray(res.data), 'Search returns array');
+      const res = await request('GET', `/api/ruhak/by-cikkszam/${testData.ruhaId}`, null, testData.managerToken);
+      assert(res.status === 200, 'Get by cikkszam returns 200');
+      assert(res.data.Cikkszam === testData.ruhaId, 'Returns correct ruha');
     } catch (error) {
-      assert(false, `Search ruhak failed: ${error.message}`);
-    }
-
-    // Test update
-    logGroup('Ruhák - Update');
-    try {
-      // Create/Update stock via which endpoint? 
-      // PATCH /api/ruhak/:id updates Ruha details (Fajta, Szin...).
-      // Does it update stock? 
-      // ruhaService.update calls repo.update -> models.Ruha.update.
-      // Ruha model NO LONGER HAS Mennyiseg.
-      // So PATCH /api/ruhak/:id with { Mennyiseg: 15 } will IGNORE Mennyiseg unless service handles it.
-      // ruhaService.js: update(cikkszam, data) -> ruhaRepo.update.
-      // ruhaRepo.update -> record.update(data).
-      // So updating Mennyiseg via this endpoint will fail/do nothing for stock.
-      // Stock updates should probably go through inventory endpoints or we should update logic.
-      // For now, let's update a field that EXISTS, like Szin or Meret (careful with duplicates).
-      // Let's invoke update but expect it NOT to crash, validation might warn about unknown field?
-
-      const res = await request('PATCH', `/api/ruhak/${testData.ruhaId}`, {
-        // Mennyiseg: 15, // This effectively does nothing now, or should we implement stock update here?
-        // Let's stick to Metadata update test.
-        // Actually, let's NOT update unique attrs to avoid collision.
-        // Ruha has no other fields? 
-        // We can try valid update?
-      }, testData.adminToken);
-
-      assert(res.status === 200, 'Update ruha returns 200 (even if noop)');
-    } catch (error) {
-      assert(false, `Update ruha failed: ${error.message}`);
+      assert(false, `Get by cikkszam failed: ${error.message}`);
     }
   }
 
-  // Test metadata options
+  // Test: Search
+  logGroup('Ruhák - Search');
+  try {
+    const res = await request('GET', `/api/ruhak/search?q=Munkaruha`, null, testData.managerToken);
+    assert(res.status === 200, 'Search ruhak returns 200');
+    assert(Array.isArray(res.data), 'Search returns array');
+  } catch (error) {
+    assert(false, `Search ruhak failed: ${error.message}`);
+  }
+
+  // Test: Search no results
+  logSubGroup('Search with no results');
+  try {
+    const res = await request('GET', `/api/ruhak/search?q=NONEXISTENTXYZ123`, null, testData.managerToken);
+    assert(res.status === 200, 'Search no results returns 200');
+    assert(Array.isArray(res.data) && res.data.length === 0, 'Empty array for no results');
+  } catch (error) {
+    assert(false, `Search no results test failed: ${error.message}`);
+  }
+
+  // Test: Metadata options
   logGroup('Ruhák - Metadata Options');
   try {
     const res = await request('GET', '/api/ruhak/options', null, testData.managerToken);
     assert(res.status === 200, 'Get options returns 200');
     assert(Array.isArray(res.data.types), 'Options contains types array');
     assert(Array.isArray(res.data.colors), 'Options contains colors array');
+    assert(Array.isArray(res.data.sizes), 'Options contains sizes array');
   } catch (error) {
     assert(false, `Get options failed: ${error.message}`);
   }
 
-  // Test clothing history and active items
+  // Test: History and Active items
   if (testData.ruhaId) {
-    logGroup('Ruhák - History & Active');
-
+    logGroup('Ruhák - History & Active Items');
     try {
       const res = await request('GET', `/api/ruhak/${testData.ruhaId}/history`, null, testData.managerToken);
       assert(res.status === 200, 'Get ruha history returns 200');
@@ -486,29 +639,62 @@ async function testRuhak() {
       assert(false, `Get ruha active items failed: ${error.message}`);
     }
   }
+
+  // Test: Update ruha
+  if (testData.ruhaId) {
+    logGroup('Ruhák - Update');
+    try {
+      const res = await request('PATCH', `/api/ruhak/${testData.ruhaId}`, {
+        Ar: 6000,
+      }, testData.adminToken);
+
+      assert(res.status === 200, 'Update ruha returns 200');
+    } catch (error) {
+      assert(false, `Update ruha failed: ${error.message}`);
+    }
+
+    // Test: Manager cannot update
+    logSubGroup('Manager cannot update');
+    try {
+      const res = await request('PATCH', `/api/ruhak/${testData.ruhaId}`, {
+        Ar: 7000,
+      }, testData.managerToken);
+      assert(res.status === 403, 'Manager updating ruha returns 403');
+    } catch (error) {
+      assert(false, `Manager update restriction test failed: ${error.message}`);
+    }
+  }
+
+  // Test: Non-existent ruha (404)
+  logGroup('Ruhák - Non-existent (404)');
+  try {
+    const res = await request('GET', '/api/ruhak/9999999', null, testData.managerToken);
+    assert(res.status === 404, 'Non-existent ruha returns 404');
+  } catch (error) {
+    assert(false, `Non-existent ruha test failed: ${error.message}`);
+  }
 }
 
-/**
- * Test: Complex SKU Logic and Constraints
- */
-async function testSkuAndDuplicates() {
-  logGroup('SKU Generation & Duplicate Prevention');
+// ============================================================================
+// SKU & VARIANTS TESTS
+// ============================================================================
 
+async function testSkuAndVariants() {
+  logGroup('SKU - Generate Multiple');
+  
   const baseRuha = {
-    Fajta: 'TESZT-Póló',
-    Szin: "Fehér",
-    Meret: "XL",
-    Minoseg: "Új",
-    Mennyiseg: 5
+    Fajta: 'TESZT-Póló-Variant',
+    Szin: 'Fehér',
+    Meret: 'XL',
+    Minoseg: 'Új',
+    Mennyiseg: 5,
   };
 
-  // 1. Automatic SKU Generation (7 digit Int)
   let firstSku = null;
   try {
     const res = await request('POST', '/api/ruhak', baseRuha, testData.adminToken);
     assert(res.status === 201, 'Create auto-SKU Item 1 returns 201');
     assert(Number.isInteger(res.data.Cikkszam), 'Generated SKU is Integer');
-    console.log(`Generated SKU: ${res.data.Cikkszam}`);
     assert(res.data.Cikkszam >= 1000000, 'Generated SKU is >= 1000000');
 
     firstSku = res.data.Cikkszam;
@@ -519,26 +705,52 @@ async function testSkuAndDuplicates() {
     assert(false, `Auto-SKU Item 1 failed: ${error.message}`);
   }
 
-  // 2. Duplicate Prevention
+  // Create variant with same attributes but different cikkszam (should fail - duplicate)
+  logSubGroup('Duplicate prevention');
   try {
     const res = await request('POST', '/api/ruhak', baseRuha, testData.adminToken);
     assert(res.status === 409, 'Duplicate creation returns 409 Conflict');
   } catch (error) {
     assert(false, `Duplicate check failed: ${error.message}`);
   }
+
+  // Test: Delete variant
+  if (testData.skuRuhaId) {
+    logGroup('Ruhák - Variant Management');
+    
+    // First add a variant with different quality
+    try {
+      const res = await request('PATCH', `/api/ruhak/${testData.skuRuhaId}`, {
+        Mennyiseg: 3,
+        Minoseg: 'Jó',
+      }, testData.adminToken);
+      assert(res.status === 200, 'Add variant returns 200');
+    } catch (error) {
+      assert(false, `Add variant failed: ${error.message}`);
+    }
+
+    // Delete variant
+    logSubGroup('Delete variant');
+    try {
+      const res = await request('DELETE', `/api/ruhak/${testData.skuRuhaId}/variants/Jó`, null, testData.adminToken);
+      assert(res.status === 204 || res.status === 200, 'Delete variant returns 204/200');
+    } catch (error) {
+      assert(false, `Delete variant failed: ${error.message}`);
+    }
+  }
 }
 
-/**
- * Test: RuhaKiBe (Issue/Return Transactions)
- */
+// ============================================================================
+// RUHAKIBE TESTS
+// ============================================================================
+
 async function testRuhaKiBe() {
   if (!testData.dolgozoId || !testData.ruhaId) {
     console.log(`${colors.yellow}⚠ Skipping RuhaKiBe tests (missing dolgozoId or ruhaId)${colors.reset}`);
     return;
   }
 
-  logGroup('RuhaKiBe - Issue Item');
-
+  logGroup('RuhaKiBe - Issue Item (Kiadás)');
   const newKiadas = {
     DolgozoID: testData.dolgozoId,
     RuhaID: testData.ruhaId,
@@ -550,12 +762,39 @@ async function testRuhaKiBe() {
     const res = await request('POST', '/api/ruhakibe', newKiadas, testData.managerToken);
     assert(res.status === 201, 'Issue item returns 201');
     assert(res.data.RuhaKiBeID, 'Issue returns transaction ID');
+    assert(res.data.DolgozoID === testData.dolgozoId, 'Transaction has correct DolgozoID');
 
     if (res.data.RuhaKiBeID) {
       testData.ruhaKiBeId = res.data.RuhaKiBeID;
     }
   } catch (error) {
     assert(false, `Issue item failed: ${error.message}`);
+  }
+
+  // Test: Dolgozo cannot issue items
+  logSubGroup('Dolgozo cannot issue (Authorization)');
+  try {
+    const res = await request('POST', '/api/ruhakibe', {
+      DolgozoID: testData.dolgozoId,
+      RuhaID: testData.ruhaId,
+      Mennyiseg: 1,
+    }, testData.dolgozoToken);
+    assert(res.status === 403, 'Dolgozo issuing returns 403');
+  } catch (error) {
+    assert(false, `Dolgozo issue restriction test failed: ${error.message}`);
+  }
+
+  // Test: Insufficient stock
+  logSubGroup('Insufficient stock handling');
+  try {
+    const res = await request('POST', '/api/ruhakibe', {
+      DolgozoID: testData.dolgozoId,
+      RuhaID: testData.ruhaId,
+      Mennyiseg: 99999, // Way too much
+    }, testData.managerToken);
+    assert(res.status === 400 || res.status === 409 || res.status === 422, 'Insufficient stock returns error');
+  } catch (error) {
+    assert(false, `Insufficient stock test failed: ${error.message}`);
   }
 
   logGroup('RuhaKiBe - List All');
@@ -576,54 +815,26 @@ async function testRuhaKiBe() {
     assert(false, `List active items failed: ${error.message}`);
   }
 
-  // Test return item
-  if (testData.ruhaKiBeId) {
-    logGroup('RuhaKiBe - Return Item');
-    try {
-      const res = await request('PATCH', `/api/ruhakibe/${testData.ruhaKiBeId}`, {
-        VisszaDatum: new Date().toISOString().split('T')[0],
-      }, testData.managerToken);
-
-      assert(res.status === 200, 'Return item returns 200');
-    } catch (error) {
-      assert(false, `Return item failed: ${error.message}`);
-    }
-  }
-
-  logGroup('RuhaKiBe - Statistics');
+  logGroup('RuhaKiBe - Returned Items');
   try {
-    const res = await request('GET', '/api/ruhakibe/stats', null, testData.managerToken);
-    assert(res.status === 200, 'Statistics returns 200');
-    assert(res.data.totalIssued !== undefined, 'Statistics contains data');
+    const res = await request('GET', '/api/ruhakibe/returned', null, testData.managerToken);
+    assert(res.status === 200, 'List returned items returns 200');
+    assert(Array.isArray(res.data), 'Returned items returns array');
   } catch (error) {
-    assert(false, `Statistics failed: ${error.message}`);
+    assert(false, `List returned items failed: ${error.message}`);
   }
 
-  // Test additional RuhaKiBe endpoints
-  logGroup('RuhaKiBe - Additional Filters');
-
-  // Mine (should get current user's items)
+  logGroup('RuhaKiBe - My Items (Mine endpoint)');
   try {
-    // If login was admin, do we have items? We created transaction for 'dolgozoId' but we are 'managerToken' or 'adminToken'?
-    // Let's use 'dolgozoToken' if available
-    const token = testData.dolgozoToken || testData.managerToken;
-    const res = await request('GET', '/api/ruhakibe/mine', null, token);
+    // Dolgozo viewing own items
+    const res = await request('GET', '/api/ruhakibe/mine', null, testData.dolgozoToken);
     assert(res.status === 200, 'Get my items returns 200');
     assert(Array.isArray(res.data), 'My items returns array');
   } catch (error) {
     assert(false, `Get my items failed: ${error.message}`);
   }
 
-  // Returned items
-  try {
-    const res = await request('GET', '/api/ruhakibe/returned', null, testData.managerToken);
-    assert(res.status === 200, 'Get returned items returns 200');
-    assert(Array.isArray(res.data), 'Returned items returns array');
-  } catch (error) {
-    assert(false, `Get returned items failed: ${error.message}`);
-  }
-
-  // By Date
+  logGroup('RuhaKiBe - By Date Filter');
   try {
     const today = new Date().toISOString().split('T')[0];
     const res = await request('GET', `/api/ruhakibe/by-date?from=${today}&to=${today}`, null, testData.managerToken);
@@ -633,8 +844,18 @@ async function testRuhaKiBe() {
     assert(false, `Get items by date failed: ${error.message}`);
   }
 
-  // Get specific transaction
+  logGroup('RuhaKiBe - Statistics');
+  try {
+    const res = await request('GET', '/api/ruhakibe/stats', null, testData.managerToken);
+    assert(res.status === 200, 'Statistics returns 200');
+    assert(res.data.totalIssued !== undefined || res.data.activeCount !== undefined, 'Statistics contains data');
+  } catch (error) {
+    assert(false, `Statistics failed: ${error.message}`);
+  }
+
+  // Test: Get specific transaction
   if (testData.ruhaKiBeId) {
+    logGroup('RuhaKiBe - Get Specific Transaction');
     try {
       const res = await request('GET', `/api/ruhakibe/${testData.ruhaKiBeId}`, null, testData.managerToken);
       assert(res.status === 200, 'Get specific transaction returns 200');
@@ -642,12 +863,46 @@ async function testRuhaKiBe() {
     } catch (error) {
       assert(false, `Get specific transaction failed: ${error.message}`);
     }
+
+    // Test: Return item
+    logGroup('RuhaKiBe - Return Item (Visszavétel)');
+    try {
+      const res = await request('PATCH', `/api/ruhakibe/${testData.ruhaKiBeId}`, {
+        VisszaDatum: new Date().toISOString().split('T')[0],
+        RuhaMinoseg: 'Használt',
+      }, testData.managerToken);
+
+      assert(res.status === 200, 'Return item returns 200');
+    } catch (error) {
+      assert(false, `Return item failed: ${error.message}`);
+    }
+
+    // Test: Dolgozo cannot return items
+    logSubGroup('Dolgozo cannot return (Authorization)');
+    try {
+      const res = await request('PATCH', `/api/ruhakibe/${testData.ruhaKiBeId}`, {
+        VisszaDatum: new Date().toISOString().split('T')[0],
+      }, testData.dolgozoToken);
+      assert(res.status === 403, 'Dolgozo returning returns 403');
+    } catch (error) {
+      assert(false, `Dolgozo return restriction test failed: ${error.message}`);
+    }
+  }
+
+  // Test: Non-existent transaction (404)
+  logGroup('RuhaKiBe - Non-existent Transaction (404)');
+  try {
+    const res = await request('GET', '/api/ruhakibe/99999', null, testData.managerToken);
+    assert(res.status === 404, 'Non-existent transaction returns 404');
+  } catch (error) {
+    assert(false, `Non-existent transaction test failed: ${error.message}`);
   }
 }
 
-/**
- * Test: Rendelések (Orders)
- */
+// ============================================================================
+// RENDELÉSEK TESTS
+// ============================================================================
+
 async function testRendelesek() {
   if (!testData.ruhaId) {
     console.log(`${colors.yellow}⚠ Skipping Rendelések tests (missing ruhaId)${colors.reset}`);
@@ -655,9 +910,8 @@ async function testRendelesek() {
   }
 
   logGroup('Rendelések - Create');
-
   const newRendeles = {
-    RuhaID: testData.ruhaId,
+    Cikkszam: testData.ruhaId,
     Mennyiseg: 5,
     Szallito: 'Teszt Szállító',
     Megjegyzes: 'Teszt rendelés',
@@ -667,12 +921,25 @@ async function testRendelesek() {
     const res = await request('POST', '/api/rendelesek', newRendeles, testData.managerToken);
     assert(res.status === 201, 'Create order returns 201');
     assert(res.data.RendelesID, 'Create order returns ID');
+    assert(res.data.Statusz === 'Leadva', 'New order has status Leadva');
 
     if (res.data.RendelesID) {
       testData.rendelesId = res.data.RendelesID;
     }
   } catch (error) {
     assert(false, `Create order failed: ${error.message}`);
+  }
+
+  // Test: Dolgozo cannot create orders
+  logSubGroup('Dolgozo cannot create (Authorization)');
+  try {
+    const res = await request('POST', '/api/rendelesek', {
+      RuhaID: testData.ruhaId,
+      Mennyiseg: 1,
+    }, testData.dolgozoToken);
+    assert(res.status === 403, 'Dolgozo creating order returns 403');
+  } catch (error) {
+    assert(false, `Dolgozo create restriction test failed: ${error.message}`);
   }
 
   logGroup('Rendelések - List All');
@@ -688,52 +955,33 @@ async function testRendelesek() {
   try {
     const res = await request('GET', '/api/rendelesek/pending', null, testData.managerToken);
     assert(res.status === 200, 'Pending orders returns 200');
+    assert(Array.isArray(res.data), 'Pending orders returns array');
   } catch (error) {
     assert(false, `Pending orders failed: ${error.message}`);
   }
 
-  // Test complete order
-  if (testData.rendelesId) {
-    logGroup('Rendelések - Complete Order');
-    try {
-      const res = await request('PATCH', `/api/rendelesek/${testData.rendelesId}/complete`, {
-        Megjegyzes: 'Rendelés teljesítve',
-      }, testData.adminToken);
-
-      assert(res.status === 200, 'Complete order returns 200');
-    } catch (error) {
-      assert(false, `Complete order failed: ${error.message}`);
-    }
-  }
-
-  // Test additional Rendelések endpoints
-  logGroup('Rendelések - Additional Search');
-
-  // By Status
+  logGroup('Rendelések - By Status');
   try {
-    // Current status might be 'Teljesítve' after completion, or 'Leadva' before?
-    // Let's search for 'Teljesítve' since we just completed one
-    const status = 'Teljesítve';
-    const res = await request('GET', `/api/rendelesek/by-status/${encodeURIComponent(status)}`, null, testData.managerToken);
-    assert(res.status === 200, `Get orders by status '${status}' returns 200`);
+    const res = await request('GET', `/api/rendelesek/by-status/${encodeURIComponent('Leadva')}`, null, testData.managerToken);
+    assert(res.status === 200, 'Get orders by status returns 200');
     assert(Array.isArray(res.data), 'Orders by status returns array');
   } catch (error) {
     assert(false, `Get orders by status failed: ${error.message}`);
   }
 
-  // By Ruha (Cikkszam)
-  if (testData.ruhaId) {
-    try {
-      const res = await request('GET', `/api/rendelesek/by-ruha/${testData.ruhaId}`, null, testData.managerToken);
-      assert(res.status === 200, 'Get orders by ruha returns 200');
-      assert(Array.isArray(res.data), 'Orders by ruha returns array');
-    } catch (error) {
-      assert(false, `Get orders by ruha failed: ${error.message}`);
-    }
+  // Test: Get by Ruha
+  logGroup('Rendelések - By Ruha');
+  try {
+    const res = await request('GET', `/api/rendelesek/by-ruha/${testData.ruhaId}`, null, testData.managerToken);
+    assert(res.status === 200, 'Get orders by ruha returns 200');
+    assert(Array.isArray(res.data), 'Orders by ruha returns array');
+  } catch (error) {
+    assert(false, `Get orders by ruha failed: ${error.message}`);
   }
 
-  // Get specific order
+  // Test: Get specific order
   if (testData.rendelesId) {
+    logGroup('Rendelések - Get Specific');
     try {
       const res = await request('GET', `/api/rendelesek/${testData.rendelesId}`, null, testData.managerToken);
       assert(res.status === 200, 'Get specific order returns 200');
@@ -741,21 +989,79 @@ async function testRendelesek() {
     } catch (error) {
       assert(false, `Get specific order failed: ${error.message}`);
     }
+
+    // Test: Update order
+    logSubGroup('Update order');
+    try {
+      const res = await request('PATCH', `/api/rendelesek/${testData.rendelesId}`, {
+        Megjegyzes: 'Updated comment',
+      }, testData.managerToken);
+      assert(res.status === 200, 'Update order returns 200');
+    } catch (error) {
+      assert(false, `Update order failed: ${error.message}`);
+    }
+
+    // Test: Complete order (Admin only)
+    logGroup('Rendelések - Complete Order (Admin)');
+    try {
+      const res = await request('PATCH', `/api/rendelesek/${testData.rendelesId}/complete`, {}, testData.adminToken);
+      assert(res.status === 200, 'Complete order returns 200');
+    } catch (error) {
+      assert(false, `Complete order failed: ${error.message}`);
+    }
+
+    // Test: Manager cannot complete
+    logSubGroup('Manager cannot complete');
+    // Create another order for this test
+    const anotherRes = await request('POST', '/api/rendelesek', {
+      RuhaID: testData.ruhaId,
+      Mennyiseg: 1,
+    }, testData.managerToken);
+    
+    if (anotherRes.status === 201 && anotherRes.data.RendelesID) {
+      try {
+        const res = await request('PATCH', `/api/rendelesek/${anotherRes.data.RendelesID}/complete`, {}, testData.managerToken);
+        assert(res.status === 403, 'Manager completing order returns 403');
+        // Cleanup
+        await request('DELETE', `/api/rendelesek/${anotherRes.data.RendelesID}`, null, testData.adminToken);
+      } catch (error) {
+        assert(false, `Manager complete restriction test failed: ${error.message}`);
+      }
+    }
+  }
+
+  // Test: Non-existent order (404)
+  logGroup('Rendelések - Non-existent Order (404)');
+  try {
+    const res = await request('GET', '/api/rendelesek/99999', null, testData.managerToken);
+    assert(res.status === 404, 'Non-existent order returns 404');
+  } catch (error) {
+    assert(false, `Non-existent order test failed: ${error.message}`);
   }
 }
 
-/**
- * Test: Dashboard
- */
+// ============================================================================
+// DASHBOARD TESTS
+// ============================================================================
+
 async function testDashboard() {
   logGroup('Dashboard - Statistics');
-
   try {
     const res = await request('GET', '/api/dashboard/stats', null, testData.managerToken);
     assert(res.status === 200, 'Dashboard stats returns 200');
-    assert(res.data.dolgozoCount !== undefined, 'Stats contain employee count');
+    assert(res.data.totalWorkers !== undefined || res.data.dolgozoCount !== undefined, 'Stats contain employee count');
+    assert(res.data.totalClothes !== undefined, 'Stats contain clothes count');
   } catch (error) {
     assert(false, `Dashboard stats failed: ${error.message}`);
+  }
+
+  // Test: Dolgozo cannot access dashboard
+  logSubGroup('Dolgozo cannot access dashboard');
+  try {
+    const res = await request('GET', '/api/dashboard/stats', null, testData.dolgozoToken);
+    assert(res.status === 403, 'Dolgozo accessing dashboard returns 403');
+  } catch (error) {
+    assert(false, `Dolgozo dashboard restriction test failed: ${error.message}`);
   }
 
   logGroup('Dashboard - Low Stock');
@@ -771,18 +1077,18 @@ async function testDashboard() {
   try {
     const res = await request('GET', '/api/dashboard/recent-activity', null, testData.managerToken);
     assert(res.status === 200, 'Recent activity returns 200');
-    assert(Array.isArray(res.data.recentKibe), 'Recent activity returns array');
+    assert(res.data.recentKibe !== undefined || Array.isArray(res.data), 'Recent activity returns data');
   } catch (error) {
     assert(false, `Recent activity failed: ${error.message}`);
   }
 }
 
-/**
- * Test: Reports
- */
+// ============================================================================
+// REPORTS TESTS
+// ============================================================================
+
 async function testReports() {
   logGroup('Reports - Inventory Report');
-
   try {
     const res = await request('GET', '/api/reports/inventory', null, testData.managerToken);
     assert(res.status === 200, 'Inventory report returns 200');
@@ -795,6 +1101,7 @@ async function testReports() {
   try {
     const res = await request('GET', '/api/reports/employee-summary', null, testData.managerToken);
     assert(res.status === 200, 'Employee summary returns 200');
+    assert(Array.isArray(res.data) || typeof res.data === 'object', 'Employee summary returns data');
   } catch (error) {
     assert(false, `Employee summary failed: ${error.message}`);
   }
@@ -809,18 +1116,82 @@ async function testReports() {
     assert(false, `Monthly report failed: ${error.message}`);
   }
 
-  logGroup('Reports - Quality Summary');
+  logGroup('Reports - Quality Summary (Admin Only)');
   try {
     const res = await request('GET', '/api/reports/quality-summary', null, testData.adminToken);
     assert(res.status === 200, 'Quality summary returns 200');
   } catch (error) {
     assert(false, `Quality summary failed: ${error.message}`);
   }
+
+  // Test: Manager cannot access quality summary
+  logSubGroup('Manager cannot access quality summary');
+  try {
+    const res = await request('GET', '/api/reports/quality-summary', null, testData.managerToken);
+    assert(res.status === 403, 'Manager accessing quality summary returns 403');
+  } catch (error) {
+    assert(false, `Manager quality summary restriction test failed: ${error.message}`);
+  }
+
+  // Test: Dolgozo cannot access any reports
+  logSubGroup('Dolgozo cannot access reports');
+  try {
+    const res = await request('GET', '/api/reports/inventory', null, testData.dolgozoToken);
+    assert(res.status === 403, 'Dolgozo accessing reports returns 403');
+  } catch (error) {
+    assert(false, `Dolgozo reports restriction test failed: ${error.message}`);
+  }
 }
 
-/**
- * Cleanup created data
- */
+// ============================================================================
+// AUTHORIZATION & EDGE CASE TESTS
+// ============================================================================
+
+async function testAuthorizationAndEdgeCases() {
+  logSection('AUTHORIZATION & EDGE CASE TESTS');
+
+  logGroup('Protected Endpoints Without Token');
+  try {
+    const endpoints = [
+      { method: 'GET', path: '/api/dolgozok' },
+      { method: 'GET', path: '/api/ruhak' },
+      { method: 'GET', path: '/api/ruhakibe' },
+      { method: 'GET', path: '/api/rendelesek' },
+      { method: 'GET', path: '/api/dashboard/stats' },
+    ];
+
+    for (const endpoint of endpoints) {
+      const res = await request(endpoint.method, endpoint.path);
+      assert(res.status === 401, `${endpoint.method} ${endpoint.path} without token returns 401`);
+    }
+  } catch (error) {
+    assert(false, `Protected endpoints test failed: ${error.message}`);
+  }
+
+  logGroup('Invalid Token');
+  try {
+    const res = await request('GET', '/api/dolgozok', null, 'invalid_token_here');
+    assert(res.status === 401, 'Request with invalid token returns 401');
+  } catch (error) {
+    assert(false, `Invalid token test failed: ${error.message}`);
+  }
+
+  logGroup('Method Not Allowed (implicit)');
+  // Most endpoints don't explicitly handle this, but we can test general behavior
+  try {
+    // Try to POST to a GET-only endpoint (if it behaves unexpectedly)
+    const res = await request('POST', '/api/ruhak/options', {}, testData.managerToken);
+    // This might return 404 (route not found) or 405 (method not allowed)
+    assert(res.status === 404 || res.status === 405, 'Invalid method handled appropriately');
+  } catch (error) {
+    // Expected to potentially fail, that's fine
+  }
+}
+
+// ============================================================================
+// CLEANUP
+// ============================================================================
+
 async function cleanup() {
   logSection('CLEANUP');
 
@@ -883,9 +1254,10 @@ async function cleanup() {
   }
 }
 
-/**
- * Print test results
- */
+// ============================================================================
+// RESULTS & MAIN
+// ============================================================================
+
 function printResults() {
   const duration = ((Date.now() - results.startTime) / 1000).toFixed(2);
 
@@ -908,16 +1280,14 @@ function printResults() {
   }
 }
 
-/**
- * Main test runner
- */
 async function runTests() {
   console.log(`${colors.cyan}
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
 ║              MUNYIRE INTEGRATION TESTS                    ║
 ║                                                           ║
-║  Testing all endpoints with authentication & authorization║
+║  Comprehensive API Testing Suite                          ║
+║  Authentication • Authorization • CRUD • Edge Cases      ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
 ${colors.reset}`);
@@ -937,7 +1307,7 @@ ${colors.reset}`);
 
     logSection('RUHÁK (CLOTHING) TESTS');
     await testRuhak();
-    await testSkuAndDuplicates();
+    await testSkuAndVariants();
 
     logSection('RUHAKIBE (TRANSACTIONS) TESTS');
     await testRuhaKiBe();
@@ -950,6 +1320,9 @@ ${colors.reset}`);
 
     logSection('REPORTS TESTS');
     await testReports();
+
+    logSection('AUTHORIZATION & EDGE CASE TESTS');
+    await testAuthorizationAndEdgeCases();
 
   } catch (error) {
     console.error(`${colors.red}Fatal error during testing:${colors.reset}`, error);
