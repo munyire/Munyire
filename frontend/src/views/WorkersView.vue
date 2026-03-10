@@ -645,7 +645,7 @@ const confirmDelete = async () => {
           <div class="warning-icon">
             <AlertTriangle size="48" />
           </div>
-          <p class="warning-title">A dolgozónak <strong>{{ clothesToReturn.length }} db</strong> aktív ruha van nála!</p>
+          <p class="warning-title">A dolgozónál kiadott ruha van!</p>
           <p class="warning-subtitle">A törlés előtt minden ruhát vissza kell venni a raktárba.</p>
           
           <div class="clothes-list-preview">
