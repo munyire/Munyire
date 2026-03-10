@@ -16,7 +16,10 @@ import {
   ChevronLeft,
   X,
   Shirt,
-  Printer
+  Printer,
+  AlertTriangle,
+  Package,
+  Check
 } from 'lucide-vue-next';
 import Modal from '../components/ui/Modal.vue';
 import PrintTemplate from '../components/PrintTemplate.vue';
@@ -35,6 +38,16 @@ const messageModalType = ref('success'); // 'success' | 'error'
 const messageModalText = ref('');
 const showDeleteConfirmModal = ref(false);
 const workerToDelete = ref(null);
+
+// ===== CLOTHES RETURN ON DELETE =====
+const showClothesWarningModal = ref(false);
+const showReturnClothModal = ref(false);
+const clothesToReturn = ref([]);
+const currentReturnIndex = ref(0);
+const returnQuality = ref('Jó');
+const qualityOptions = ['Új', 'Jó', 'Szakadt'];
+const currentReturnItem = computed(() => clothesToReturn.value[currentReturnIndex.value] || null);
+const isReturningAll = ref(false);
 const form = ref({
   DolgozoID: null,
   DNev: '',
@@ -230,7 +243,72 @@ const saveWorker = async () => {
 
 const deleteWorker = async (id) => {
   workerToDelete.value = id;
-  showDeleteConfirmModal.value = true;
+  
+  // Fetch the worker's active clothes first
+  try {
+    const res = await api.get(`/dolgozok/${id}/ruhak`);
+    const activeItems = res.data.filter(item => !item.VisszaDatum);
+    
+    if (activeItems.length > 0) {
+      // Worker has clothes - show warning modal
+      clothesToReturn.value = activeItems;
+      showClothesWarningModal.value = true;
+    } else {
+      // No clothes - show simple delete confirmation
+      showDeleteConfirmModal.value = true;
+    }
+  } catch (err) {
+    console.error('Error checking worker clothes:', err);
+    // On error, show simple delete confirmation
+    showDeleteConfirmModal.value = true;
+  }
+};
+
+const startReturnAllClothes = () => {
+  showClothesWarningModal.value = false;
+  isReturningAll.value = true;
+  currentReturnIndex.value = 0;
+  returnQuality.value = 'Jó';
+  showReturnClothModal.value = true;
+};
+
+const confirmReturnCurrentCloth = async () => {
+  if (!currentReturnItem.value) return;
+  
+  try {
+    await api.patch(`/ruhakibe/${currentReturnItem.value.RuhaKiBeID}`, {
+      RuhaMinoseg: returnQuality.value,
+      VisszaDatum: new Date().toISOString().split('T')[0]
+    });
+    
+    // Move to next cloth or finish
+    currentReturnIndex.value++;
+    returnQuality.value = 'Jó'; // Reset quality for next item
+    
+    if (currentReturnIndex.value >= clothesToReturn.value.length) {
+      // All clothes returned - close return modal and proceed with delete
+      showReturnClothModal.value = false;
+      // Refresh the clothing history
+      if (selectedWorker.value?.DolgozoID === workerToDelete.value) {
+        await fetchClothingHistory(workerToDelete.value);
+      }
+      // Now show the delete confirmation
+      showDeleteConfirmModal.value = true;
+    }
+    // Otherwise, continue with the next cloth (modal stays open)
+  } catch (err) {
+    console.error('Error returning cloth:', err);
+    messageModalText.value = 'Hiba történt a ruha visszavétele során.';
+    messageModalType.value = 'error';
+    showMessageModal.value = true;
+  }
+};
+
+const cancelReturnProcess = () => {
+  showReturnClothModal.value = false;
+  clothesToReturn.value = [];
+  currentReturnIndex.value = 0;
+  isReturningAll.value = false;
 };
 
 const confirmDelete = async () => {
@@ -245,6 +323,9 @@ const confirmDelete = async () => {
     }
     showDeleteConfirmModal.value = false;
     workerToDelete.value = null;
+    clothesToReturn.value = [];
+    currentReturnIndex.value = 0;
+    isReturningAll.value = false;
   } catch (error) {
     console.error('Error deleting worker:', error);
     messageModalText.value = 'Hiba történt a törlés során.';
@@ -553,6 +634,101 @@ const confirmDelete = async () => {
       </template>
     </Modal>
 
+    <!-- Clothes Warning Modal -->
+    <Modal 
+      :show="showClothesWarningModal" 
+      title="Figyelmeztetés - Aktív ruhák" 
+      @close="showClothesWarningModal = false"
+    >
+      <template #body>
+        <div class="clothes-warning-content">
+          <div class="warning-icon">
+            <AlertTriangle size="48" />
+          </div>
+          <p class="warning-title">A dolgozónak <strong>{{ clothesToReturn.length }} db</strong> aktív ruha van nála!</p>
+          <p class="warning-subtitle">A törlés előtt minden ruhát vissza kell venni a raktárba.</p>
+          
+          <div class="clothes-list-preview">
+            <div v-for="(item, idx) in clothesToReturn.slice(0, 5)" :key="item.RuhaKiBeID" class="cloth-preview-item">
+              <Package size="16" />
+              <span>{{ item.Ruha?.Fajta || 'Ismeretlen' }} ({{ item.Ruha?.Cikkszam || item.Cikkszam }})</span>
+            </div>
+            <div v-if="clothesToReturn.length > 5" class="cloth-preview-more">
+              + {{ clothesToReturn.length - 5 }} további ruha...
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showClothesWarningModal = false">Mégse</button>
+          <button class="btn-warning" @click="startReturnAllClothes">
+            <Package size="18" />
+            Összes ruha visszavétele
+          </button>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Return Cloth Modal (Sequential) -->
+    <Modal 
+      :show="showReturnClothModal" 
+      :title="`Ruha visszavétele (${currentReturnIndex + 1}/${clothesToReturn.length})`" 
+      @close="cancelReturnProcess"
+    >
+      <template #body>
+        <div v-if="currentReturnItem" class="return-modal-content">
+          <div class="return-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: ((currentReturnIndex / clothesToReturn.length) * 100) + '%' }"></div>
+            </div>
+            <span class="progress-text">{{ currentReturnIndex }} / {{ clothesToReturn.length }} ruha feldolgozva</span>
+          </div>
+
+          <div class="return-item-info">
+            <h4>Visszavett tétel</h4>
+            <div class="item-name">{{ currentReturnItem.Ruha?.Fajta || 'Ismeretlen' }}</div>
+            <div class="item-code">{{ currentReturnItem.Ruha?.Cikkszam || currentReturnItem.Cikkszam }}</div>
+            <div class="item-details">
+              <span>Kiadva: {{ new Date(currentReturnItem.KiadasDatum).toLocaleDateString('hu-HU') }}</span>
+              <span v-if="currentReturnItem.Indok">| Indok: {{ currentReturnItem.Indok }}</span>
+            </div>
+          </div>
+
+          <div class="quality-selection">
+            <label class="form-label">Milyen állapotban van a ruha?</label>
+            <div class="quality-options">
+              <label 
+                v-for="opt in qualityOptions" 
+                :key="opt"
+                class="quality-option"
+              >
+                <input 
+                  type="radio" 
+                  name="quality" 
+                  :value="opt" 
+                  v-model="returnQuality"
+                  class="sr-only"
+                >
+                <div class="quality-card" :class="{ selected: returnQuality === opt }">
+                  {{ opt }}
+                  <Check v-if="returnQuality === opt" size="16" class="check-icon" />
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="cancelReturnProcess">Mégse</button>
+          <button class="btn-primary" @click="confirmReturnCurrentCloth">
+            {{ currentReturnIndex < clothesToReturn.length - 1 ? 'Következő ruha →' : 'Utolsó ruha - Tovább a törléshez' }}
+          </button>
+        </div>
+      </template>
+    </Modal>
+
     <!-- Delete Confirmation Modal -->
     <Modal 
       :show="showDeleteConfirmModal" 
@@ -560,6 +736,9 @@ const confirmDelete = async () => {
       @close="showDeleteConfirmModal = false"
     >
       <template #body>
+        <p v-if="clothesToReturn.length > 0 && currentReturnIndex >= clothesToReturn.length" class="delete-success-note">
+          ✓ Minden ruha sikeresen visszavéve!
+        </p>
         <p>Biztosan törölni szeretné ezt a dolgozót?</p>
         <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-top: 0.5rem;">Ez az akció nem vonható vissza.</p>
       </template>
@@ -1454,5 +1633,229 @@ const confirmDelete = async () => {
 .worker-list::-webkit-scrollbar-thumb {
   background: #d1d5db;
   border-radius: 2px;
+}
+
+/* Clothes Warning Modal Styles */
+.clothes-warning-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.warning-icon {
+  color: #f59e0b;
+  margin-bottom: 1rem;
+}
+
+.warning-title {
+  font-size: 1.125rem;
+  color: var(--color-text);
+  margin: 0 0 0.5rem;
+}
+
+.warning-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  margin: 0 0 1.5rem;
+}
+
+.clothes-list-preview {
+  width: 100%;
+  background: var(--color-bg);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+}
+
+.cloth-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cloth-preview-item:last-child {
+  border-bottom: none;
+}
+
+.cloth-preview-more {
+  text-align: center;
+  padding-top: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-style: italic;
+}
+
+.btn-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.625rem;
+  background: #f59e0b;
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9375rem;
+}
+
+.btn-warning:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+.delete-success-note {
+  color: #22c55e;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 0.5rem;
+}
+
+/* Return Modal Styles */
+.return-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.return-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--color-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.return-item-info {
+  background: var(--color-bg);
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+}
+
+.return-item-info h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.75rem;
+}
+
+.return-item-info .item-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+}
+
+.return-item-info .item-code {
+  font-size: 0.9375rem;
+  color: var(--color-primary);
+  font-family: monospace;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.return-item-info .item-details {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.quality-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.quality-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.quality-option {
+  cursor: pointer;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.quality-card {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid var(--color-border);
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: all 0.2s;
+  position: relative;
+}
+
+.quality-card:hover {
+  border-color: var(--color-primary);
+}
+
+.quality-card.selected {
+  border-color: var(--color-primary);
+  background: var(--color-sidebar-active);
+  color: var(--color-sidebar-active-text);
+}
+
+.check-icon {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .quality-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn-warning {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
