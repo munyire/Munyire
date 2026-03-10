@@ -1,0 +1,1 @@
+Dolgozó távozása előtt ruhák vannak nála, vissza kell venni tőle a ruhákat. Felkell dobni egy modalt, amelyel a ruhakat visszatudjuk venni es ezt kezelni tudjuk. A ruha minőségét is fel tudjuk venni. 

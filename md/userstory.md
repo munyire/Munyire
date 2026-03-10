@@ -48,14 +48,11 @@ A megrendelt áru beérkezését követően a raktáros a **Rendelések** modulb
 ## 12. Dolgozó adatainak módosítása (Dolgozók)
 A munkavállaló adatainak változása (pl. telefonszám vagy pozíció csere) esetén az adminisztrátor a **Dolgozók** menüpontban frissíti a profilt, biztosítva a rendszer naprakészségét.
 
-## 13. Munkavállaló inaktiválása vagy törlése (Dolgozók)
-A munkaviszony megszűnésekor a jogosult felhasználó a **Dolgozók** menüpontban kikeresi az érintett személyt. A **Törlés** vagy **Inaktiválás** gombra kattintva, majd a döntést jóváhagyva eltávolítja a dolgozót az aktív listából.
+## 13. Munkavállaló törlése (Dolgozók)
+A munkaviszony megszűnésekor a jogosult felhasználó a **Dolgozók** menüpontban kikeresi az érintett személyt. A **Törlés** gombra kattintva, majd a döntést jóváhagyva eltávolítja a dolgozót az aktív listából.
 
-## 14. Készletmozgások időszakos lekérdezése (Jelentések / Ruhakészlet alakulás)
-Az adminisztrátor átfogó elemzésekhez a **Jelentések** menüpontot használja. A paraméterek megadásával a rendszer táblázatos formában, időbélyegekkel ellátva listázza a készletváltozásokat egy meghatározott időintervallumban.
-
-## 15. Részletes vezetői jelentések generálása (Jelentések)
+## 14. Részletes vezetői jelentések generálása (Jelentések)
 A menedzsment a **Jelentések** modulból kinyerheti az aktuális leltárjelentést, a havi forgalmi összesítőket, a ruhák állapot szerinti eloszlását, valamint dolgozónkénti statisztikákat, ezzel is elősegítve a stratégiai és költségvetési döntéshozatalt.
 
-## 16. Biztonságos kijelentkezés (Kijelentkezés)
+## 15. Biztonságos kijelentkezés (Kijelentkezés)
 A munkavégzés befejeztével a felhasználó a menü **Kijelentkezés** funkciójával bontja a munkamenetet. A rendszer biztonsági okokból visszairányítja a bejelentkező felületre, megakadályozva az illetéktelen hozzáférést.
